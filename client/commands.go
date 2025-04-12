@@ -86,7 +86,8 @@ func (c *Client) Message(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 
-	msg := fmt.Sprintf("%+v", expense)
+	msg := fmt.Sprintf("%s (€ %.2f), %s", expense.Category, expense.Amount, expense.Description)
+	fmt.Println(msg)
 	ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
 		ParseMode: "HTML",
 	})
