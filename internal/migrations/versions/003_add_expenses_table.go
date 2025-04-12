@@ -13,6 +13,7 @@ func init() {
 func addExpensesTable(tx *gorm.DB) error {
 	return tx.Exec(`
 		-- Create expense category enum type
+		DROP TYPE IF EXISTS expense_category;
 		CREATE TYPE expense_category AS ENUM (
 			'Salary',
 			'OtherIncomes',
@@ -34,12 +35,14 @@ func addExpensesTable(tx *gorm.DB) error {
 		);
 
 		-- Create expense type enum
+		DROP TYPE IF EXISTS expense_type;
 		CREATE TYPE expense_type AS ENUM (
 			'Income',
 			'Expense'
 		);
 
 		-- Create currency enum
+		DROP TYPE IF EXISTS currency_type;
 		CREATE TYPE currency_type AS ENUM (
 			'EUR',
 			'USD',

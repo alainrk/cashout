@@ -17,6 +17,7 @@ func createUsersTable(tx *gorm.DB) error {
 			tg_username VARCHAR(255) UNIQUE,
 			tg_firstname VARCHAR(255),
 			tg_lastname VARCHAR(255),
+			session JSONB NOT NULL,
 			created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 			updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 		)

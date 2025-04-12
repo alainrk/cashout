@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"happypoor/internal/db"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -23,7 +24,13 @@ func (c *Client) Start(b *gotgbot.Bot, ctx *ext.Context) error {
 		return nil
 	}
 
-	if err := c.setUserData(ctx); err != nil {
+	session := db.UserSession{
+		State:       db.StateNormal,
+		LastCommand: db.CommandStart,
+		LastMessage: ctx.Message.Text,
+	}
+
+	if err := c.setUserData(ctx, session); err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
