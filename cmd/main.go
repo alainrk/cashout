@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"happypoor/client"
 	"log"
 	"os"
 	"time"
@@ -42,10 +42,14 @@ func main() {
 		},
 		MaxRoutines: ext.DefaultMaxRoutines,
 	})
+
 	updater := ext.NewUpdater(dispatcher, nil)
 
+	// We create our stateful bot client here.
+	c := &client.Client{}
+
 	// /start command to introduce the bot
-	dispatcher.AddHandler(handlers.NewCommand("start", start))
+	dispatcher.AddHandler(handlers.NewCommand("start", c.Start))
 
 	// Start receiving updates.
 	err = updater.StartPolling(b, &ext.PollingOpts{
@@ -64,17 +68,4 @@ func main() {
 
 	// Idle, to keep updates coming in, and avoid bot stopping.
 	updater.Idle()
-}
-
-// start introduces the bot.
-func start(b *gotgbot.Bot, ctx *ext.Context) error {
-	// Collect user information
-	msg := fmt.Sprintf("%s, %d, %s %s", ctx.Message.From.Username, ctx.Message.From.Id, ctx.Message.From.FirstName, ctx.Message.From.LastName)
-	_, err := ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
-		ParseMode: "HTML",
-	})
-	if err != nil {
-		return fmt.Errorf("failed to send start message: %w", err)
-	}
-	return nil
 }
