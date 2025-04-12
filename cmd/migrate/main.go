@@ -9,19 +9,25 @@ import (
 
 	_ "happypoor/internal/migrations/versions" // Import all migrations
 
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	var command string
 	flag.StringVar(&command, "command", "up", "Migration command (up, down, status)")
 	flag.Parse()
 
-	// Get DB connection string from environment variable
+	// Initialize database
 	postgresURL := os.Getenv("DATABASE_URL")
 	if postgresURL == "" {
-		postgresURL = "postgresql://user:password@localhost:5432/dbname?sslmode=disable"
+		panic("DATABASE_URL environment variable is empty")
 	}
 
 	// Connect to the database directly with GORM

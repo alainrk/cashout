@@ -30,7 +30,7 @@ func main() {
 
 	// Initialize database
 	postgresURL := os.Getenv("DATABASE_URL")
-	if token == "" {
+	if postgresURL == "" {
 		panic("DATABASE_URL environment variable is empty")
 	}
 	database, err := db.NewDB(postgresURL)
