@@ -46,7 +46,7 @@ func main() {
 	defer db.Close()
 
 	// Initialize client
-	c := client.Client{Db: db}
+	c := client.Client{Db: db, Store: &client.Store{Db: db}}
 
 	// Create bot from environment value.
 	b, err := gotgbot.NewBot(token, nil)
@@ -66,19 +66,23 @@ func main() {
 
 	updater := ext.NewUpdater(dispatcher, nil)
 
-	// /start command to introduce the bot
-	// dispatcher.AddHandler(handlers.NewCommand("start", c.Start))
+	dispatcher.AddHandler(handlers.NewCommand("start", c.Start))
+	dispatcher.AddHandler(handlers.NewCommand("cancel", c.Cancel))
+	dispatcher.AddHandler(handlers.NewMessage(noCommands, c.Message))
 
-	dispatcher.AddHandler(handlers.NewConversation(
-		[]ext.Handler{handlers.NewCommand("start", c.Start)},
-		map[string][]ext.Handler{
-			"": {handlers.NewMessage(noCommands, c.Message)},
-		},
-		&handlers.ConversationOpts{
-			Exits:        []ext.Handler{handlers.NewCommand("cancel", c.Cancel)},
-			AllowReEntry: true,
-		},
-	))
+	// dispatcher.AddHandler(handlers.NewConversation(
+	// 	[]ext.Handler{handlers.NewCommand("start", c.Start)},
+	// 	map[string][]ext.Handler{
+	// 		string(model.StateNormal): {handlers.NewMessage(noCommands, c.Message)},
+	// 	},
+	// 	&handlers.ConversationOpts{
+	// 		Exits: []ext.Handler{handlers.NewCommand("cancel", c.Cancel)},
+	// 		// StateStorage: c.Store,
+	// 		StateStorage: conversation.NewInMemoryStorage(conversation.KeyStrategySenderAndChat),
+	// 		Fallbacks:    []ext.Handler{handlers.NewMessage(noCommands, c.Message)},
+	// 		AllowReEntry: true,
+	// 	},
+	// ))
 
 	// Start receiving updates.
 	err = updater.StartPolling(b, &ext.PollingOpts{
@@ -93,7 +97,8 @@ func main() {
 	if err != nil {
 		panic("failed to start polling: " + err.Error())
 	}
-	log.Printf("%s has been started...\n", b.User.Username)
+
+	log.Printf("%s has been started...\n", b.Username)
 
 	// Idle, to keep updates coming in, and avoid bot stopping.
 	updater.Idle()

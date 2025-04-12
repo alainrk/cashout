@@ -12,6 +12,7 @@ type StateType string
 
 // State type constants
 const (
+	StateStart   StateType = "start"   // When the user has just started the conversation with the bot
 	StateNormal  StateType = "normal"  // When the user can send commands or an expense "out-of-the-blue" (ootb)
 	StateWaiting StateType = "waiting" // We are waiting a followup response from the user
 )

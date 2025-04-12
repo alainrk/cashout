@@ -6,11 +6,10 @@ import (
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 )
 
-// AuthAndGetUser authenticates the user and returns the user data.
-func (c *Client) AuthAndGetUser(b *gotgbot.Bot, ctx *ext.Context) (model.User, error) {
+// authAndGetUser authenticates the user and returns the user data.
+func (c *Client) authAndGetUser(ctx *ext.Context) (model.User, error) {
 	user, exists, err := c.getUserData(ctx, ctx.Message.From.Username)
 	if err != nil {
 		return user, fmt.Errorf("failed to get user data: %w", err)
@@ -44,22 +43,22 @@ func (c *Client) AuthAndGetUser(b *gotgbot.Bot, ctx *ext.Context) (model.User, e
 
 // Start introduces the bot.
 func (c *Client) Start(b *gotgbot.Bot, ctx *ext.Context) error {
-	user, err := c.AuthAndGetUser(b, ctx)
+	user, err := c.authAndGetUser(ctx)
 	if err != nil {
 		return err
 	}
 
-	msg := fmt.Sprintf("Welcome to HappyPoor %s!", user.Name)
+	msg := fmt.Sprintf("Welcome to HappyPoor, %s!", user.Name)
 	ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
 		ParseMode: "HTML",
 	})
 
-	return handlers.NextConversationState("normal")
+	return nil
 }
 
 // Message handles incoming messages not in a specific flow.
 func (c *Client) Message(b *gotgbot.Bot, ctx *ext.Context) error {
-	user, err := c.AuthAndGetUser(b, ctx)
+	user, err := c.authAndGetUser(ctx)
 	if err != nil {
 		return err
 	}
@@ -68,12 +67,27 @@ func (c *Client) Message(b *gotgbot.Bot, ctx *ext.Context) error {
 		return c.Start(b, ctx)
 	}
 
+	user.Session.State = model.StateWaiting
+	// TODO: This must be understood through the analysis of the text the user have given
+	user.Session.LastCommand = model.CommandExpenseAdd
+	user.Session.LastMessage = ctx.Message.Text
+
+	err = c.Db.SetUser(&user)
+	if err != nil {
+		return fmt.Errorf("failed to set user data: %w", err)
+	}
+
+	msg := fmt.Sprintf("I will add your expense '%s', %s!", user.Session.LastMessage, user.Name)
+	ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
+		ParseMode: "HTML",
+	})
+
 	return nil
 }
 
 // Cancel returns to normal state.
 func (c *Client) Cancel(b *gotgbot.Bot, ctx *ext.Context) error {
-	user, err := c.AuthAndGetUser(b, ctx)
+	user, err := c.authAndGetUser(ctx)
 	if err != nil {
 		return err
 	}
@@ -86,6 +100,11 @@ func (c *Client) Cancel(b *gotgbot.Bot, ctx *ext.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
+
+	msg := fmt.Sprintf("Sure, you can always restart with /start, %s!", user.Name)
+	ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
+		ParseMode: "HTML",
+	})
 
 	return nil
 }
