@@ -1,4 +1,4 @@
-package db
+package model
 
 import (
 	"database/sql/driver"
@@ -48,6 +48,7 @@ type User struct {
 }
 
 type UserSession struct {
+	Iterations  uint64      `json:"iterations"`
 	State       StateType   `json:"state"`
 	LastCommand CommandType `json:"last_command"`
 	LastMessage string      `json:"last_message"`

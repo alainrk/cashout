@@ -10,10 +10,16 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 	"github.com/joho/godotenv"
 )
 
-// This bot demonstrates some example interactions with commands on telegram.
+// Create a matcher which only matches text which is not a command.
+func noCommands(msg *gotgbot.Message) bool {
+	return message.Text(msg) && !message.Command(msg)
+}
+
+// This bot demonstrates some example interactions with commands ontelegram.
 // It has a basic start command with a bot intro.
 // It also has a source command, which sends the bot sourcecode, as a file.
 func main() {
@@ -61,7 +67,18 @@ func main() {
 	updater := ext.NewUpdater(dispatcher, nil)
 
 	// /start command to introduce the bot
-	dispatcher.AddHandler(handlers.NewCommand("start", c.Start))
+	// dispatcher.AddHandler(handlers.NewCommand("start", c.Start))
+
+	dispatcher.AddHandler(handlers.NewConversation(
+		[]ext.Handler{handlers.NewCommand("start", c.Start)},
+		map[string][]ext.Handler{
+			"": {handlers.NewMessage(noCommands, c.Message)},
+		},
+		&handlers.ConversationOpts{
+			Exits:        []ext.Handler{handlers.NewCommand("cancel", c.Cancel)},
+			AllowReEntry: true,
+		},
+	))
 
 	// Start receiving updates.
 	err = updater.StartPolling(b, &ext.PollingOpts{
