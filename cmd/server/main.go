@@ -2,6 +2,7 @@ package main
 
 import (
 	"happypoor/client"
+	"happypoor/internal/db"
 	"log"
 	"os"
 	"time"
@@ -24,8 +25,19 @@ func main() {
 	// Get token from the environment variable
 	token := os.Getenv("TELEGRAM_BOT_API_TOKEN")
 	if token == "" {
-		panic("TOKEN environment variable is empty")
+		panic("TELEGRAM_BOT_API_TOKEN environment variable is empty")
 	}
+
+	// Initialize database
+	postgresURL := os.Getenv("DATABASE_URL")
+	if token == "" {
+		panic("DATABASE_URL environment variable is empty")
+	}
+	database, err := db.NewDB(postgresURL)
+	if err != nil {
+		log.Fatalf("Failed to initialize database: %v", err)
+	}
+	defer database.Close()
 
 	// Create bot from environment value.
 	b, err := gotgbot.NewBot(token, nil)
