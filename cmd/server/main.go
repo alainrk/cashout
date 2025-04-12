@@ -33,11 +33,14 @@ func main() {
 	if postgresURL == "" {
 		panic("DATABASE_URL environment variable is empty")
 	}
-	database, err := db.NewDB(postgresURL)
+	db, err := db.NewDB(postgresURL)
 	if err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
-	defer database.Close()
+	defer db.Close()
+
+	// Initialize client
+	c := client.Client{Db: db}
 
 	// Create bot from environment value.
 	b, err := gotgbot.NewBot(token, nil)
@@ -56,9 +59,6 @@ func main() {
 	})
 
 	updater := ext.NewUpdater(dispatcher, nil)
-
-	// We create our stateful bot client here.
-	c := &client.Client{}
 
 	// /start command to introduce the bot
 	dispatcher.AddHandler(handlers.NewCommand("start", c.Start))
