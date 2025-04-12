@@ -17,7 +17,7 @@ func (c *Client) authAndGetUser(ctx *ext.Context) (model.User, error) {
 
 	if exists {
 		user.Session.Iterations++
-		c.Db.SetUser(&user)
+		c.DB.SetUser(&user)
 		return user, nil
 	}
 
@@ -72,12 +72,21 @@ func (c *Client) Message(b *gotgbot.Bot, ctx *ext.Context) error {
 	user.Session.LastCommand = model.CommandExpenseAdd
 	user.Session.LastMessage = ctx.Message.Text
 
-	err = c.Db.SetUser(&user)
+	err = c.DB.SetUser(&user)
 	if err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	msg := fmt.Sprintf("I will add your expense '%s', %s!", user.Session.LastMessage, user.Name)
+	expense, err := c.LLM.ExtractExpense(ctx.Message.Text)
+	if err != nil {
+		msg := fmt.Sprintf("I'm sorry, I can't understand your expense '%s', %s!", user.Session.LastMessage, user.Name)
+		ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+		})
+		return err
+	}
+
+	msg := fmt.Sprintf("%+v", expense)
 	ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
 		ParseMode: "HTML",
 	})
@@ -96,7 +105,7 @@ func (c *Client) Cancel(b *gotgbot.Bot, ctx *ext.Context) error {
 	user.Session.LastCommand = model.CommandCancel
 	user.Session.LastMessage = ctx.Message.Text
 
-	err = c.Db.SetUser(&user)
+	err = c.DB.SetUser(&user)
 	if err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}

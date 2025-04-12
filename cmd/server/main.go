@@ -2,6 +2,7 @@ package main
 
 import (
 	"happypoor/client"
+	"happypoor/internal/ai"
 	"happypoor/internal/db"
 	"log"
 	"os"
@@ -34,6 +35,14 @@ func main() {
 		panic("TELEGRAM_BOT_API_TOKEN environment variable is empty")
 	}
 
+	// API key and endpoint
+	aiApiKey := os.Getenv("DEEPSEEK_API_KEY")
+	aiEndpoint := "https://api.deepseek.com/v1/chat/completions"
+	llm := ai.LLM{
+		APIKey:   aiApiKey,
+		Endpoint: aiEndpoint,
+	}
+
 	// Initialize database
 	postgresURL := os.Getenv("DATABASE_URL")
 	if postgresURL == "" {
@@ -46,7 +55,7 @@ func main() {
 	defer db.Close()
 
 	// Initialize client
-	c := client.Client{Db: db}
+	c := client.Client{DB: db, LLM: llm}
 
 	// Create bot from environment value.
 	b, err := gotgbot.NewBot(token, nil)

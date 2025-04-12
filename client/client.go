@@ -1,6 +1,7 @@
 package client
 
 import (
+	"happypoor/internal/ai"
 	"happypoor/internal/db"
 	"happypoor/internal/model"
 	"strings"
@@ -9,11 +10,12 @@ import (
 )
 
 type Client struct {
-	Db *db.DB
+	DB  *db.DB
+	LLM ai.LLM
 }
 
 func (c *Client) getUserData(_ *ext.Context, username string) (model.User, bool, error) {
-	user, err := c.Db.GetUserByUsername(username)
+	user, err := c.DB.GetUserByUsername(username)
 	if err != nil {
 		if err.Error() == "record not found" {
 			return model.User{}, false, nil
@@ -30,7 +32,7 @@ func (c *Client) setUserData(ctx *ext.Context, session model.UserSession) error 
 		name = ctx.Message.From.Username
 	}
 
-	return c.Db.SetUser(&model.User{
+	return c.DB.SetUser(&model.User{
 		TgID:        ctx.Message.From.Id,
 		Name:        name,
 		Session:     session,
