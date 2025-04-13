@@ -21,22 +21,7 @@ func (c *Client) Start(b *gotgbot.Bot, ctx *ext.Context) error {
 		ParseMode: "HTML",
 	})
 
-	ctx.EffectiveMessage.Reply(b, "Add a transaction", &gotgbot.SendMessageOpts{
-		ReplyMarkup: gotgbot.ReplyKeyboardMarkup{
-			Keyboard: [][]gotgbot.KeyboardButton{
-				{
-					{
-						Text: "Add Income",
-					},
-					{
-						Text: "Add Expense",
-					},
-				},
-			},
-			IsPersistent:   true,
-			ResizeKeyboard: true,
-		},
-	})
+	c.SendTransactionKeyboard(b, ctx, "Add a transaction")
 
 	return nil
 }
@@ -109,22 +94,7 @@ func (c *Client) AddTransaction(b *gotgbot.Bot, ctx *ext.Context) error {
 		transactionType = model.TypeExpense
 	default:
 		// answer the user that they should chose a valid command first and send the keyboard
-		ctx.EffectiveMessage.Reply(b, "Add a transaction", &gotgbot.SendMessageOpts{
-			ReplyMarkup: gotgbot.ReplyKeyboardMarkup{
-				Keyboard: [][]gotgbot.KeyboardButton{
-					{
-						{
-							Text: "Add Income",
-						},
-						{
-							Text: "Add Expense",
-						},
-					},
-				},
-				IsPersistent:   true,
-				ResizeKeyboard: true,
-			},
-		})
+		c.SendTransactionKeyboard(b, ctx, "Add a transaction")
 		return nil
 	}
 
@@ -153,23 +123,7 @@ func (c *Client) AddTransaction(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	msg := fmt.Sprintf("%s (€ %.2f), %s. Confirm?", transaction.Category, transaction.Amount, transaction.Description)
-	ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
-		ReplyMarkup: gotgbot.ReplyKeyboardMarkup{
-			Keyboard: [][]gotgbot.KeyboardButton{
-				{
-					{
-						Text: "Confirm",
-					},
-					{
-						Text: "Cancel",
-					},
-				},
-			},
-			IsPersistent:    false,
-			ResizeKeyboard:  true,
-			OneTimeKeyboard: true,
-		},
-	})
+	c.SendConfirmKeyboard(b, ctx, msg)
 
 	return nil
 }
@@ -197,22 +151,7 @@ func (c *Client) Confirm(b *gotgbot.Bot, ctx *ext.Context) error {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	ctx.EffectiveMessage.Reply(b, "Your transaction has been saved!", &gotgbot.SendMessageOpts{
-		ReplyMarkup: gotgbot.ReplyKeyboardMarkup{
-			Keyboard: [][]gotgbot.KeyboardButton{
-				{
-					{
-						Text: "Add Income",
-					},
-					{
-						Text: "Add Expense",
-					},
-				},
-			},
-			IsPersistent:   true,
-			ResizeKeyboard: true,
-		},
-	})
+	c.SendTransactionKeyboard(b, ctx, "Your transaction has been saved!")
 
 	return nil
 }
@@ -233,22 +172,7 @@ func (c *Client) Cancel(b *gotgbot.Bot, ctx *ext.Context) error {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	ctx.EffectiveMessage.Reply(b, "Add a transaction", &gotgbot.SendMessageOpts{
-		ReplyMarkup: gotgbot.ReplyKeyboardMarkup{
-			Keyboard: [][]gotgbot.KeyboardButton{
-				{
-					{
-						Text: "Add Income",
-					},
-					{
-						Text: "Add Expense",
-					},
-				},
-			},
-			IsPersistent:   true,
-			ResizeKeyboard: true,
-		},
-	})
+	c.SendTransactionKeyboard(b, ctx, "Add a transaction")
 
 	return nil
 }
