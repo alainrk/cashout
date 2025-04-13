@@ -33,6 +33,12 @@ Copy the example `.env` file in the project root (or set environment variables) 
 cp .env.example .env
 ```
 
+Spin up local infrastructure
+
+```bash
+docker compose up -d
+```
+
 ## Database Management
 
 HappyPoor uses a version-based migration system to manage database schema changes.
