@@ -22,18 +22,14 @@ type CommandType string
 
 // Command type constants
 const (
-	CommandNone              CommandType = "none"
-	CommandStart             CommandType = "start"
-	CommandHelp              CommandType = "help"
-	CommandCancel            CommandType = "cancel"
-	CommandAddIncome         CommandType = "add_income"
-	CommandAddExpense        CommandType = "add_expense"
-	CommandEditTransaction   CommandType = "edit"
-	CommandDeleteTransaction CommandType = "delete"
-	CommandRecapMonth        CommandType = "recap_month"
-	CommandRecapWeek         CommandType = "recap_week"
-	CommandRecapYear         CommandType = "recap_year"
-	CommandRecapAll          CommandType = "recap_all"
+	CommandNone             CommandType = "none"
+	CommandStart            CommandType = "start"
+	CommandHelp             CommandType = "help"
+	CommandCancel           CommandType = "cancel"
+	CommandConfirm          CommandType = "confirm"
+	CommandAddIncomeIntent  CommandType = "add_income_intent"
+	CommandAddExpenseIntent CommandType = "add_expense_intent"
+	CommandAddTransaction   CommandType = "add_transaction" // User has sent their transaction text
 )
 
 // User represents the users table structure
@@ -54,6 +50,7 @@ type UserSession struct {
 	State       StateType   `json:"state"`
 	LastCommand CommandType `json:"last_command"`
 	LastMessage string      `json:"last_message"`
+	Body        string      `json:"body"`
 }
 
 // Value makes the UserSession struct implement the driver.Valuer interface

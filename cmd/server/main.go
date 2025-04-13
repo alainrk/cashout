@@ -26,11 +26,15 @@ func cancelCommand(msg *gotgbot.Message) bool {
 }
 
 func addIncome(msg *gotgbot.Message) bool {
-	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Income"
+	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Add Income"
 }
 
 func addExpense(msg *gotgbot.Message) bool {
-	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Expense"
+	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Add Expense"
+}
+
+func confirmCommand(msg *gotgbot.Message) bool {
+	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Confirm"
 }
 
 // This bot demonstrates some example interactions with commands ontelegram.
@@ -91,6 +95,7 @@ func main() {
 	dispatcher.AddHandler(handlers.NewCommand("start", c.Start))
 	dispatcher.AddHandler(handlers.NewCommand("cancel", c.Cancel))
 	dispatcher.AddHandler(handlers.NewMessage(cancelCommand, c.Cancel))
+	dispatcher.AddHandler(handlers.NewMessage(confirmCommand, c.Confirm))
 	dispatcher.AddHandler(handlers.NewMessage(addIncome, c.AddIncomeIntent))
 	dispatcher.AddHandler(handlers.NewMessage(addExpense, c.AddExpenseIntent))
 	dispatcher.AddHandler(handlers.NewMessage(noCommands, c.AddTransaction))
