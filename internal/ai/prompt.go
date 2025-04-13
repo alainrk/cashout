@@ -26,8 +26,8 @@ Follow these rules:
    - If category cannot be determined, use "Others"
 2. For description:
    - Use the main item mentioned in the text
-   - Capitalize the first letter of each word in the description
-   - If no item is mentioned, use the same text as the category
+   - Capitalize the first letter of the description
+   - If no item is mentioned, use text of the category
 3. For amount:
    - Convert any amount to standard decimal notation with a period (not comma) as decimal separator
    - Return as a number (not a string) with at most 2 decimal places
@@ -38,7 +38,7 @@ Examples:
 - "pam 4.31 grocertw" → { "category": "Grocery", "amount": 4.31, "description": "Pam" }
 - "car 25,30" → { "category": "Car", "amount": 25.3, "description": "Car" }
 - "34 usd" → { "category": "Others", "amount": 34, "description": "Others" }
-- "Cibo a volonta 12 euro e 25" → { "category": "EatingOut", "amount": 12.25, "description": "Cibo A Volontà" }
+- "Great sea food 12 euro e 25" → { "category": "EatingOut", "amount": 12.25, "description": "Great see food" }
 
 IMPORTANT: Respond with ONLY the JSON object but without markdown syntax. Your answer is plaintext being JSON to be parsed as it is, don't include the triple backticks syntax or anything similar.
 
