@@ -6,7 +6,7 @@ import (
 )
 
 func (c *Client) SendTransactionKeyboard(b *gotgbot.Bot, ctx *ext.Context, text string) (*gotgbot.Message, error) {
-	return ctx.EffectiveMessage.Reply(b, text, &gotgbot.SendMessageOpts{
+	return b.SendMessage(ctx.EffectiveSender.ChatId, text, &gotgbot.SendMessageOpts{
 		ReplyMarkup: gotgbot.ReplyKeyboardMarkup{
 			Keyboard: [][]gotgbot.KeyboardButton{
 				{
@@ -25,6 +25,7 @@ func (c *Client) SendTransactionKeyboard(b *gotgbot.Bot, ctx *ext.Context, text 
 }
 
 func (c *Client) SendConfirmKeyboard(b *gotgbot.Bot, ctx *ext.Context, text string) (*gotgbot.Message, error) {
+	// Send a simple message in the chat without replying
 	return ctx.EffectiveMessage.Reply(b, text, &gotgbot.SendMessageOpts{
 		ReplyMarkup: gotgbot.ReplyKeyboardMarkup{
 			Keyboard: [][]gotgbot.KeyboardButton{

@@ -17,11 +17,7 @@ func (c *Client) Start(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	msg := fmt.Sprintf("Welcome to HappyPoor, %s!", user.Name)
-	ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
-		ParseMode: "HTML",
-	})
-
-	c.SendTransactionKeyboard(b, ctx, "Add a transaction")
+	c.SendTransactionKeyboard(b, ctx, msg)
 
 	return nil
 }
