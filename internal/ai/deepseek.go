@@ -47,7 +47,7 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 				"content": prompt,
 			},
 		},
-		"max_tokens": 1000,
+		"max_tokens": 250,
 	})
 	if err != nil {
 		fmt.Printf("Error creating request: %v\n", err)
