@@ -2,7 +2,7 @@
 
 Telegram bot for expense tracking AI-Powered (for real!).
 
-![demo](assets/demo.mp4)
+![demo](assets/demo.gif)
 
 ## Getting Started
 
