@@ -1,8 +1,8 @@
 package main
 
 import (
-	"happypoor/client"
 	"happypoor/internal/ai"
+	"happypoor/internal/client"
 	"happypoor/internal/db"
 	"log"
 	"os"
@@ -55,7 +55,7 @@ func main() {
 	defer db.Close()
 
 	// Initialize client
-	c := client.Client{DB: db, LLM: llm}
+	c := client.NewClient(db, llm)
 
 	// Create bot from environment value.
 	b, err := gotgbot.NewBot(token, nil)
