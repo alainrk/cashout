@@ -6,6 +6,7 @@ import (
 	"happypoor/internal/db"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -18,6 +19,18 @@ import (
 // Create a matcher which only matches text which is not a command.
 func noCommands(msg *gotgbot.Message) bool {
 	return message.Text(msg) && !message.Command(msg)
+}
+
+func cancelCommand(msg *gotgbot.Message) bool {
+	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Cancel"
+}
+
+func addIncome(msg *gotgbot.Message) bool {
+	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Income"
+}
+
+func addExpense(msg *gotgbot.Message) bool {
+	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Expense"
 }
 
 // This bot demonstrates some example interactions with commands ontelegram.
@@ -77,7 +90,10 @@ func main() {
 
 	dispatcher.AddHandler(handlers.NewCommand("start", c.Start))
 	dispatcher.AddHandler(handlers.NewCommand("cancel", c.Cancel))
-	dispatcher.AddHandler(handlers.NewMessage(noCommands, c.Message))
+	dispatcher.AddHandler(handlers.NewMessage(cancelCommand, c.Cancel))
+	dispatcher.AddHandler(handlers.NewMessage(addIncome, c.AddIncomeIntent))
+	dispatcher.AddHandler(handlers.NewMessage(addExpense, c.AddExpenseIntent))
+	dispatcher.AddHandler(handlers.NewMessage(noCommands, c.AddTransaction))
 
 	// Start receiving updates.
 	err = updater.StartPolling(b, &ext.PollingOpts{
