@@ -1,6 +1,6 @@
 # [WIP] HappyPoor
 
-Telegram bot for expense tracking AI-Powered (for real!).
+Telegram bot for expense tracking **AI-Powered** (_for real!_).
 
 ![demo](assets/demo.gif)
 
