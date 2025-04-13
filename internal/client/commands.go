@@ -147,6 +147,8 @@ func (c *Client) Confirm(b *gotgbot.Bot, ctx *ext.Context) error {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
+	// TODO: Save the transaction in the DB and give the user some detail, like week balance(?)
+
 	c.SendTransactionKeyboard(b, ctx, "Your transaction has been saved!")
 
 	return nil
