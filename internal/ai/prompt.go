@@ -34,7 +34,7 @@ Follow these rules:
    - If no amount is mentioned, use 0
 
 Examples:
-- "bread 5 euro e 20, grocery" → { "category": "Grocery", "amount": 5.2, "description": "Bread" }
+- "bread 5 euro an 20, grocery" → { "category": "Grocery", "amount": 5.2, "description": "Bread" }
 - "pam 4.31 grocertw" → { "category": "Grocery", "amount": 4.31, "description": "Pam" }
 - "car 25,30" → { "category": "Car", "amount": 25.3, "description": "Car" }
 - "34 usd" → { "category": "Others", "amount": 34, "description": "Others" }
