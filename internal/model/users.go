@@ -13,7 +13,7 @@ type StateType string
 // State type constants
 const (
 	StateStart   StateType = "start"   // When the user has just started the conversation with the bot
-	StateNormal  StateType = "normal"  // When the user can send commands or an expense "out-of-the-blue" (ootb)
+	StateNormal  StateType = "normal"  // When the user can send commands or a transaction "out-of-the-blue" (ootb)
 	StateWaiting StateType = "waiting" // We are waiting a followup response from the user
 )
 
@@ -26,13 +26,14 @@ const (
 	CommandStart             CommandType = "start"
 	CommandHelp              CommandType = "help"
 	CommandCancel            CommandType = "cancel"
-	CommandExpenseAdd        CommandType = "add"
-	CommandExpenseDelete     CommandType = "delete"
-	CommandExpenseEedit      CommandType = "edit"
-	CommandExpenseRecapMonth CommandType = "recap_month"
-	CommandExpenseRecapWeek  CommandType = "recap_week"
-	CommandExpenseRecapYear  CommandType = "recap_year"
-	CommandExpenseRecapAll   CommandType = "recap_all"
+	CommandAddIncome         CommandType = "add_income"
+	CommandAddExpense        CommandType = "add_expense"
+	CommandEditTransaction   CommandType = "edit"
+	CommandDeleteTransaction CommandType = "delete"
+	CommandRecapMonth        CommandType = "recap_month"
+	CommandRecapWeek         CommandType = "recap_week"
+	CommandRecapYear         CommandType = "recap_year"
+	CommandRecapAll          CommandType = "recap_all"
 )
 
 // User represents the users table structure

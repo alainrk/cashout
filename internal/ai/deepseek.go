@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"happypoor/internal/model"
 	"io"
 	"net/http"
 )
@@ -13,17 +14,25 @@ type LLM struct {
 	Endpoint string
 }
 
-type ExtractedExpense struct {
+type ExtractedTransaction struct {
+	Type        model.TransactionType
 	Description string
 	Amount      float64
 	Category    string
 }
 
-func (llm *LLM) ExtractExpense(userText string) (ExtractedExpense, error) {
-	expense := ExtractedExpense{}
+func (llm *LLM) ExtractTransaction(userText string, transactionType model.TransactionType) (ExtractedTransaction, error) {
+	expense := ExtractedTransaction{
+		Type: transactionType,
+	}
+
+	tmpl := LLMExpensePromptTemplate
+	if transactionType == model.TypeIncome {
+		tmpl = LLMIncomePromptTemplate
+	}
 
 	// Generate prompt using the template
-	prompt, err := GeneratePrompt(userText)
+	prompt, err := GeneratePrompt(userText, tmpl)
 	if err != nil {
 		fmt.Printf("Error generating prompt: %v\n", err)
 		return expense, err
@@ -38,7 +47,7 @@ func (llm *LLM) ExtractExpense(userText string) (ExtractedExpense, error) {
 				"content": prompt,
 			},
 		},
-		"max_tokens": 150,
+		"max_tokens": 1000,
 	})
 	if err != nil {
 		fmt.Printf("Error creating request: %v\n", err)
@@ -93,6 +102,26 @@ func (llm *LLM) ExtractExpense(userText string) (ExtractedExpense, error) {
 		fmt.Println("Raw response:", string(body))
 		return expense, fmt.Errorf("invalid response format")
 	}
+
+	// Sometimes the llm returns the ```json``` markdown format, despite being asked no to, so we need to clean it up
+	jsonStart := 0
+	jsonEnd := len(content)
+	// Start parsing char by char until a "{" is found
+	for i, char := range content {
+		if char == '{' {
+			jsonStart = i
+			break
+		}
+	}
+	// Starting from the end do the same until a "}" is found
+	for i := len(content) - 1; i >= 0; i-- {
+		if content[i] == '}' {
+			jsonEnd = i + 1
+			break
+		}
+	}
+	// Remove the markdown
+	content = content[jsonStart:jsonEnd]
 
 	// ExtractExpense from the LLM Response text
 	// Parse the LLM JSON response
