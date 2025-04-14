@@ -97,6 +97,8 @@ func main() {
 	updater := ext.NewUpdater(dispatcher, nil)
 
 	dispatcher.AddHandler(handlers.NewCommand("start", c.Start))
+	dispatcher.AddHandler(handlers.NewCommand("income", c.AddIncomeIntent))
+	dispatcher.AddHandler(handlers.NewCommand("expense", c.AddExpenseIntent))
 	dispatcher.AddHandler(handlers.NewCommand("cancel", c.Cancel))
 	dispatcher.AddHandler(handlers.NewMessage(cancelCommand, c.Cancel))
 	dispatcher.AddHandler(handlers.NewMessage(confirmCommand, c.Confirm))
