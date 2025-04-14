@@ -119,7 +119,55 @@ func (c *Client) AddTransaction(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	msg := fmt.Sprintf("%s (€ %.2f), %s. Confirm?", transaction.Category, transaction.Amount, transaction.Description)
-	c.SendConfirmKeyboard(b, ctx, msg)
+	c.SendConfirmKeyboard(b, ctx, msg, []string{"Edit"})
+
+	return nil
+}
+
+// Edit edits the transaction previously inserted, basically returns to the same add Income/Expense state, cleaning up the session.
+func (c *Client) AmendTransaction(b *gotgbot.Bot, ctx *ext.Context) error {
+	user, err := c.authAndGetUser(ctx)
+	if err != nil {
+		return err
+	}
+
+	var transaction model.Transaction
+	err = json.Unmarshal([]byte(user.Session.Body), &transaction)
+	if err != nil {
+		return fmt.Errorf("failed to extract transaction from the session: %w", err)
+	}
+
+	user.Session.State = model.StateEdit
+	user.Session.LastMessage = ctx.Message.Text
+
+	// Trick to put the session state back to the correct add transaction
+	user.Session.LastCommand = model.CommandAddExpenseIntent
+	if transaction.Type == model.TypeIncome {
+		user.Session.LastCommand = model.CommandAddIncomeIntent
+	}
+	// Clean up the previously inserted session
+	user.Session.Body = ""
+
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to set user data: %w", err)
+	}
+
+	ctx.EffectiveMessage.Reply(b, "Sure, to better edit the transaction, specify the category, amount, and description as best you can.", &gotgbot.SendMessageOpts{
+		ParseMode: "HTML",
+		ReplyMarkup: gotgbot.ReplyKeyboardMarkup{
+			Keyboard: [][]gotgbot.KeyboardButton{
+				{
+					{
+						Text: "Cancel",
+					},
+				},
+			},
+			IsPersistent:    false,
+			OneTimeKeyboard: true,
+			ResizeKeyboard:  true,
+		},
+	})
 
 	return nil
 }

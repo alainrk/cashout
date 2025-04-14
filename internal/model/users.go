@@ -15,6 +15,7 @@ const (
 	StateStart   StateType = "start"   // When the user has just started the conversation with the bot
 	StateNormal  StateType = "normal"  // When the user can send commands or a transaction "out-of-the-blue" (ootb)
 	StateWaiting StateType = "waiting" // We are waiting a followup response from the user
+	StateEdit    StateType = "editing" // We are waiting the user to edit the transaction
 )
 
 // CommandType represents the type of command sent by the user

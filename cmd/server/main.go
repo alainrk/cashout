@@ -37,6 +37,10 @@ func confirmCommand(msg *gotgbot.Message) bool {
 	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Confirm"
 }
 
+func amendCommand(msg *gotgbot.Message) bool {
+	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Edit"
+}
+
 // This bot demonstrates some example interactions with commands ontelegram.
 // It has a basic start command with a bot intro.
 // It also has a source command, which sends the bot sourcecode, as a file.
@@ -96,6 +100,7 @@ func main() {
 	dispatcher.AddHandler(handlers.NewCommand("cancel", c.Cancel))
 	dispatcher.AddHandler(handlers.NewMessage(cancelCommand, c.Cancel))
 	dispatcher.AddHandler(handlers.NewMessage(confirmCommand, c.Confirm))
+	dispatcher.AddHandler(handlers.NewMessage(amendCommand, c.AmendTransaction))
 	dispatcher.AddHandler(handlers.NewMessage(addIncome, c.AddIncomeIntent))
 	dispatcher.AddHandler(handlers.NewMessage(addExpense, c.AddExpenseIntent))
 	dispatcher.AddHandler(handlers.NewMessage(noCommands, c.AddTransaction))
