@@ -16,7 +16,8 @@ type Client struct {
 }
 
 type Repositories struct {
-	Users repository.Users
+	Users        repository.Users
+	Transactions repository.Transactions
 }
 
 func NewClient(db *db.DB, llm ai.LLM) *Client {
