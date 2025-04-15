@@ -12,8 +12,8 @@ type Users struct {
 	DB *db.DB
 }
 
-func (u *Users) GetByUsername(username string) (model.User, bool, error) {
-	user, err := u.DB.GetUserByUsername(username)
+func (r *Users) GetByUsername(username string) (model.User, bool, error) {
+	user, err := r.DB.GetUserByUsername(username)
 	if err != nil {
 		if err.Error() == "record not found" {
 			return model.User{}, false, nil
@@ -23,14 +23,14 @@ func (u *Users) GetByUsername(username string) (model.User, bool, error) {
 	return *user, true, nil
 }
 
-func (u *Users) UpsertWithContext(ctx *ext.Context, session model.UserSession) error {
+func (r *Users) UpsertWithContext(ctx *ext.Context, session model.UserSession) error {
 	name := ctx.Message.From.FirstName
 	name = strings.Trim(name, " ")
 	if name == "" {
 		name = ctx.Message.From.Username
 	}
 
-	return u.DB.SetUser(&model.User{
+	return r.DB.SetUser(&model.User{
 		TgID:        ctx.Message.From.Id,
 		Name:        name,
 		Session:     session,

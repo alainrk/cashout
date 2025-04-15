@@ -24,6 +24,9 @@ func NewClient(db *db.DB, llm ai.LLM) *Client {
 	return &Client{
 		Repositories: Repositories{
 			Users: repository.Users{DB: db},
+			Transactions: repository.Transactions{
+				DB: db,
+			},
 		},
 		LLM: llm,
 	}
