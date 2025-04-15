@@ -38,7 +38,7 @@ func addTransactionsTable(tx *gorm.DB) error {
 		DROP TYPE IF EXISTS transaction_type;
 		CREATE TYPE transaction_type AS ENUM (
 			'Income',
-			'transaction'
+			'Expense'
 		);
 
 		-- Create currency enum

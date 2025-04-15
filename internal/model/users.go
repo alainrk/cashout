@@ -41,7 +41,6 @@ type User struct {
 	TgLastname  string      `gorm:"column:tg_lastname"`
 	Name        string      `gorm:"column:name;name"`
 	Session     UserSession `gorm:"column:session;type:jsonb"`
-	Settings    JSONData    `gorm:"column:settings;type:jsonb"`
 	CreatedAt   time.Time   `gorm:"column:created_at;autoCreateTime"`
 	UpdatedAt   time.Time   `gorm:"column:updated_at;autoUpdateTime"`
 }
