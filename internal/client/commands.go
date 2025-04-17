@@ -243,12 +243,10 @@ func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	// Get current year
-	year := time.Now().Year()
 	// Get current month
 	month := time.Now().Month()
 
-	m, err := c.Repositories.Transactions.DB.GetMonthlyTotals(user.TgID, year)
+	m, err := c.Repositories.Transactions.GetMonthlyTotalsCurrentYear(user.TgID)
 	if err != nil {
 		return err
 	}

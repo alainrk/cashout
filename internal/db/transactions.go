@@ -117,8 +117,8 @@ func (db *DB) GetUserBalance(tgID int64, startDate, endDate time.Time) (float64,
 	return income - transaction, nil
 }
 
-// GetMonthlyTotals gets monthly totals for a specific year
-func (db *DB) GetMonthlyTotals(tgID int64, year int) (map[int]map[model.TransactionType]float64, error) {
+// GetMonthlyTotalsInYear gets monthly totals for a specific year
+func (db *DB) GetMonthlyTotalsInYear(tgID int64, year int) (map[int]map[model.TransactionType]float64, error) {
 	var results []struct {
 		Month int
 		Type  model.TransactionType
