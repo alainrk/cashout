@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"happypoor/internal/model"
+	"time"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -222,6 +223,54 @@ func (c *Client) Cancel(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	c.SendTransactionKeyboard(b, ctx, "Add a transaction")
+
+	return nil
+}
+
+// MonthRecap returns to the user the breakdown and the total for the expenses and income of the current month.
+func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
+	user, err := c.authAndGetUser(ctx)
+	if err != nil {
+		return err
+	}
+
+	user.Session.State = model.StateNormal
+	user.Session.LastCommand = model.CommandMonthRecap
+	user.Session.LastMessage = ctx.Message.Text
+
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to set user data: %w", err)
+	}
+
+	// Get current year
+	year := time.Now().Year()
+	// Get current month
+	month := time.Now().Month()
+
+	m, err := c.Repositories.Transactions.DB.GetMonthlyTotals(user.TgID, year)
+	if err != nil {
+		return err
+	}
+
+	if cmonth, ok := m[int(month)]; ok {
+		fmt.Printf("%+v\n", cmonth)
+		var msg string
+		var total float64
+		if ex, ok := cmonth[model.TypeExpense]; ok {
+			msg += fmt.Sprintf("Expenses: € %.2f \n", ex)
+			total -= ex
+		}
+		if in, ok := cmonth[model.TypeIncome]; ok {
+			msg += fmt.Sprintf("Income: € %.2f\n", in)
+			total += in
+		}
+
+		msg += fmt.Sprintf("Total: € %.2f", total)
+		ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+		})
+	}
 
 	return nil
 }
