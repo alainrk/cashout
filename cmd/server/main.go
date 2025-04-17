@@ -101,6 +101,7 @@ func main() {
 	dispatcher.AddHandler(handlers.NewCommand("expense", c.AddExpenseIntent))
 	dispatcher.AddHandler(handlers.NewCommand("cancel", c.Cancel))
 	dispatcher.AddHandler(handlers.NewCommand("month", c.MonthRecap))
+	dispatcher.AddHandler(handlers.NewCommand("year", c.YearRecap))
 	dispatcher.AddHandler(handlers.NewMessage(cancelCommand, c.Cancel))
 	dispatcher.AddHandler(handlers.NewMessage(confirmCommand, c.Confirm))
 	dispatcher.AddHandler(handlers.NewMessage(amendCommand, c.AmendTransaction))

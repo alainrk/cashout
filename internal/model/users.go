@@ -32,6 +32,7 @@ const (
 	CommandAddExpenseIntent CommandType = "add_expense_intent"
 	CommandAddTransaction   CommandType = "add_transaction" // User has sent their transaction text
 	CommandMonthRecap       CommandType = "month_recap"
+	CommandYearRecap        CommandType = "year_recap"
 )
 
 // User represents the users table structure

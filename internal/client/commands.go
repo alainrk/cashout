@@ -246,12 +246,12 @@ func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 	// Get current month
 	month := time.Now().Month()
 
-	m, err := c.Repositories.Transactions.GetMonthlyTotalsCurrentYear(user.TgID)
+	res, err := c.Repositories.Transactions.GetMonthlyTotalsCurrentYear(user.TgID)
 	if err != nil {
 		return err
 	}
 
-	if cmonth, ok := m[int(month)]; ok {
+	if cmonth, ok := res[int(month)]; ok {
 		fmt.Printf("%+v\n", cmonth)
 		var msg string
 		var total float64
@@ -269,6 +269,70 @@ func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 			ParseMode: "HTML",
 		})
 	}
+
+	return nil
+}
+
+func (c *Client) YearRecap(b *gotgbot.Bot, ctx *ext.Context) error {
+	user, err := c.authAndGetUser(ctx)
+	if err != nil {
+		return err
+	}
+
+	user.Session.State = model.StateNormal
+	user.Session.LastCommand = model.CommandMonthRecap
+	user.Session.LastMessage = ctx.Message.Text
+
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to set user data: %w", err)
+	}
+
+	res, err := c.Repositories.Transactions.GetMonthlyTotalsCurrentYear(user.TgID)
+	if err != nil {
+		return err
+	}
+
+	var msg string
+	var yeartot float64
+	var yearex float64
+	var yearin float64
+
+	// TODO:
+	// - Create and put everything into an array
+	// - Take month and expense/income from the map in O(1)
+	// - Loop on month 0->11 there so months gets sorted and take ex/in from inner map
+	for m, t := range res {
+		var monthtot float64
+
+		msg += fmt.Sprintf("Month: %s\n", time.Month(m).String())
+
+		if ex, ok := t[model.TypeExpense]; ok {
+			msg += fmt.Sprintf("Expenses: € %.2f \n", ex)
+			monthtot -= ex
+			yearex += ex
+		}
+
+		if in, ok := t[model.TypeIncome]; ok {
+			msg += fmt.Sprintf("Income: € %.2f\n", in)
+			monthtot += in
+			yearin += in
+		}
+
+		yeartot += monthtot
+
+		msg += fmt.Sprintf("Total: € %.2f", monthtot)
+
+		msg += "\n---\n"
+	}
+
+	msg += fmt.Sprintf("Year Expenses: € %.2f\n", yearex)
+	msg += fmt.Sprintf("Year Incomes: € %.2f\n", yearin)
+	msg += fmt.Sprintf("Year Total: € %.2f", yeartot)
+
+	ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
+		ParseMode: "HTML",
+	})
 
 	return nil
 }
