@@ -251,24 +251,33 @@ func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 
-	if cmonth, ok := res[int(month)]; ok {
-		fmt.Printf("%+v\n", cmonth)
-		var msg string
-		var total float64
-		if ex, ok := cmonth[model.TypeExpense]; ok {
-			msg += fmt.Sprintf("Expenses: € %.2f \n", ex)
-			total -= ex
-		}
-		if in, ok := cmonth[model.TypeIncome]; ok {
-			msg += fmt.Sprintf("Income: € %.2f\n", in)
-			total += in
-		}
-
-		msg += fmt.Sprintf("Total: € %.2f", total)
-		ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
+	t, ok := res[int(month)]
+	if !ok {
+		ctx.EffectiveMessage.Reply(b, "No transactions for this month", &gotgbot.SendMessageOpts{
 			ParseMode: "HTML",
 		})
+		return nil
 	}
+
+	var msg string
+	var monthtot float64
+
+	msg += fmt.Sprintf("🗓 %s\n", time.Month(month).String())
+
+	if ex, ok := t[model.TypeExpense]; ok {
+		msg += fmt.Sprintf("-%.2f€\n", ex)
+		monthtot -= ex
+	}
+
+	if in, ok := t[model.TypeIncome]; ok {
+		msg += fmt.Sprintf("+%.2f€\n", in)
+		monthtot += in
+	}
+
+	msg += fmt.Sprintf("Total: %.2f€\n\n", monthtot)
+	ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
+		ParseMode: "HTML",
+	})
 
 	return nil
 }
