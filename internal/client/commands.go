@@ -298,37 +298,45 @@ func (c *Client) YearRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 	var yearex float64
 	var yearin float64
 
-	// TODO:
-	// - Create and put everything into an array
-	// - Take month and expense/income from the map in O(1)
-	// - Loop on month 0->11 there so months gets sorted and take ex/in from inner map
-	for m, t := range res {
+	currMonth := time.Now().Month()
+
+	for m := 1; m <= int(currMonth); m++ {
+		t, ok := res[m]
+
+		msg += fmt.Sprintf("🗓 %s\n", time.Month(m).String())
+		if !ok {
+			msg += "No entries\n\n"
+			continue
+		}
+
 		var monthtot float64
 
-		msg += fmt.Sprintf("Month: %s\n", time.Month(m).String())
-
 		if ex, ok := t[model.TypeExpense]; ok {
-			msg += fmt.Sprintf("Expenses: € %.2f \n", ex)
+			msg += fmt.Sprintf("-%.2f€\n", ex)
 			monthtot -= ex
 			yearex += ex
 		}
 
 		if in, ok := t[model.TypeIncome]; ok {
-			msg += fmt.Sprintf("Income: € %.2f\n", in)
+			msg += fmt.Sprintf("+%.2f€\n", in)
 			monthtot += in
 			yearin += in
 		}
 
 		yeartot += monthtot
 
-		msg += fmt.Sprintf("Total: € %.2f", monthtot)
-
-		msg += "\n---\n"
+		msg += fmt.Sprintf("Total: %.2f€\n\n", monthtot)
 	}
 
-	msg += fmt.Sprintf("Year Expenses: € %.2f\n", yearex)
-	msg += fmt.Sprintf("Year Incomes: € %.2f\n", yearin)
-	msg += fmt.Sprintf("Year Total: € %.2f", yeartot)
+	msg += "\n💰 Year to Date\n"
+
+	if yearex > 0 {
+		msg += fmt.Sprintf("-%.2f€\n", yearex)
+	}
+	if yearin > 0 {
+		msg += fmt.Sprintf("+%.2f€\n", yearin)
+	}
+	msg += fmt.Sprintf("Total: %.2f€", yeartot)
 
 	ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
 		ParseMode: "HTML",
