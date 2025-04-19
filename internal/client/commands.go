@@ -4,11 +4,60 @@ import (
 	"encoding/json"
 	"fmt"
 	"happypoor/internal/model"
+	"strings"
 	"time"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 )
+
+func (c *Client) Test(b *gotgbot.Bot, ctx *ext.Context) error {
+	b.SendMessage(ctx.EffectiveSender.ChatId, "test inline", &gotgbot.SendMessageOpts{
+		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+				{{Text: "Income", CallbackData: "test.income"}},
+				{{Text: "Expense", CallbackData: "test.expense"}},
+			},
+		},
+	})
+
+	return nil
+}
+
+func (c *Client) TestInlineCallback(b *gotgbot.Bot, ctx *ext.Context) error {
+	fmt.Println("inline called with query", ctx.CallbackQuery)
+	query := ctx.CallbackQuery
+	// user := ctx.EffectiveSender.User
+	msg := query.Message
+
+	action := strings.Split(query.Data, ".")[1]
+
+	switch action {
+	case "income":
+		_, _, err := msg.EditText(b, "This is an income", nil)
+		if err != nil {
+			fmt.Printf("failed to set user data: %v", err)
+			return err
+		}
+	case "expense":
+		_, _, err := msg.EditText(b, "This is an expense", nil)
+		if err != nil {
+			fmt.Printf("failed to set user data: %v", err)
+			return err
+		}
+	}
+
+	msg.EditReplyMarkup(b, &gotgbot.EditMessageReplyMarkupOpts{
+		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+				{{Text: "Income", CallbackData: "test.income"}},
+				{{Text: "Expense", CallbackData: "test.expense"}},
+			},
+		},
+	})
+
+	return ext.EndGroups
+}
 
 // Start introduces the bot.
 func (c *Client) Start(b *gotgbot.Bot, ctx *ext.Context) error {

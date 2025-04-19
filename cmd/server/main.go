@@ -12,6 +12,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/callbackquery"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 	"github.com/joho/godotenv"
 )
@@ -95,6 +96,9 @@ func main() {
 	})
 
 	updater := ext.NewUpdater(dispatcher, nil)
+
+	dispatcher.AddHandler(handlers.NewCommand("test", c.Test))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("test."), c.TestInlineCallback))
 
 	dispatcher.AddHandler(handlers.NewCommand("start", c.Start))
 	dispatcher.AddHandler(handlers.NewCommand("income", c.AddIncomeIntent))
