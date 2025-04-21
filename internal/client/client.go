@@ -7,6 +7,7 @@ import (
 	"happypoor/internal/model"
 	"happypoor/internal/repository"
 
+	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 )
 
@@ -33,34 +34,39 @@ func NewClient(db *db.DB, llm ai.LLM) *Client {
 }
 
 // authAndGetUser authenticates the user and returns the user data.
-func (c *Client) authAndGetUser(ctx *ext.Context) (model.User, error) {
-	user, exists, err := c.Repositories.Users.GetByUsername(ctx.Message.From.Username)
+func (c *Client) authAndGetUser(user gotgbot.User) (model.User, error) {
+	u, exists, err := c.Repositories.Users.GetByUsername(user.Username)
 	if err != nil {
-		return user, fmt.Errorf("failed to get user data: %w", err)
+		return u, fmt.Errorf("failed to get user data: %w", err)
 	}
 
 	if exists {
-		user.Session.Iterations++
-		c.Repositories.Users.Update(&user)
-		return user, nil
+		u.Session.Iterations++
+		c.Repositories.Users.Update(&u)
+		return u, nil
 	}
 
-	// User to be created
+	// First Message, user to be created.
 	session := model.UserSession{
-		Iterations:  0,
-		State:       model.StateNormal,
-		LastCommand: model.CommandStart,
-		LastMessage: ctx.Message.Text,
+		Iterations: 0,
+		State:      model.StateStart,
 	}
 
-	if err := c.Repositories.Users.UpsertWithContext(ctx, session); err != nil {
-		return user, fmt.Errorf("failed to set user data: %w", err)
+	if err := c.Repositories.Users.UpsertWithContext(user, session); err != nil {
+		return u, fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	user, _, err = c.Repositories.Users.GetByUsername(ctx.Message.From.Username)
+	u, _, err = c.Repositories.Users.GetByUsername(user.Username)
 	if err != nil {
-		return user, fmt.Errorf("failed to get user data: %w", err)
+		return u, fmt.Errorf("failed to get user data: %w", err)
 	}
 
-	return user, nil
+	return u, nil
+}
+
+func (c *Client) getUserFromContext(ctx *ext.Context) (isTopLevel bool, user gotgbot.User) {
+	if ctx.CallbackQuery != nil {
+		return false, ctx.CallbackQuery.From
+	}
+	return true, *ctx.Message.From
 }
