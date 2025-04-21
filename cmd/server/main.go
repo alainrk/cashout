@@ -22,24 +22,8 @@ func noCommands(msg *gotgbot.Message) bool {
 	return message.Text(msg) && !message.Command(msg)
 }
 
-func cancelCommand(msg *gotgbot.Message) bool {
-	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Cancel"
-}
-
-func addIncome(msg *gotgbot.Message) bool {
-	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Add Income"
-}
-
-func addExpense(msg *gotgbot.Message) bool {
-	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Add Expense"
-}
-
 func confirmCommand(msg *gotgbot.Message) bool {
 	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Confirm"
-}
-
-func amendCommand(msg *gotgbot.Message) bool {
-	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Edit"
 }
 
 // This bot demonstrates some example interactions with commands ontelegram.
@@ -107,12 +91,8 @@ func main() {
 
 	dispatcher.AddHandler(handlers.NewCommand("start", c.Start))
 	dispatcher.AddHandler(handlers.NewCommand("new", c.Start))
-	dispatcher.AddHandler(handlers.NewCommand("cancel", c.Cancel))
 	dispatcher.AddHandler(handlers.NewCommand("month", c.MonthRecap))
 	dispatcher.AddHandler(handlers.NewCommand("year", c.YearRecap))
-	dispatcher.AddHandler(handlers.NewMessage(cancelCommand, c.Cancel))
-	dispatcher.AddHandler(handlers.NewMessage(confirmCommand, c.Confirm))
-	dispatcher.AddHandler(handlers.NewMessage(amendCommand, c.AmendTransaction))
 
 	// Top-level message for LLM goes into AddTransaction and gets the expense/income intent from user session state.
 	dispatcher.AddHandler(handlers.NewMessage(noCommands, c.AddTransaction))

@@ -115,7 +115,7 @@ func (c *Client) AddTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 	msg.EditReplyMarkup(b, &gotgbot.EditMessageReplyMarkupOpts{
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
-				{{Text: "Cancel", CallbackData: "cancel"}},
+				{{Text: "Cancel", CallbackData: "transactions.cancel"}},
 			},
 		},
 	})
