@@ -7,33 +7,25 @@ import (
 	"time"
 )
 
-// StateType represents the status of the user in the session
+// StateType represents the last state of the user (if any)
 type StateType string
 
 // State type constants
 const (
-	StateStart   StateType = "start"   // When the user has just started the conversation with the bot
-	StateNormal  StateType = "normal"  // When the user can send commands or a transaction "out-of-the-blue" (ootb)
-	StateWaiting StateType = "waiting" // We are waiting a followup response from the user
-	StateEdit    StateType = "editing" // We are waiting the user to edit the transaction
+	// Normal state where the user has to give commands.
+	StateNormal StateType = "start"
+	// Only when the user has started the bot.
+	StateStart StateType = "start"
+	// The user has to add an expense after having set the bot to accept it.
+	StateInsertingExpense StateType = "inserting_expense"
+	// The user has to add an income after having set the bot to accept it.
+	StateInsertingIncome StateType = "inserting_income"
+	// The user has to confirm an action.
+	StateWaitingConfirm StateType = "confirm"
 )
 
 // CommandType represents the type of command sent by the user
 type CommandType string
-
-// Command type constants
-const (
-	CommandNone             CommandType = "none"
-	CommandStart            CommandType = "start"
-	CommandHelp             CommandType = "help"
-	CommandCancel           CommandType = "cancel"
-	CommandConfirm          CommandType = "confirm"
-	CommandAddIncomeIntent  CommandType = "add_income_intent"
-	CommandAddExpenseIntent CommandType = "add_expense_intent"
-	CommandAddTransaction   CommandType = "add_transaction" // User has sent their transaction text
-	CommandMonthRecap       CommandType = "month_recap"
-	CommandYearRecap        CommandType = "year_recap"
-)
 
 // User represents the users table structure
 type User struct {
@@ -48,11 +40,10 @@ type User struct {
 }
 
 type UserSession struct {
-	Iterations  uint64      `json:"iterations"`
-	State       StateType   `json:"state"`
-	LastCommand CommandType `json:"last_command"`
-	LastMessage string      `json:"last_message"`
-	Body        string      `json:"body"`
+	Iterations  uint64    `json:"iterations"`
+	State       StateType `json:"state"`
+	LastMessage string    `json:"last_message"`
+	Body        string    `json:"body"`
 }
 
 // Value makes the UserSession struct implement the driver.Valuer interface
@@ -63,7 +54,7 @@ func (s UserSession) Value() (driver.Value, error) {
 // Scan makes the UserSession struct implement the sql.Scanner interface
 func (s *UserSession) Scan(value interface{}) error {
 	if value == nil {
-		*s = UserSession{State: "", LastCommand: CommandNone, LastMessage: ""}
+		*s = UserSession{State: "", LastMessage: ""}
 		return nil
 	}
 
