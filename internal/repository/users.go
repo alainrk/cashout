@@ -5,7 +5,7 @@ import (
 	"happypoor/internal/model"
 	"strings"
 
-	"github.com/PaulSonOfLars/gotgbot/v2/ext"
+	"github.com/PaulSonOfLars/gotgbot/v2"
 )
 
 type Users struct {
@@ -23,20 +23,20 @@ func (r *Users) GetByUsername(username string) (model.User, bool, error) {
 	return *user, true, nil
 }
 
-func (r *Users) UpsertWithContext(ctx *ext.Context, session model.UserSession) error {
-	name := ctx.Message.From.FirstName
+func (r *Users) UpsertWithContext(user gotgbot.User, session model.UserSession) error {
+	name := user.FirstName
 	name = strings.Trim(name, " ")
 	if name == "" {
-		name = ctx.Message.From.Username
+		name = user.Username
 	}
 
 	return r.DB.SetUser(&model.User{
-		TgID:        ctx.Message.From.Id,
+		TgID:        user.Id,
 		Name:        name,
 		Session:     session,
-		TgUsername:  ctx.Message.From.Username,
-		TgFirstname: ctx.Message.From.FirstName,
-		TgLastname:  ctx.Message.From.LastName,
+		TgUsername:  user.Username,
+		TgFirstname: user.FirstName,
+		TgLastname:  user.LastName,
 	})
 }
 
