@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"happypoor/internal/model"
+	"happypoor/internal/utils"
 	"strings"
 	"time"
 
@@ -123,7 +124,7 @@ func (c *Client) AddTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 	return ext.ContinueGroups
 }
 
-func (c *Client) AddTransaction(b *gotgbot.Bot, ctx *ext.Context) error {
+func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 	_, u := c.getUserFromContext(ctx)
 	user, err := c.authAndGetUser(u)
 	if err != nil {
@@ -134,6 +135,18 @@ func (c *Client) AddTransaction(b *gotgbot.Bot, ctx *ext.Context) error {
 		return c.Start(b, ctx)
 	}
 
+	if user.Session.State == model.StateInsertingIncome || user.Session.State == model.StateInsertingExpense {
+		return c.addTransaction(b, ctx, user)
+	}
+
+	if user.Session.State == model.StateEditingTransaction {
+		return c.editTransaction(b, ctx, user)
+	}
+
+	return fmt.Errorf("invalid top-level state")
+}
+
+func (c *Client) addTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.User) error {
 	var transactionType model.TransactionType
 
 	switch user.Session.State {
@@ -167,10 +180,10 @@ func (c *Client) AddTransaction(b *gotgbot.Bot, ctx *ext.Context) error {
 	user.Session.State = model.StateNormal
 	user.Session.LastMessage = ctx.Message.Text
 	s, err := json.Marshal(transaction)
-	user.Session.Body = string(s)
 	if err != nil {
-		return fmt.Errorf("failed to set user data: %w", err)
+		return fmt.Errorf("failed to stringify the body: %w", err)
 	}
+	user.Session.Body = string(s)
 
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
@@ -182,6 +195,10 @@ func (c *Client) AddTransaction(b *gotgbot.Bot, ctx *ext.Context) error {
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 				{
+					{
+						Text:         "Edit date",
+						CallbackData: "transactions.edit.date",
+					},
 					{
 						Text:         "Confirm",
 						CallbackData: "transactions.confirm",
@@ -202,48 +219,79 @@ func (c *Client) AddTransaction(b *gotgbot.Bot, ctx *ext.Context) error {
 	return nil
 }
 
-// Edit edits the transaction previously inserted, basically returns to the same add Income/Expense state, cleaning up the session.
-func (c *Client) AmendTransaction(b *gotgbot.Bot, ctx *ext.Context) error {
+func (c *Client) EditTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 	_, u := c.getUserFromContext(ctx)
 	user, err := c.authAndGetUser(u)
 	if err != nil {
 		return err
 	}
 
-	var transaction model.Transaction
-	err = json.Unmarshal([]byte(user.Session.Body), &transaction)
-	if err != nil {
-		return fmt.Errorf("failed to extract transaction from the session: %w", err)
-	}
-
-	user.Session.LastMessage = ctx.Message.Text
-
-	// Trick to put the session state back to the correct add transaction
-	user.Session.State = model.StateInsertingExpense
-	if transaction.Type == model.TypeIncome {
-		user.Session.State = model.StateInsertingIncome
-	}
-	// Clean up the previously inserted session
-	user.Session.Body = ""
+	user.Session.State = model.StateEditingTransaction
+	user.Session.LastMessage = "edit"
 
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	ctx.EffectiveMessage.Reply(b, "Sure, to better edit the transaction, specify the category, amount, and description as best you can.", &gotgbot.SendMessageOpts{
-		ParseMode: "HTML",
-		ReplyMarkup: gotgbot.ReplyKeyboardMarkup{
-			Keyboard: [][]gotgbot.KeyboardButton{
+	b.SendMessage(ctx.EffectiveSender.ChatId, "Add your date (e.g. dd mm, dd-mm, dd-mm-yyyy).", &gotgbot.SendMessageOpts{})
+
+	return nil
+}
+
+// EditTransaction edits a transaction.
+func (c *Client) editTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.User) error {
+	var transaction model.Transaction
+	err := json.Unmarshal([]byte(user.Session.Body), &transaction)
+	if err != nil {
+		return fmt.Errorf("failed to extract transaction from the session: %w", err)
+	}
+
+	// TODO: Handle this with LLM to support different formats automatically and also yesterday, 2 days ago etc.
+
+	// Get date from DD-MM-YYYY to date
+	date, err := utils.ParseDate(ctx.Message.Text)
+	if err != nil {
+		// TODO: Handle invalid date
+		fmt.Printf("failed to parse date: %v\n", err)
+		return err
+	}
+
+	// TODO: Reject future date
+
+	transaction.Date = date
+
+	user.Session.LastMessage = ctx.Message.Text
+	s, err := json.Marshal(transaction)
+	if err != nil {
+		return fmt.Errorf("failed to stringify the body: %w", err)
+	}
+	user.Session.Body = string(s)
+
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to set user data: %w", err)
+	}
+
+	m := fmt.Sprintf("%s (€ %.2f), %s on %s. Confirm?", transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
+	b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
+		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 				{
 					{
-						Text: "Cancel",
+						Text:         "Edit date",
+						CallbackData: "transactions.edit.date",
+					},
+					{
+						Text:         "Confirm",
+						CallbackData: "transactions.confirm",
+					},
+					{
+						Text:         "Cancel",
+						CallbackData: "transactions.cancel",
 					},
 				},
 			},
-			IsPersistent:    false,
-			OneTimeKeyboard: true,
-			ResizeKeyboard:  true,
 		},
 	})
 

@@ -86,6 +86,7 @@ func main() {
 
 	// Add transaction intents (transactions.new.income, transactions.new.expense)
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.new."), c.AddTransactionIntent))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.edit."), c.EditTransactionIntent))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("transactions.cancel"), c.Cancel))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("transactions.confirm"), c.Confirm))
 
@@ -95,7 +96,7 @@ func main() {
 	dispatcher.AddHandler(handlers.NewCommand("year", c.YearRecap))
 
 	// Top-level message for LLM goes into AddTransaction and gets the expense/income intent from user session state.
-	dispatcher.AddHandler(handlers.NewMessage(noCommands, c.AddTransaction))
+	dispatcher.AddHandler(handlers.NewMessage(noCommands, c.FreeTextRouter))
 
 	// Start receiving updates.
 	err = updater.StartPolling(b, &ext.PollingOpts{
