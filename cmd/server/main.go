@@ -97,20 +97,24 @@ func main() {
 
 	updater := ext.NewUpdater(dispatcher, nil)
 
-	dispatcher.AddHandler(handlers.NewCommand("test", c.Test))
-	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("test."), c.TestInlineCallback))
+	// dispatcher.AddHandler(handlers.NewCommand("test", c.Test))
+	// dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("test."), c.TestInlineCallback))
+
+	// Add transaction intents (transactions.new.income, transactions.new.expense)
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.new."), c.AddTransactionIntent))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("transactions.cancel"), c.Cancel))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("transactions.confirm"), c.Confirm))
 
 	dispatcher.AddHandler(handlers.NewCommand("start", c.Start))
-	dispatcher.AddHandler(handlers.NewCommand("income", c.AddIncomeIntent))
-	dispatcher.AddHandler(handlers.NewCommand("expense", c.AddExpenseIntent))
+	dispatcher.AddHandler(handlers.NewCommand("new", c.Start))
 	dispatcher.AddHandler(handlers.NewCommand("cancel", c.Cancel))
 	dispatcher.AddHandler(handlers.NewCommand("month", c.MonthRecap))
 	dispatcher.AddHandler(handlers.NewCommand("year", c.YearRecap))
 	dispatcher.AddHandler(handlers.NewMessage(cancelCommand, c.Cancel))
 	dispatcher.AddHandler(handlers.NewMessage(confirmCommand, c.Confirm))
 	dispatcher.AddHandler(handlers.NewMessage(amendCommand, c.AmendTransaction))
-	dispatcher.AddHandler(handlers.NewMessage(addIncome, c.AddIncomeIntent))
-	dispatcher.AddHandler(handlers.NewMessage(addExpense, c.AddExpenseIntent))
+
+	// Top-level message for LLM goes into AddTransaction and gets the expense/income intent from user session state.
 	dispatcher.AddHandler(handlers.NewMessage(noCommands, c.AddTransaction))
 
 	// Start receiving updates.
