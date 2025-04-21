@@ -226,6 +226,15 @@ func (c *Client) EditTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 
+	// Cleanup inline keyboard if exists
+	if ctx.CallbackQuery != nil {
+		ctx.CallbackQuery.Message.EditReplyMarkup(b, &gotgbot.EditMessageReplyMarkupOpts{
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: [][]gotgbot.InlineKeyboardButton{},
+			},
+		})
+	}
+
 	user.Session.State = model.StateEditingTransaction
 	user.Session.LastMessage = "edit"
 
