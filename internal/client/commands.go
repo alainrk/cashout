@@ -107,12 +107,7 @@ func (c *Client) AddTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	_, _, err = msg.EditText(b, fmt.Sprintf("Sure, to add a new %s, just tell me category, amount and decription.", action), nil)
-	if err != nil {
-		fmt.Printf("failed to set user data: %v", err)
-		return err
-	}
-
+	msg.EditText(b, fmt.Sprintf("Sure, to add a new %s, just tell me category, amount and decription.", action), nil)
 	msg.EditReplyMarkup(b, &gotgbot.EditMessageReplyMarkupOpts{
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
@@ -226,14 +221,7 @@ func (c *Client) EditTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 
-	// Cleanup inline keyboard if exists
-	if ctx.CallbackQuery != nil {
-		ctx.CallbackQuery.Message.EditReplyMarkup(b, &gotgbot.EditMessageReplyMarkupOpts{
-			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
-				InlineKeyboard: [][]gotgbot.InlineKeyboardButton{},
-			},
-		})
-	}
+	c.CleanupInlineKeyboard(b, ctx)
 
 	user.Session.State = model.StateEditingTransaction
 	user.Session.LastMessage = "edit"
