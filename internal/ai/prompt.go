@@ -12,7 +12,7 @@ const LLMExpensePromptTemplate = `You are a financial transaction parser. Your t
 - A brief description of the transaction
 
 Format the result as a JSON object with the following structure:
-{ "category": "Category", "amount": 12.34, "description": "Description" }
+{ "category": "Category", "amount": 12.34, "description": "Description", "date": "dd-mm-yyyy" }
 
 Available categories (use ONLY these):
 "Car", "Clothes", "Grocery", "House", "Bills", "Entertainment", "Sport", "EatingOut", "Transport", "Learning", "Toiletry", "Health", "Tech", "Gifts", "Travel", "Others"
@@ -30,12 +30,17 @@ Follow these rules:
    - Convert any amount to standard decimal notation with a period (not comma) as decimal separator
    - Return as a number (not a string) with at most 2 decimal places
    - If no amount is mentioned, use 0
+4. For date:
+	 - If no date is mentioned, use today's date
+		- If only day and month is mentioned, use the current year (4 digits)
+		- If in doubt if a date is given or not, use today's date
+		- If yesterday, 2 days ago etc. is mentioned, use the corresponding date
 
 Examples:
 - "bread 5 euro an 20, grocery" → { "category": "Grocery", "amount": 5.2, "description": "Bread" }
 - "pam 4.31 grocertw" → { "category": "Grocery", "amount": 4.31, "description": "Pam" }
 - "car 25,30" → { "category": "Car", "amount": 25.3, "description": "Car" }
-- "34 usd" → { "category": "Others", "amount": 34, "description": "Others" }
+- "34 usd 23-04" → { "category": "Others", "amount": 34, "description": "Others", "date": "23-04-2025" }
 - "Great sea food 12 euro e 25" → { "category": "EatingOut", "amount": 12.25, "description": "Great see food" }
 
 IMPORTANT: Respond with ONLY the JSON object but without markdown syntax. Your answer is plaintext being JSON to be parsed as it is, don't include the triple backticks syntax or anything similar.
@@ -51,7 +56,7 @@ const LLMIncomePromptTemplate = `You are a financial transaction parser. Your ta
 - A brief description of the transaction
 
 Format the result as a JSON object with the following structure:
-{ "category": "Category", "amount": 12.34, "description": "Description" }
+{ "category": "Category", "amount": 12.34, "description": "Description", "date": "dd-mm-yyyy" }
 
 Available categories (use ONLY these):
 "Salary", "OtherIncomes"
@@ -69,12 +74,17 @@ Follow these rules:
    - Convert any amount to standard decimal notation with a period (not comma) as decimal separator
    - Return as a number (not a string) with at most 2 decimal places
    - If no amount is mentioned, use 0
+4. For date:
+	 - If no date is mentioned, use today's date
+		- If only day and month is mentioned, use the current year (4 digits)
+		- If in doubt if a date is given or not, use today's date
+		- If yesterday, 2 days ago etc. is mentioned, use the corresponding date
 
 Examples:
 - "250k earned from job" → { "category": "Salary", "amount": 250000, "description": "From job" }
 - "salayr 340 and 34 august" → { "category": "Salary", "amount": 340.34, "description": "August" }
 - "ticket reastants 245 dollars" → { "category": "OtherIncomes", "amount": 245, "description": "Ticket restaurants" }
-- "gained income 231 and 32 euro" → { "category": "Salary", "amount": 231.32, "description": "Salary" }
+- "gained income 231 and 32 euro 03-04" → { "category": "Salary", "amount": 231.32, "description": "Salary", "date": "03-04-2025" }
 
 IMPORTANT: Respond with ONLY the JSON object but without markdown syntax. Your answer is plaintext being JSON to be parsed as it is, don't include the triple backticks syntax or anything similar.
 

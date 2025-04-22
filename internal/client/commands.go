@@ -59,7 +59,7 @@ func (c *Client) AddTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	msg.EditText(b, fmt.Sprintf("Sure, to add a new %s, just tell me category, amount and decription.", action), nil)
+	msg.EditText(b, fmt.Sprintf("Sure, to add a new %s:\nTell me category, amount and description.\nYou can also specify a date and change it later, today is default.", action), nil)
 	msg.EditReplyMarkup(b, &gotgbot.EditMessageReplyMarkupOpts{
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
@@ -137,7 +137,7 @@ func (c *Client) addTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	msg := fmt.Sprintf("%s (€ %.2f), %s. Confirm?", transaction.Category, transaction.Amount, transaction.Description)
+	msg := fmt.Sprintf("%s (€ %.2f), %s on %s. Confirm?", transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
 	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, msg, &gotgbot.SendMessageOpts{
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{

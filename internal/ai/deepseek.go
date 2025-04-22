@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"happypoor/internal/model"
+	"happypoor/internal/utils"
 	"io"
 	"net/http"
+	"time"
 )
 
 type LLM struct {
@@ -19,10 +21,11 @@ type ExtractedTransaction struct {
 	Description string
 	Amount      float64
 	Category    string
+	Date        time.Time
 }
 
 func (llm *LLM) ExtractTransaction(userText string, transactionType model.TransactionType) (ExtractedTransaction, error) {
-	expense := ExtractedTransaction{
+	transaction := ExtractedTransaction{
 		Type: transactionType,
 	}
 
@@ -35,7 +38,7 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 	prompt, err := GeneratePrompt(userText, tmpl)
 	if err != nil {
 		fmt.Printf("Error generating prompt: %v\n", err)
-		return expense, err
+		return transaction, err
 	}
 
 	// Request payload
@@ -51,14 +54,14 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 	})
 	if err != nil {
 		fmt.Printf("Error creating request: %v\n", err)
-		return expense, err
+		return transaction, err
 	}
 
 	// Create request
 	req, err := http.NewRequest("POST", llm.Endpoint, bytes.NewBuffer(requestBody))
 	if err != nil {
 		fmt.Printf("Error creating request: %v\n", err)
-		return expense, err
+		return transaction, err
 	}
 
 	// Set headers
@@ -70,7 +73,7 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Printf("Error sending request: %v\n", err)
-		return expense, err
+		return transaction, err
 	}
 	defer resp.Body.Close()
 
@@ -78,7 +81,7 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Printf("Error reading response: %v\n", err)
-		return expense, err
+		return transaction, err
 	}
 
 	// Parse response
@@ -86,7 +89,7 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 	if err := json.Unmarshal(body, &result); err != nil {
 		fmt.Printf("Error parsing response: %v\n", err)
 		fmt.Println("Raw response:", string(body))
-		return expense, err
+		return transaction, err
 	}
 
 	// Extract and print the message content
@@ -100,7 +103,7 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 		}
 	} else {
 		fmt.Println("Raw response:", string(body))
-		return expense, fmt.Errorf("invalid response format")
+		return transaction, fmt.Errorf("invalid response format")
 	}
 
 	// Sometimes the llm returns the ```json``` markdown format, despite being asked no to, so we need to clean it up
@@ -125,24 +128,32 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 
 	// ExtractExpense from the LLM Response text
 	// Parse the LLM JSON response
-	var expenseData map[string]interface{}
-	if err := json.Unmarshal([]byte(content), &expenseData); err != nil {
+	var transactionData map[string]interface{}
+	if err := json.Unmarshal([]byte(content), &transactionData); err != nil {
 		fmt.Printf("Error parsing LLM response as JSON: %v\n", err)
-		return expense, err
+		return transaction, err
 	}
 
 	// Extract fields
-	if description, ok := expenseData["description"].(string); ok {
-		expense.Description = description
+	if description, ok := transactionData["description"].(string); ok {
+		transaction.Description = description
 	}
 
-	if amount, ok := expenseData["amount"].(float64); ok {
-		expense.Amount = amount
+	if amount, ok := transactionData["amount"].(float64); ok {
+		transaction.Amount = amount
 	}
 
-	if category, ok := expenseData["category"].(string); ok {
-		expense.Category = category
+	if category, ok := transactionData["category"].(string); ok {
+		transaction.Category = category
 	}
 
-	return expense, nil
+	transaction.Date = time.Now()
+	if date, ok := transactionData["date"].(string); ok {
+		transaction.Date, err = utils.ParseDate(date)
+		if err != nil {
+			transaction.Date = time.Now()
+		}
+	}
+
+	return transaction, nil
 }
