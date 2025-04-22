@@ -59,7 +59,9 @@ func (c *Client) AddTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	msg.EditText(b, fmt.Sprintf("Sure, to add a new %s:\nTell me category, amount and description.\nYou can also specify a date and change it later, today is default.", action), nil)
+	msg.EditText(b, fmt.Sprintf("Sure, to add a new <b>%s</b>:\nTell me category, amount and description. You can also specify a date and change it later, today is default.\n\n<i>Examples:</i>\n<code>Irish Pub 3.4</code>\n<code>January salary 3k 10/01</code>", action), &gotgbot.EditMessageTextOpts{
+		ParseMode: "HTML",
+	})
 	msg.EditReplyMarkup(b, &gotgbot.EditMessageReplyMarkupOpts{
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
