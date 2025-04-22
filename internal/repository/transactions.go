@@ -18,3 +18,7 @@ func (r *Transactions) GetMonthlyTotalsCurrentYear(tgID int64) (map[int]map[mode
 	year := time.Now().Year()
 	return r.DB.GetMonthlyTotalsInYear(tgID, year)
 }
+
+func (r *Transactions) GetUserTransactionsByMonthPaginated(tgID int64, year, month, offset, limit int) ([]model.Transaction, int64, error) {
+	return r.DB.GetUserTransactionsByMonthPaginated(tgID, year, month, offset, limit)
+}
