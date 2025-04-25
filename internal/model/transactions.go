@@ -30,6 +30,15 @@ const (
 	CategoryTravel        TransactionCategory = "Travel"
 )
 
+func IsValidTransactionCategory(category string) bool {
+	for _, c := range GetTransactionCategories() {
+		if c == category {
+			return true
+		}
+	}
+	return false
+}
+
 // Value implements the driver.Valuer interface for TransactionCategory
 func (ec TransactionCategory) Value() (driver.Value, error) {
 	return string(ec), nil
