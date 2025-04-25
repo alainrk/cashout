@@ -16,7 +16,7 @@ func (c *Client) SendAddTransactionKeyboard(b *gotgbot.Bot, ctx *ext.Context, te
 	})
 }
 
-func (c *Client) CleanupInlineKeyboard(b *gotgbot.Bot, ctx *ext.Context) error {
+func (c *Client) CleanupKeyboard(b *gotgbot.Bot, ctx *ext.Context) error {
 	var err error
 	// Cleanup inline keyboard if exists
 	if ctx.CallbackQuery != nil {
@@ -24,6 +24,12 @@ func (c *Client) CleanupInlineKeyboard(b *gotgbot.Bot, ctx *ext.Context) error {
 			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 				InlineKeyboard: [][]gotgbot.InlineKeyboardButton{},
 			},
+		})
+	}
+	// Cleanup markup keyboard if exists
+	if ctx.Message != nil {
+		_, err = ctx.Message.Reply(b, "", &gotgbot.SendMessageOpts{
+			ReplyMarkup: gotgbot.ReplyKeyboardRemove{},
 		})
 	}
 	return err
