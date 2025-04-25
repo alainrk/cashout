@@ -95,6 +95,7 @@ func main() {
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("list.month."), c.ListMonthTransactions))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("list.page."), c.ListTransactionPage))
 
+	dispatcher.AddHandler(handlers.NewCommand("cancel", c.Cancel))
 	dispatcher.AddHandler(handlers.NewCommand("start", c.Start))
 	dispatcher.AddHandler(handlers.NewCommand("new", c.Start))
 	dispatcher.AddHandler(handlers.NewCommand("month", c.MonthRecap))
