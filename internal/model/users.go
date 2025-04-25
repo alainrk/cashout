@@ -20,8 +20,9 @@ const (
 	StateInsertingExpense StateType = "inserting_expense"
 	// The user has to add an income after having set the bot to accept it.
 	StateInsertingIncome StateType = "inserting_income"
-	// The user has to edit the transaction (e.g. add date).
-	StateEditingTransaction StateType = "editing_transaction"
+	// The user has to edit the transaction
+	StateEditingTransactionDate     StateType = "editing_transaction_date"
+	StateEditingTransactionCategory StateType = "editing_transaction_category"
 	// The user has to confirm an action.
 	StateWaitingConfirm StateType = "confirm"
 )

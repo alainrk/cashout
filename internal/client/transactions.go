@@ -108,9 +108,15 @@ func (c *Client) addTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 				{
 					{
+						Text:         "Edit category",
+						CallbackData: "transactions.edit.category",
+					},
+					{
 						Text:         "Edit date",
 						CallbackData: "transactions.edit.date",
 					},
+				},
+				{
 					{
 						Text:         "Confirm",
 						CallbackData: "transactions.confirm",
@@ -138,23 +144,80 @@ func (c *Client) EditTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 
-	c.CleanupInlineKeyboard(b, ctx)
+	var transaction model.Transaction
+	err = json.Unmarshal([]byte(user.Session.Body), &transaction)
+	if err != nil {
+		return fmt.Errorf("failed to extract transaction from the session: %w", err)
+	}
 
-	user.Session.State = model.StateEditingTransaction
-	user.Session.LastMessage = "edit"
+	query := ctx.CallbackQuery
 
+	field := strings.Split(query.Data, ".")[2]
+
+	var text string
+	var opts *gotgbot.SendMessageOpts
+
+	switch field {
+	case "date":
+		user.Session.State = model.StateEditingTransactionDate
+		text = "Add your date (e.g. dd mm, dd-mm, dd-mm-yyyy)."
+		opts = &gotgbot.SendMessageOpts{}
+	case "category":
+		user.Session.State = model.StateEditingTransactionCategory
+		text = "Choose your category among the following ones."
+
+		keyboard := [][]gotgbot.KeyboardButton{
+			{{Text: "Salary"}},
+			{{Text: "OtherIncomes"}},
+		}
+
+		if transaction.Type == model.TypeExpense {
+			keyboard = [][]gotgbot.KeyboardButton{
+				{{Text: "Car"}},
+				{{Text: "Clothes"}},
+				{{Text: "Grocery"}},
+				{{Text: "House"}},
+				{{Text: "Bills"}},
+				{{Text: "Entertainment"}},
+				{{Text: "Sport"}},
+				{{Text: "EatingOut"}},
+				{{Text: "Transport"}},
+				{{Text: "Learning"}},
+				{{Text: "Toiletry"}},
+				{{Text: "Health"}},
+				{{Text: "Tech"}},
+				{{Text: "Gifts"}},
+				{{Text: "Travel"}},
+				{{Text: "Others"}},
+			}
+		}
+
+		opts = &gotgbot.SendMessageOpts{
+			ReplyMarkup: gotgbot.ReplyKeyboardMarkup{
+				Keyboard:        keyboard,
+				OneTimeKeyboard: true,
+				IsPersistent:    false,
+				ResizeKeyboard:  true,
+			},
+		}
+	default:
+		return fmt.Errorf("unknown field: %s", field)
+	}
+
+	c.CleanupKeyboard(b, ctx)
+
+	user.Session.LastMessage = field
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	b.SendMessage(ctx.EffectiveSender.ChatId, "Add your date (e.g. dd mm, dd-mm, dd-mm-yyyy).", &gotgbot.SendMessageOpts{})
+	b.SendMessage(ctx.EffectiveSender.ChatId, text, opts)
 
 	return nil
 }
 
-// EditTransaction edits a transaction.
-func (c *Client) editTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.User) error {
+func (c *Client) editTransactionDate(b *gotgbot.Bot, ctx *ext.Context, user model.User) error {
 	var transaction model.Transaction
 	err := json.Unmarshal([]byte(user.Session.Body), &transaction)
 	if err != nil {
@@ -166,8 +229,8 @@ func (c *Client) editTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Us
 	// Get date from DD-MM-YYYY to date
 	date, err := utils.ParseDate(ctx.Message.Text)
 	if err != nil {
-		// TODO: Handle invalid date
 		fmt.Printf("failed to parse date: %v\n", err)
+		b.SendMessage(ctx.EffectiveSender.ChatId, "Invalid date, please try again.", nil)
 		return err
 	}
 
@@ -193,9 +256,71 @@ func (c *Client) editTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Us
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 				{
 					{
+						Text:         "Edit category",
+						CallbackData: "transactions.edit.category",
+					},
+					{
 						Text:         "Edit date",
 						CallbackData: "transactions.edit.date",
 					},
+				},
+				{
+					{
+						Text:         "Confirm",
+						CallbackData: "transactions.confirm",
+					},
+					{
+						Text:         "Cancel",
+						CallbackData: "transactions.cancel",
+					},
+				},
+			},
+		},
+	})
+
+	return nil
+}
+
+func (c *Client) editTransactionCategory(b *gotgbot.Bot, ctx *ext.Context, user model.User) error {
+	var transaction model.Transaction
+	err := json.Unmarshal([]byte(user.Session.Body), &transaction)
+	if err != nil {
+		return fmt.Errorf("failed to extract transaction from the session: %w", err)
+	}
+
+	if !model.IsValidTransactionCategory(ctx.Message.Text) {
+		b.SendMessage(ctx.EffectiveSender.ChatId, "Invalid category, please try again.", nil)
+		return fmt.Errorf("invalid category: %s", ctx.Message.Text)
+	}
+	transaction.Category = model.TransactionCategory(ctx.Message.Text)
+
+	user.Session.LastMessage = ctx.Message.Text
+	s, err := json.Marshal(transaction)
+	if err != nil {
+		return fmt.Errorf("failed to stringify the body: %w", err)
+	}
+	user.Session.Body = string(s)
+
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to set user data: %w", err)
+	}
+
+	m := fmt.Sprintf("%s (€ %.2f), %s on %s. Confirm?", transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
+	b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
+		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+				{
+					{
+						Text:         "Edit category",
+						CallbackData: "transactions.edit.category",
+					},
+					{
+						Text:         "Edit date",
+						CallbackData: "transactions.edit.date",
+					},
+				},
+				{
 					{
 						Text:         "Confirm",
 						CallbackData: "transactions.confirm",
@@ -271,8 +396,8 @@ func (c *Client) Cancel(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 
-	query := ctx.CallbackQuery
-	msg := query.Message
+	// query := ctx.CallbackQuery
+	// msg := query.Message
 
 	user.Session.State = model.StateNormal
 	user.Session.LastMessage = "cancel"
@@ -282,10 +407,7 @@ func (c *Client) Cancel(b *gotgbot.Bot, ctx *ext.Context) error {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	msg.EditReplyMarkup(b, &gotgbot.EditMessageReplyMarkupOpts{
-		ReplyMarkup: gotgbot.InlineKeyboardMarkup{},
-	})
-
+	c.CleanupKeyboard(b, ctx)
 	c.SendAddTransactionKeyboard(b, ctx, "Add a transaction")
 
 	return ext.EndGroups

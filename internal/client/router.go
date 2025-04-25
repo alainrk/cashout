@@ -23,8 +23,12 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 		return c.addTransaction(b, ctx, user)
 	}
 
-	if user.Session.State == model.StateEditingTransaction {
-		return c.editTransaction(b, ctx, user)
+	if user.Session.State == model.StateEditingTransactionDate {
+		return c.editTransactionDate(b, ctx, user)
+	}
+
+	if user.Session.State == model.StateEditingTransactionCategory {
+		return c.editTransactionCategory(b, ctx, user)
 	}
 
 	return fmt.Errorf("invalid top-level state")
