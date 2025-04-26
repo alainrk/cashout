@@ -6,6 +6,7 @@ import (
 	"happypoor/internal/model"
 	"happypoor/internal/utils"
 	"strings"
+	"time"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -235,6 +236,10 @@ func (c *Client) editTransactionDate(b *gotgbot.Bot, ctx *ext.Context, user mode
 	}
 
 	// TODO: Reject future date
+	if date.After(time.Now()) {
+		b.SendMessage(ctx.EffectiveSender.ChatId, "I don't support future dates, please try again.", nil)
+		return fmt.Errorf("invalid date: %s", ctx.Message.Text)
+	}
 
 	transaction.Date = date
 
