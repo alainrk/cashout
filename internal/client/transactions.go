@@ -388,7 +388,7 @@ func (c *Client) Confirm(b *gotgbot.Bot, ctx *ext.Context) error {
 	if transaction.Type == model.TypeExpense {
 		emoji = "💸"
 	}
-	c.SendAddTransactionKeyboard(b, ctx, fmt.Sprintf("%s Your transaction has been saved!", emoji))
+	c.SendHomeKeyboard(b, ctx, fmt.Sprintf("%s Your transaction has been saved!", emoji))
 
 	return nil
 }
@@ -413,7 +413,7 @@ func (c *Client) Cancel(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	c.CleanupKeyboard(b, ctx)
-	c.SendAddTransactionKeyboard(b, ctx, "Add a transaction")
+	c.SendHomeKeyboard(b, ctx, "Sure! What else can I do for you?\n\n/delete - Delete a transaction\n/list - List your transactions\n/month Month Recap\n/year Year Recap")
 
 	return ext.EndGroups
 }

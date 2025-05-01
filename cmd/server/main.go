@@ -91,15 +91,21 @@ func main() {
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("list.month."), c.ListMonthTransactions))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("list.page."), c.ListTransactionPage))
 
-	dispatcher.AddHandler(handlers.NewCommand("delete", c.DeleteTransactions))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.page."), c.DeleteTransactionPage))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.confirm."), c.DeleteTransactionConfirm))
 
 	dispatcher.AddHandler(handlers.NewCommand("cancel", c.Cancel))
+	dispatcher.AddHandler(handlers.NewCommand("delete", c.DeleteTransactions))
 	dispatcher.AddHandler(handlers.NewCommand("start", c.Start))
 	dispatcher.AddHandler(handlers.NewCommand("new", c.Start))
 	dispatcher.AddHandler(handlers.NewCommand("month", c.MonthRecap))
 	dispatcher.AddHandler(handlers.NewCommand("year", c.YearRecap))
+
+	// TODO:
+	// dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.month"), c.MonthRecap))
+	// dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.year"), c.YearRecap))
+	// dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.list"), c.ListTransactions))
+	// dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.delete"), c.DeleteTransactions))
 
 	// Top-level message for LLM goes into AddTransaction and gets the expense/income intent from user session state.
 	dispatcher.AddHandler(handlers.NewMessage(noCommands, c.FreeTextRouter))
