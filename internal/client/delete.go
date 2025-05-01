@@ -5,7 +5,6 @@ import (
 	"happypoor/internal/model"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -83,22 +82,11 @@ func (c *Client) DeleteTransactionConfirm(b *gotgbot.Bot, ctx *ext.Context) erro
 		return fmt.Errorf("failed to get transaction: %w", err)
 	}
 
-	// Verify ownership and age
+	// Verify ownership
 	if transaction.TgID != user.TgID {
 		_, _, err = ctx.CallbackQuery.Message.EditText(
 			b,
 			"⚠️ This transaction doesn't belong to you.",
-			&gotgbot.EditMessageTextOpts{},
-		)
-		return err
-	}
-
-	// Check if transaction is not older than 30 days
-	thirtyDaysAgo := time.Now().AddDate(0, 0, -30)
-	if transaction.Date.Before(thirtyDaysAgo) {
-		_, _, err = ctx.CallbackQuery.Message.EditText(
-			b,
-			"⚠️ You can only delete transactions from the past 30 days.",
 			&gotgbot.EditMessageTextOpts{},
 		)
 		return err
@@ -148,16 +136,13 @@ func (c *Client) DeleteTransactionConfirm(b *gotgbot.Bot, ctx *ext.Context) erro
 	return err
 }
 
-// showDeletableTransactionPage displays a paginated list of transactions from the last 30 days
+// showDeletableTransactionPage displays a paginated list of all user transactions
 func (c *Client) showDeletableTransactionPage(b *gotgbot.Bot, ctx *ext.Context, user model.User, offset int) error {
-	limit := 10
-	thirtyDaysAgo := time.Now().AddDate(0, 0, -30)
+	limit := 5
 
-	// Get transactions from the last 30 days
-	transactions, total, err := c.Repositories.Transactions.GetUserTransactionsByDateRangePaginated(
+	// Get all user transactions with pagination
+	transactions, total, err := c.Repositories.Transactions.GetUserTransactionsPaginated(
 		user.TgID,
-		thirtyDaysAgo,
-		time.Now(),
 		offset,
 		limit,
 	)
@@ -167,7 +152,7 @@ func (c *Client) showDeletableTransactionPage(b *gotgbot.Bot, ctx *ext.Context, 
 
 	if total == 0 {
 		// No transactions found
-		message := "No transactions found from the past 30 days."
+		message := "You don't have any transactions to delete."
 
 		if ctx.CallbackQuery != nil {
 			_, _, err = ctx.CallbackQuery.Message.EditText(b, message, &gotgbot.EditMessageTextOpts{})
@@ -208,7 +193,7 @@ func (c *Client) showDeletableTransactionPage(b *gotgbot.Bot, ctx *ext.Context, 
 func formatDeletableTransactions(transactions []model.Transaction, offset, total int) string {
 	var msg strings.Builder
 	msg.WriteString("<b>🗑 Delete Transaction</b>\n")
-	msg.WriteString("Select a transaction to delete from the past 30 days:\n")
+	msg.WriteString("Select a transaction to delete:\n")
 	msg.WriteString(fmt.Sprintf("Showing %d-%d of %d transactions\n\n", offset+1, offset+len(transactions), total))
 
 	for i, t := range transactions {
@@ -264,15 +249,12 @@ func createDeletionPaginationKeyboard(transactions []model.Transaction, offset, 
 	// Navigation buttons (previous, cancel, next)
 	var navigationRow []gotgbot.InlineKeyboardButton
 
-	// Previous page button
-	if offset > 0 {
-		prevOffset := offset - limit
-		if prevOffset < 0 {
-			prevOffset = 0
-		}
+	// Next page button (for older transactions)
+	if offset+limit < total {
+		nextOffset := offset + limit
 		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
 			Text:         "⬅️ Previous",
-			CallbackData: fmt.Sprintf("delete.page.%d", prevOffset),
+			CallbackData: fmt.Sprintf("delete.page.%d", nextOffset),
 		})
 	}
 
@@ -282,12 +264,15 @@ func createDeletionPaginationKeyboard(transactions []model.Transaction, offset, 
 		CallbackData: "transactions.cancel",
 	})
 
-	// Next page button
-	if offset+limit < total {
-		nextOffset := offset + limit
+	// Previous page button (for newer transactions)
+	if offset > 0 {
+		prevOffset := offset - limit
+		if prevOffset < 0 {
+			prevOffset = 0
+		}
 		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
 			Text:         "Next ➡️",
-			CallbackData: fmt.Sprintf("delete.page.%d", nextOffset),
+			CallbackData: fmt.Sprintf("delete.page.%d", prevOffset),
 		})
 	}
 

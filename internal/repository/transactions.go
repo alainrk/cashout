@@ -39,6 +39,11 @@ func (r *Transactions) GetUserTransactionsByDateRangePaginated(tgID int64, start
 	return r.DB.GetUserTransactionsByDateRangePaginated(tgID, startDate, endDate, offset, limit)
 }
 
+// GetUserTransactionsPaginated retrieves all transactions for a user with pagination
+func (r *Transactions) GetUserTransactionsPaginated(tgID int64, offset, limit int) ([]model.Transaction, int64, error) {
+	return r.DB.GetUserTransactionsPaginated(tgID, offset, limit)
+}
+
 // GetMonthCategorizedTotals returns the transaction totals for each category for a specific month
 func (r *Transactions) GetMonthCategorizedTotals(tgID int64, year int, month int) (map[model.TransactionType]map[model.TransactionCategory]float64, error) {
 	startDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)

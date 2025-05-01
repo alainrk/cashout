@@ -26,10 +26,10 @@ func (db *DB) UpdateTransaction(transaction *model.Transaction) error {
 	return db.conn.Save(transaction).Error
 }
 
-// DeleteTransaction deletes an transaction by ID
-// func (db *DB) DeleteTransaction(id int64) error {
-// 	return db.conn.Delete(&model.Transaction{}, id).Error
-// }
+// DeleteTransaction deletes an transaction by ID (kept for backward compatibility)
+func (db *DB) DeleteTransaction(id int64) error {
+	return db.conn.Delete(&model.Transaction{}, id).Error
+}
 
 // DeleteTransactionByID deletes a transaction by its ID and optionally checks if it belongs to the given user
 // If tgID is 0, the ownership check is skipped
@@ -223,6 +223,33 @@ func (db *DB) GetUserTransactionsByMonthPaginated(tgID int64, year int, month in
 	// Get paginated results
 	result := db.conn.Where("tg_id = ? AND date BETWEEN ? AND ?",
 		tgID, startDate.Format("2006-01-02"), endDate.Format("2006-01-02")).
+		Order("date DESC").
+		Offset(offset).
+		Limit(limit).
+		Find(&transactions)
+
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+
+	return transactions, total, nil
+}
+
+// GetUserTransactionsPaginated retrieves all transactions for a user with pagination
+func (db *DB) GetUserTransactionsPaginated(tgID int64, offset, limit int) ([]model.Transaction, int64, error) {
+	var transactions []model.Transaction
+	var total int64
+
+	// Get total count
+	err := db.conn.Model(&model.Transaction{}).
+		Where("tg_id = ?", tgID).
+		Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Get paginated results
+	result := db.conn.Where("tg_id = ?", tgID).
 		Order("date DESC").
 		Offset(offset).
 		Limit(limit).
