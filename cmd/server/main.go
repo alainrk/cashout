@@ -81,10 +81,6 @@ func main() {
 
 	updater := ext.NewUpdater(dispatcher, nil)
 
-	// dispatcher.AddHandler(handlers.NewCommand("test", c.Test))
-	// dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("test."), c.TestInlineCallback))
-
-	// Add transaction intents (transactions.new.income, transactions.new.expense)
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.new."), c.AddTransactionIntent))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.edit."), c.EditTransactionIntent))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("transactions.cancel"), c.Cancel))
@@ -94,6 +90,10 @@ func main() {
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("list.year."), c.ListYearNavigation))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("list.month."), c.ListMonthTransactions))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("list.page."), c.ListTransactionPage))
+
+	dispatcher.AddHandler(handlers.NewCommand("delete", c.DeleteTransactions))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.page."), c.DeleteTransactionPage))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.confirm."), c.DeleteTransactionConfirm))
 
 	dispatcher.AddHandler(handlers.NewCommand("cancel", c.Cancel))
 	dispatcher.AddHandler(handlers.NewCommand("start", c.Start))

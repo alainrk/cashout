@@ -14,6 +14,18 @@ func (r *Transactions) Add(transaction model.Transaction) error {
 	return r.DB.CreateTransaction(&transaction)
 }
 
+func (r *Transactions) GetByID(id int64) (model.Transaction, error) {
+	transaction, err := r.DB.GetTransactionByID(id)
+	if err != nil {
+		return model.Transaction{}, err
+	}
+	return *transaction, nil
+}
+
+func (r *Transactions) Delete(id int64, tgID int64) error {
+	return r.DB.DeleteTransactionByID(id, tgID)
+}
+
 func (r *Transactions) GetMonthlyTotalsCurrentYear(tgID int64) (map[int]map[model.TransactionType]float64, error) {
 	year := time.Now().Year()
 	return r.DB.GetMonthlyTotalsInYear(tgID, year)
@@ -21,6 +33,15 @@ func (r *Transactions) GetMonthlyTotalsCurrentYear(tgID int64) (map[int]map[mode
 
 func (r *Transactions) GetUserTransactionsByMonthPaginated(tgID int64, year, month, offset, limit int) ([]model.Transaction, int64, error) {
 	return r.DB.GetUserTransactionsByMonthPaginated(tgID, year, month, offset, limit)
+}
+
+func (r *Transactions) GetUserTransactionsByDateRangePaginated(tgID int64, startDate, endDate time.Time, offset, limit int) ([]model.Transaction, int64, error) {
+	return r.DB.GetUserTransactionsByDateRangePaginated(tgID, startDate, endDate, offset, limit)
+}
+
+// GetUserTransactionsPaginated retrieves all transactions for a user with pagination
+func (r *Transactions) GetUserTransactionsPaginated(tgID int64, offset, limit int) ([]model.Transaction, int64, error) {
+	return r.DB.GetUserTransactionsPaginated(tgID, offset, limit)
 }
 
 // GetMonthCategorizedTotals returns the transaction totals for each category for a specific month
