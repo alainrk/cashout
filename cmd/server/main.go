@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -41,6 +40,16 @@ func main() {
 		panic("TELEGRAM_BOT_API_TOKEN environment variable is empty")
 	}
 
+	webhookDomain := os.Getenv("WEBHOOK_DOMAIN")
+	if webhookDomain == "" {
+		panic("WEBHOOK_DOMAIN environment variable is empty")
+	}
+
+	webhookSecret := os.Getenv("WEBHOOK_SECRET")
+	if webhookSecret == "" {
+		panic("WEBHOOK_SECRET environment variable is empty")
+	}
+
 	// API key and endpoint
 	aiApiKey := os.Getenv("DEEPSEEK_API_KEY")
 	aiEndpoint := "https://api.deepseek.com/v1/chat/completions"
@@ -69,9 +78,8 @@ func main() {
 		panic("failed to create new bot: " + err.Error())
 	}
 
-	// Create updater and dispatcher.
+	// Create updater and dispatcher for webhook management
 	dispatcher := ext.NewDispatcher(&ext.DispatcherOpts{
-		// If an error is returned by a handler, log it and continue going.
 		Error: func(b *gotgbot.Bot, ctx *ext.Context, err error) ext.DispatcherAction {
 			log.Println("an error occurred while handling update:", err.Error())
 			return ext.DispatcherActionNoop
@@ -80,6 +88,21 @@ func main() {
 	})
 
 	updater := ext.NewUpdater(dispatcher, nil)
+
+	// // Create updater and dispatcher.
+	// dispatcher := ext.NewDispatcher(&ext.DispatcherOpts{
+	// 	// If an error is returned by a handler, log it and continue going.
+	// 	Error: func(b *gotgbot.Bot, ctx *ext.Context, err error) ext.DispatcherAction {
+	// 		log.Println("an error occurred while handling update:", err.Error())
+	// 		return ext.DispatcherActionNoop
+	// 	},
+	// 	MaxRoutines: ext.DefaultMaxRoutines,
+	// })
+	//
+	// updater := ext.NewUpdater(dispatcher, nil)
+
+	// Top-level message for LLM goes into AddTransaction and gets the expense/income intent from user session state.
+	dispatcher.AddHandler(handlers.NewMessage(noCommands, c.FreeTextRouter))
 
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.new."), c.AddTransactionIntent))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.edit."), c.EditTransactionIntent))
@@ -107,25 +130,50 @@ func main() {
 	// dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.list"), c.ListTransactions))
 	// dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.delete"), c.DeleteTransactions))
 
-	// Top-level message for LLM goes into AddTransaction and gets the expense/income intent from user session state.
-	dispatcher.AddHandler(handlers.NewMessage(noCommands, c.FreeTextRouter))
-
-	// Start receiving updates.
-	err = updater.StartPolling(b, &ext.PollingOpts{
-		DropPendingUpdates: true,
-		GetUpdatesOpts: &gotgbot.GetUpdatesOpts{
-			Timeout: 9,
-			RequestOpts: &gotgbot.RequestOpts{
-				Timeout: time.Second * 10,
-			},
-		},
-	})
-	if err != nil {
-		panic("failed to start polling: " + err.Error())
+	// Start the webhook server, but before start the server so we're ready when Telegram starts sending updates.
+	webhookOpts := ext.WebhookOpts{
+		ListenAddr:  "localhost:3666", // TODo: Put it into config
+		SecretToken: webhookSecret,
 	}
 
-	log.Printf("%s has been started...\n", b.Username)
+	// The bot's urlPath can be anything.
+	// It's a good idea to contain the bot token, as that makes it very difficult for outside
+	// parties to find the update endpoint (which would allow them to inject their own updates).
+	err = updater.StartWebhook(b, "happywebhook/"+token, webhookOpts)
+	if err != nil {
+		panic("failed to start webhook: " + err.Error())
+	}
+
+	err = updater.SetAllBotWebhooks(webhookDomain, &gotgbot.SetWebhookOpts{
+		MaxConnections:     100,
+		DropPendingUpdates: true,
+		SecretToken:        webhookOpts.SecretToken,
+	})
+	if err != nil {
+		panic("failed to set webhook: " + err.Error())
+	}
+
+	log.Printf("%s has been started...\n", b.User.Username)
 
 	// Idle, to keep updates coming in, and avoid bot stopping.
 	updater.Idle()
+
+	// Start receiving updates.
+	// err = updater.StartPolling(b, &ext.PollingOpts{
+	// 	DropPendingUpdates: true,
+	// 	GetUpdatesOpts: &gotgbot.GetUpdatesOpts{
+	// 		Timeout: 9,
+	// 		RequestOpts: &gotgbot.RequestOpts{
+	// 			Timeout: time.Second * 10,
+	// 		},
+	// 	},
+	// })
+	// if err != nil {
+	// 	panic("failed to start polling: " + err.Error())
+	// }
+	//
+	// log.Printf("%s has been started...\n", b.Username)
+	//
+	// // Idle, to keep updates coming in, and avoid bot stopping.
+	// updater.Idle()
 }
