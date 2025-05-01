@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"happypoor/internal/model"
 	"time"
 )
@@ -26,8 +27,33 @@ func (db *DB) UpdateTransaction(transaction *model.Transaction) error {
 }
 
 // DeleteTransaction deletes an transaction by ID
-func (db *DB) DeleteTransaction(id int64) error {
-	return db.conn.Delete(&model.Transaction{}, id).Error
+// func (db *DB) DeleteTransaction(id int64) error {
+// 	return db.conn.Delete(&model.Transaction{}, id).Error
+// }
+
+// DeleteTransactionByID deletes a transaction by its ID and optionally checks if it belongs to the given user
+// If tgID is 0, the ownership check is skipped
+func (db *DB) DeleteTransactionByID(id int64, tgID int64) error {
+	query := db.conn.Model(&model.Transaction{})
+
+	if tgID != 0 {
+		// Add ownership check if tgID is provided
+		query = query.Where("id = ? AND tg_id = ?", id, tgID)
+	} else {
+		query = query.Where("id = ?", id)
+	}
+
+	result := query.Delete(&model.Transaction{})
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("transaction not found or doesn't belong to user")
+	}
+
+	return nil
 }
 
 // GetUserTransactions retrieves all transactions for a user
@@ -52,6 +78,35 @@ func (db *DB) GetUserTransactionsByDateRange(tgID int64, startDate, endDate time
 		return nil, result.Error
 	}
 	return transactions, nil
+}
+
+// GetUserTransactionsByDateRangePaginated retrieves paginated transactions for a user between two dates
+func (db *DB) GetUserTransactionsByDateRangePaginated(tgID int64, startDate, endDate time.Time, offset, limit int) ([]model.Transaction, int64, error) {
+	var transactions []model.Transaction
+	var total int64
+
+	// Get total count
+	err := db.conn.Model(&model.Transaction{}).
+		Where("tg_id = ? AND date BETWEEN ? AND ?",
+			tgID, startDate.Format("2006-01-02"), endDate.Format("2006-01-02")).
+		Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Get paginated results
+	result := db.conn.Where("tg_id = ? AND date BETWEEN ? AND ?",
+		tgID, startDate.Format("2006-01-02"), endDate.Format("2006-01-02")).
+		Order("date DESC").
+		Offset(offset).
+		Limit(limit).
+		Find(&transactions)
+
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+
+	return transactions, total, nil
 }
 
 // GetUserTransactionsByMonth retrieves transactions for a user for a specific year and month
