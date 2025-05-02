@@ -1,4 +1,8 @@
-main_package_path = ./cmd/server/main.go
+# Poll server for development
+# main_package_path = ./cmd/server/poll/main.go
+# Webhook server
+main_package_path = ./cmd/server/webhook/main.go
+
 migrate_package_path = ./cmd/migrate/main.go
 binary_name = happypoor
 
