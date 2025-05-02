@@ -11,4 +11,5 @@ tmp/
 go.work
 bin
 cert
-.env
+*.env
+deploy.sh

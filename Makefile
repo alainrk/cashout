@@ -5,6 +5,7 @@ main_package_path = ./cmd/server/webhook/main.go
 
 migrate_package_path = ./cmd/migrate/main.go
 binary_name = happypoor
+linux_binary_name = ${binary_name}-linux
 
 # ==================================================================================== #
 # HELPERS
@@ -74,6 +75,11 @@ tidy:
 .PHONY: build
 build:
 	go build -o=/tmp/bin/${binary_name} ${main_package_path}
+
+## build-linux: build the application for linux x86_64 (CentOS)
+.PHONY: build-linux
+build-linux:
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-w -s" -o=/tmp/bin/${linux_binary_name} ${main_package_path}
 
 ## run: run the application
 .PHONY: run
