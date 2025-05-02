@@ -4,14 +4,13 @@ import (
 	"happypoor/internal/ai"
 	"happypoor/internal/client"
 	"happypoor/internal/db"
+	"happypoor/internal/handlers"
 	"log"
 	"os"
 	"strings"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/callbackquery"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 	"github.com/joho/godotenv"
 )
@@ -89,46 +88,7 @@ func main() {
 
 	updater := ext.NewUpdater(dispatcher, nil)
 
-	// // Create updater and dispatcher.
-	// dispatcher := ext.NewDispatcher(&ext.DispatcherOpts{
-	// 	// If an error is returned by a handler, log it and continue going.
-	// 	Error: func(b *gotgbot.Bot, ctx *ext.Context, err error) ext.DispatcherAction {
-	// 		log.Println("an error occurred while handling update:", err.Error())
-	// 		return ext.DispatcherActionNoop
-	// 	},
-	// 	MaxRoutines: ext.DefaultMaxRoutines,
-	// })
-	//
-	// updater := ext.NewUpdater(dispatcher, nil)
-
-	// Top-level message for LLM goes into AddTransaction and gets the expense/income intent from user session state.
-	dispatcher.AddHandler(handlers.NewMessage(noCommands, c.FreeTextRouter))
-
-	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.new."), c.AddTransactionIntent))
-	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.edit."), c.EditTransactionIntent))
-	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("transactions.cancel"), c.Cancel))
-	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("transactions.confirm"), c.Confirm))
-
-	dispatcher.AddHandler(handlers.NewCommand("list", c.ListTransactions))
-	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("list.year."), c.ListYearNavigation))
-	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("list.month."), c.ListMonthTransactions))
-	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("list.page."), c.ListTransactionPage))
-
-	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.page."), c.DeleteTransactionPage))
-	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.confirm."), c.DeleteTransactionConfirm))
-
-	dispatcher.AddHandler(handlers.NewCommand("cancel", c.Cancel))
-	dispatcher.AddHandler(handlers.NewCommand("delete", c.DeleteTransactions))
-	dispatcher.AddHandler(handlers.NewCommand("start", c.Start))
-	dispatcher.AddHandler(handlers.NewCommand("new", c.Start))
-	dispatcher.AddHandler(handlers.NewCommand("month", c.MonthRecap))
-	dispatcher.AddHandler(handlers.NewCommand("year", c.YearRecap))
-
-	// TODO:
-	// dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.month"), c.MonthRecap))
-	// dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.year"), c.YearRecap))
-	// dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.list"), c.ListTransactions))
-	// dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.delete"), c.DeleteTransactions))
+	handlers.SetupHandlers(dispatcher, c)
 
 	// Start the webhook server, but before start the server so we're ready when Telegram starts sending updates.
 	webhookOpts := ext.WebhookOpts{
@@ -157,23 +117,4 @@ func main() {
 
 	// Idle, to keep updates coming in, and avoid bot stopping.
 	updater.Idle()
-
-	// Start receiving updates.
-	// err = updater.StartPolling(b, &ext.PollingOpts{
-	// 	DropPendingUpdates: true,
-	// 	GetUpdatesOpts: &gotgbot.GetUpdatesOpts{
-	// 		Timeout: 9,
-	// 		RequestOpts: &gotgbot.RequestOpts{
-	// 			Timeout: time.Second * 10,
-	// 		},
-	// 	},
-	// })
-	// if err != nil {
-	// 	panic("failed to start polling: " + err.Error())
-	// }
-	//
-	// log.Printf("%s has been started...\n", b.Username)
-	//
-	// // Idle, to keep updates coming in, and avoid bot stopping.
-	// updater.Idle()
 }
