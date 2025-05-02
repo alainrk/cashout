@@ -51,6 +51,9 @@ Use the following commands to manage database migrations:
 # Run all pending migrations
 go run ./cmd/migrate/main.go -command up
 
+# Run all pending migrations with another .env file
+go run ./cmd/migrate/main.go -command up -env .prod.env
+
 # Create a new migration just by copy-pasting a previous one and editing it accordingly
 cp internal/migrations/versions/001*.go internal/migrations/versions/00X_your_migration.go
 ```

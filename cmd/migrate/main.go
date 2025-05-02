@@ -15,14 +15,21 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	// Add a new flag for environment file
+	var (
+		command string
+		envFile string
+	)
 
-	var command string
 	flag.StringVar(&command, "command", "up", "Migration command (up, down, status)")
+	flag.StringVar(&envFile, "env", ".env", "Environment file to load (.env, .prod.env, etc)")
 	flag.Parse()
+
+	// Load the specified environment file
+	err := godotenv.Load(envFile)
+	if err != nil {
+		log.Fatalf("Error loading %s file", envFile)
+	}
 
 	// Initialize database
 	postgresURL := os.Getenv("DATABASE_URL")
