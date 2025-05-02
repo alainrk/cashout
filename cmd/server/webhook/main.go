@@ -1,10 +1,10 @@
 package main
 
 import (
-	"happypoor/internal/ai"
-	"happypoor/internal/client"
-	"happypoor/internal/db"
-	"happypoor/internal/handlers"
+	"cashout/internal/ai"
+	"cashout/internal/client"
+	"cashout/internal/db"
+	"cashout/internal/handlers"
 	"log"
 	"os"
 	"strings"
@@ -99,7 +99,7 @@ func main() {
 	// The bot's urlPath can be anything.
 	// It's a good idea to contain the bot token, as that makes it very difficult for outside
 	// parties to find the update endpoint (which would allow them to inject their own updates).
-	err = updater.StartWebhook(b, "happywebhook/"+token, webhookOpts)
+	err = updater.StartWebhook(b, "cashout/"+token, webhookOpts)
 	if err != nil {
 		panic("failed to start webhook: " + err.Error())
 	}

@@ -1,10 +1,10 @@
 package main
 
 import (
-	"happypoor/internal/ai"
-	"happypoor/internal/client"
-	"happypoor/internal/db"
-	"happypoor/internal/handlers"
+	"cashout/internal/ai"
+	"cashout/internal/client"
+	"cashout/internal/db"
+	"cashout/internal/handlers"
 	"log"
 	"os"
 	"time"

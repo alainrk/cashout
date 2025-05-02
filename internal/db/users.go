@@ -1,6 +1,6 @@
 package db
 
-import "happypoor/internal/model"
+import "cashout/internal/model"
 
 // GetUsermodel. retrieves a user by Telegram ID
 func (db *DB) GetUser(tgID int64) (*model.User, error) {

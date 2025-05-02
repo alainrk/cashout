@@ -1,4 +1,4 @@
-module happypoor
+module cashout
 
 go 1.23.4
 

@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"happypoor/internal/client"
+	"cashout/internal/client"
 	"strings"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"

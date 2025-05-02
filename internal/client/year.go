@@ -1,8 +1,8 @@
 package client
 
 import (
+	"cashout/internal/model"
 	"fmt"
-	"happypoor/internal/model"
 	"sort"
 	"strings"
 	"time"

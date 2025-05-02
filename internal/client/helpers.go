@@ -1,7 +1,7 @@
 package client
 
 import (
-	"happypoor/internal/model"
+	"cashout/internal/model"
 )
 
 // getCategoryEmoji returns the appropriate emoji for a transaction category

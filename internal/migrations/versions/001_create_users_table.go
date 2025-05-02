@@ -1,7 +1,7 @@
 package versions
 
 import (
-	"happypoor/internal/migrations"
+	"cashout/internal/migrations"
 
 	"gorm.io/gorm"
 )

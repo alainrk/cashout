@@ -1,4 +1,4 @@
-# [WIP] HappyPoor
+# Cashout
 
 Telegram bot for expense tracking **AI-Powered** (_for real!_).
 
@@ -17,8 +17,8 @@ Telegram bot for expense tracking **AI-Powered** (_for real!_).
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/alainrk/happypoor.git
-cd happypoor
+git clone https://github.com/alainrk/cashout.git
+cd cashout
 ```
 
 2. Install dependencies:
@@ -43,7 +43,7 @@ docker compose up -d
 
 ## Database Management
 
-HappyPoor uses a version-based migration system to manage database schema changes.
+Cashout uses a version-based migration system to manage database schema changes.
 
 Use the following commands to manage database migrations:
 

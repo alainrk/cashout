@@ -1,11 +1,11 @@
 package client
 
 import (
+	"cashout/internal/ai"
+	"cashout/internal/db"
+	"cashout/internal/model"
+	"cashout/internal/repository"
 	"fmt"
-	"happypoor/internal/ai"
-	"happypoor/internal/db"
-	"happypoor/internal/model"
-	"happypoor/internal/repository"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"

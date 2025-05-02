@@ -1,10 +1,10 @@
 package client
 
 import (
+	"cashout/internal/model"
+	"cashout/internal/utils"
 	"encoding/json"
 	"fmt"
-	"happypoor/internal/model"
-	"happypoor/internal/utils"
 	"strings"
 	"time"
 

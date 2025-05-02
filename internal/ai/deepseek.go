@@ -2,10 +2,10 @@ package ai
 
 import (
 	"bytes"
+	"cashout/internal/model"
+	"cashout/internal/utils"
 	"encoding/json"
 	"fmt"
-	"happypoor/internal/model"
-	"happypoor/internal/utils"
 	"io"
 	"net/http"
 	"time"

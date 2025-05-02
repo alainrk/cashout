@@ -1,8 +1,8 @@
 package db
 
 import (
+	"cashout/internal/model"
 	"fmt"
-	"happypoor/internal/model"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

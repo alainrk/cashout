@@ -1,8 +1,8 @@
 package db
 
 import (
+	"cashout/internal/model"
 	"fmt"
-	"happypoor/internal/model"
 	"time"
 )
 

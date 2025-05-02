@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"happypoor/internal/db"
-	"happypoor/internal/model"
+	"cashout/internal/db"
+	"cashout/internal/model"
 	"time"
 )
 
