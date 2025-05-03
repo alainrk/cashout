@@ -162,12 +162,21 @@ func (c *Client) EditTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 	case "date":
 		user.Session.State = model.StateEditingTransactionDate
 		text = "Add your date (e.g. dd mm, dd-mm, dd-mm-yyyy)."
-		opts = &gotgbot.SendMessageOpts{}
+		keyboard := [][]gotgbot.InlineKeyboardButton{
+			{
+				{
+					Text:         "Cancel",
+					CallbackData: "transactions.cancel",
+				},
+			},
+		}
+		opts = &gotgbot.SendMessageOpts{ReplyMarkup: gotgbot.InlineKeyboardMarkup{InlineKeyboard: keyboard}}
 	case "category":
 		user.Session.State = model.StateEditingTransactionCategory
 		text = "Choose your category among the following ones."
 
 		keyboard := [][]gotgbot.KeyboardButton{
+			{{Text: "Cancel"}},
 			{{Text: "Salary"}},
 			{{Text: "OtherIncomes"}},
 		}
@@ -414,7 +423,7 @@ func (c *Client) Cancel(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	c.CleanupKeyboard(b, ctx)
-	c.SendHomeKeyboard(b, ctx, "Sure! What else can I do for you?\n\n/delete - Delete a transaction\n/list - List your transactions\n/month Month Recap\n/year Year Recap")
+	c.SendHomeKeyboard(b, ctx, "Your operation has been canceled!\nWhat else can I do for you?\n\n/delete - Delete a transaction\n/list - List your transactions\n/month Month Recap\n/year Year Recap")
 
 	return ext.EndGroups
 }
