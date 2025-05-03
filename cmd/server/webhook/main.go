@@ -4,7 +4,6 @@ import (
 	"cashout/internal/ai"
 	"cashout/internal/client"
 	"cashout/internal/db"
-	"cashout/internal/handlers"
 	"log"
 	"os"
 	"strings"
@@ -88,7 +87,7 @@ func main() {
 
 	updater := ext.NewUpdater(dispatcher, nil)
 
-	handlers.SetupHandlers(dispatcher, c)
+	client.SetupHandlers(dispatcher, c)
 
 	// Start the webhook server, but before start the server so we're ready when Telegram starts sending updates.
 	webhookOpts := ext.WebhookOpts{

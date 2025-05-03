@@ -3,9 +3,11 @@ package client
 import (
 	"cashout/internal/model"
 	"fmt"
+	"strings"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
+	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 )
 
 func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -13,6 +15,11 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 	user, err := c.authAndGetUser(u)
 	if err != nil {
 		return err
+	}
+
+	msg := ctx.Message
+	if message.Text(msg) && strings.ToLower(strings.Trim(msg.Text, " ")) == "cancel" {
+		return c.Cancel(b, ctx)
 	}
 
 	if user.Session.Iterations == 0 {

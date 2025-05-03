@@ -4,7 +4,6 @@ import (
 	"cashout/internal/ai"
 	"cashout/internal/client"
 	"cashout/internal/db"
-	"cashout/internal/handlers"
 	"log"
 	"os"
 	"time"
@@ -68,7 +67,7 @@ func main() {
 
 	updater := ext.NewUpdater(dispatcher, nil)
 
-	handlers.SetupHandlers(dispatcher, c)
+	client.SetupHandlers(dispatcher, c)
 
 	// Start receiving updates.
 	err = updater.StartPolling(b, &ext.PollingOpts{

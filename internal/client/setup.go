@@ -1,7 +1,6 @@
-package handlers
+package client
 
 import (
-	"cashout/internal/client"
 	"strings"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -20,9 +19,14 @@ func confirmCommand(msg *gotgbot.Message) bool {
 	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Confirm"
 }
 
-func SetupHandlers(dispatcher *ext.Dispatcher, c *client.Client) {
+func cancelText(msg *gotgbot.Message) bool {
+	return message.Text(msg) && strings.ToLower(strings.Trim(msg.Text, " ")) == "cancel"
+}
+
+func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
 	// Top-level message for LLM goes into AddTransaction and gets the expense/income intent from user session state.
 	dispatcher.AddHandler(handlers.NewMessage(noCommands, c.FreeTextRouter))
+	dispatcher.AddHandler(handlers.NewMessage(cancelText, c.Cancel))
 
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.new."), c.AddTransactionIntent))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.edit."), c.EditTransactionIntent))
