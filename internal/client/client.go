@@ -64,9 +64,9 @@ func (c *Client) authAndGetUser(user gotgbot.User) (model.User, error) {
 	return u, nil
 }
 
-func (c *Client) getUserFromContext(ctx *ext.Context) (isTopLevel bool, user gotgbot.User) {
+func (c *Client) getUserFromContext(ctx *ext.Context) (isInline bool, user gotgbot.User) {
 	if ctx.CallbackQuery != nil {
-		return false, ctx.CallbackQuery.From
+		return true, ctx.CallbackQuery.From
 	}
-	return true, *ctx.Message.From
+	return false, *ctx.Message.From
 }

@@ -245,7 +245,6 @@ func (c *Client) editTransactionDate(b *gotgbot.Bot, ctx *ext.Context, user mode
 		return err
 	}
 
-	// TODO: Reject future date
 	if date.After(time.Now()) {
 		b.SendMessage(ctx.EffectiveSender.ChatId, "I don't support future dates, please try again.", nil)
 		return fmt.Errorf("invalid date: %s", ctx.Message.Text)

@@ -20,7 +20,10 @@ func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	user.Session.State = model.StateNormal
-	user.Session.LastMessage = ctx.Message.Text
+
+	msg := GetMessageFromContext(ctx)
+
+	user.Session.LastMessage = msg
 
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
@@ -45,28 +48,27 @@ func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	t, ok := totals[int(month)]
+
 	if !ok {
-		ctx.EffectiveMessage.Reply(b, "No transactions for this month", &gotgbot.SendMessageOpts{
-			ParseMode: "HTML",
-		})
-		return nil
+		txt := "No transactions for this month"
+		return SendMessage(ctx, b, txt, [][]gotgbot.InlineKeyboardButton{})
 	}
 
 	// Format the message
-	var msg strings.Builder
+	var text strings.Builder
 	var monthTotal float64
 
 	// Header with month name
-	msg.WriteString(fmt.Sprintf("📊 <b>%s %d Summary</b>\n\n", month.String(), year))
+	text.WriteString(fmt.Sprintf("📊 <b>%s %d Summary</b>\n\n", month.String(), year))
 
 	// --- EXPENSES SECTION ---
 	if expenseAmount, ok := t[model.TypeExpense]; ok && expenseAmount > 0 {
 		monthTotal -= expenseAmount
-		msg.WriteString(fmt.Sprintf("💸 <b>Expenses:</b> %.2f€\n", expenseAmount))
+		text.WriteString(fmt.Sprintf("💸 <b>Expenses:</b> %.2f€\n", expenseAmount))
 
 		// Add category breakdown for expenses
 		if expenseCats, ok := categoryTotals[model.TypeExpense]; ok && len(expenseCats) > 0 {
-			msg.WriteString("\n<b>Expense Breakdown:</b>\n")
+			text.WriteString("\n<b>Expense Breakdown:</b>\n")
 
 			// Sort categories by amount (descending)
 			categories := make([]struct {
@@ -89,21 +91,21 @@ func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 			for _, entry := range categories {
 				emoji := getCategoryEmoji(entry.Category)
 				percentage := (entry.Amount / expenseAmount) * 100
-				msg.WriteString(fmt.Sprintf("  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
+				text.WriteString(fmt.Sprintf("  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
 					emoji, entry.Category, entry.Amount, percentage))
 			}
-			msg.WriteString("\n")
+			text.WriteString("\n")
 		}
 	}
 
 	// --- INCOME SECTION ---
 	if incomeAmount, ok := t[model.TypeIncome]; ok && incomeAmount > 0 {
 		monthTotal += incomeAmount
-		msg.WriteString(fmt.Sprintf("💰 <b>Income:</b> %.2f€\n", incomeAmount))
+		text.WriteString(fmt.Sprintf("💰 <b>Income:</b> %.2f€\n", incomeAmount))
 
 		// Add category breakdown for income
 		if incomeCats, ok := categoryTotals[model.TypeIncome]; ok && len(incomeCats) > 0 {
-			msg.WriteString("\n<b>Income Breakdown:</b>\n")
+			text.WriteString("\n<b>Income Breakdown:</b>\n")
 
 			// Sort categories by amount (descending)
 			categories := make([]struct {
@@ -126,10 +128,10 @@ func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 			for _, entry := range categories {
 				emoji := getCategoryEmoji(entry.Category)
 				percentage := (entry.Amount / incomeAmount) * 100
-				msg.WriteString(fmt.Sprintf("  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
+				text.WriteString(fmt.Sprintf("  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
 					emoji, entry.Category, entry.Amount, percentage))
 			}
-			msg.WriteString("\n")
+			text.WriteString("\n")
 		}
 	}
 
@@ -141,12 +143,7 @@ func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 		balanceEmoji = "❌"
 	}
 
-	msg.WriteString(fmt.Sprintf("\n%s <b>Month Balance:</b> %.2f€", balanceEmoji, monthTotal))
+	text.WriteString(fmt.Sprintf("\n%s <b>Month Balance:</b> %.2f€", balanceEmoji, monthTotal))
 
-	// Send the message
-	ctx.EffectiveMessage.Reply(b, msg.String(), &gotgbot.SendMessageOpts{
-		ParseMode: "HTML",
-	})
-
-	return nil
+	return SendMessage(ctx, b, text.String(), [][]gotgbot.InlineKeyboardButton{})
 }

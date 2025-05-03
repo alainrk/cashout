@@ -19,7 +19,7 @@ func (c *Client) YearRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	user.Session.State = model.StateNormal
-	user.Session.LastMessage = ctx.Message.Text
+	user.Session.LastMessage = GetMessageFromContext(ctx)
 
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
@@ -191,10 +191,7 @@ func (c *Client) YearRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	msg.WriteString(fmt.Sprintf("\n%s <b>Year Balance:</b> %.2f€", balanceEmoji, yearTotal))
 
-	// Send the message
-	ctx.EffectiveMessage.Reply(b, msg.String(), &gotgbot.SendMessageOpts{
-		ParseMode: "HTML",
-	})
+	SendMessage(ctx, b, msg.String(), [][]gotgbot.InlineKeyboardButton{})
 
 	return nil
 }
