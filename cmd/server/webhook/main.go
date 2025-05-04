@@ -91,7 +91,7 @@ func main() {
 
 	// Start the webhook server, but before start the server so we're ready when Telegram starts sending updates.
 	webhookOpts := ext.WebhookOpts{
-		ListenAddr:  "localhost:3666", // TODo: Put it into config
+		ListenAddr:  "localhost:8080", // TODO: Put it into config
 		SecretToken: webhookSecret,
 	}
 
