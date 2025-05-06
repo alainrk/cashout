@@ -3,17 +3,21 @@ package client
 import (
 	"cashout/internal/ai"
 	"cashout/internal/db"
-	"cashout/internal/model"
 	"cashout/internal/repository"
-	"fmt"
-
-	"github.com/PaulSonOfLars/gotgbot/v2"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext"
+	"os"
+	"strings"
 )
+
+type Config struct {
+	// Dev Purpose, telegram usernames
+	AuthEnabled  bool
+	AllowedUsers map[string]struct{}
+}
 
 type Client struct {
 	Repositories Repositories
 	LLM          ai.LLM
+	Config       Config
 }
 
 type Repositories struct {
@@ -22,7 +26,20 @@ type Repositories struct {
 }
 
 func NewClient(db *db.DB, llm ai.LLM) *Client {
+	config := Config{
+		AllowedUsers: make(map[string]struct{}),
+	}
+
+	usernames := os.Getenv("ALLOWED_USERS")
+	if usernames != "" {
+		config.AuthEnabled = true
+		for _, u := range strings.Split(usernames, ",") {
+			config.AllowedUsers[u] = struct{}{}
+		}
+	}
+
 	return &Client{
+		Config: config,
 		Repositories: Repositories{
 			Users: repository.Users{DB: db},
 			Transactions: repository.Transactions{
@@ -31,42 +48,4 @@ func NewClient(db *db.DB, llm ai.LLM) *Client {
 		},
 		LLM: llm,
 	}
-}
-
-// authAndGetUser authenticates the user and returns the user data.
-func (c *Client) authAndGetUser(user gotgbot.User) (model.User, error) {
-	u, exists, err := c.Repositories.Users.GetByUsername(user.Username)
-	if err != nil {
-		return u, fmt.Errorf("failed to get user data: %w", err)
-	}
-
-	if exists {
-		u.Session.Iterations++
-		c.Repositories.Users.Update(&u)
-		return u, nil
-	}
-
-	// First Message, user to be created.
-	session := model.UserSession{
-		Iterations: 0,
-		State:      model.StateStart,
-	}
-
-	if err := c.Repositories.Users.UpsertWithContext(user, session); err != nil {
-		return u, fmt.Errorf("failed to set user data: %w", err)
-	}
-
-	u, _, err = c.Repositories.Users.GetByUsername(user.Username)
-	if err != nil {
-		return u, fmt.Errorf("failed to get user data: %w", err)
-	}
-
-	return u, nil
-}
-
-func (c *Client) getUserFromContext(ctx *ext.Context) (isInline bool, user gotgbot.User) {
-	if ctx.CallbackQuery != nil {
-		return true, ctx.CallbackQuery.From
-	}
-	return false, *ctx.Message.From
 }
