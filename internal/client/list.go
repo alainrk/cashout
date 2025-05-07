@@ -165,6 +165,14 @@ func (c *Client) sendMonthSelectionKeyboard(b *gotgbot.Bot, ctx *ext.Context, ye
 		keyboard = append(keyboard, navigationRow)
 	}
 
+	// In any case, add the cancel
+	keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
+		{
+			Text:         "Cancel",
+			CallbackData: "list.cancel",
+		},
+	})
+
 	// Send the keyboard
 	if ctx.CallbackQuery != nil {
 		// Edit existing message

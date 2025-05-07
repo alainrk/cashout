@@ -191,7 +191,5 @@ func (c *Client) YearRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	msg.WriteString(fmt.Sprintf("\n%s <b>Year Balance:</b> %.2f€", balanceEmoji, yearTotal))
 
-	SendMessage(ctx, b, msg.String(), [][]gotgbot.InlineKeyboardButton{})
-
-	return nil
+	return c.SendHomeKeyboard(b, ctx, msg.String())
 }

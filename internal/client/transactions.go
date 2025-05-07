@@ -397,9 +397,7 @@ func (c *Client) Confirm(b *gotgbot.Bot, ctx *ext.Context) error {
 	if transaction.Type == model.TypeExpense {
 		emoji = "💸"
 	}
-	c.SendHomeKeyboard(b, ctx, fmt.Sprintf("%s Your transaction has been saved!", emoji))
-
-	return nil
+	return c.SendHomeKeyboard(b, ctx, fmt.Sprintf("%s Your transaction has been saved!", emoji))
 }
 
 // Cancel returns to normal state.
@@ -409,9 +407,6 @@ func (c *Client) Cancel(b *gotgbot.Bot, ctx *ext.Context) error {
 	if err != nil {
 		return err
 	}
-
-	// query := ctx.CallbackQuery
-	// msg := query.Message
 
 	user.Session.State = model.StateNormal
 	user.Session.LastMessage = "cancel"

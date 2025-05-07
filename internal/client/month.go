@@ -145,5 +145,5 @@ func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	text.WriteString(fmt.Sprintf("\n%s <b>Month Balance:</b> %.2f€", balanceEmoji, monthTotal))
 
-	return SendMessage(ctx, b, text.String(), [][]gotgbot.InlineKeyboardButton{})
+	return c.SendHomeKeyboard(b, ctx, text.String())
 }
