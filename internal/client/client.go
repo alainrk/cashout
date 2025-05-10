@@ -6,6 +6,8 @@ import (
 	"cashout/internal/repository"
 	"os"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 type Config struct {
@@ -15,6 +17,7 @@ type Config struct {
 }
 
 type Client struct {
+	Logger       *logrus.Logger
 	Repositories Repositories
 	LLM          ai.LLM
 	Config       Config
@@ -25,7 +28,7 @@ type Repositories struct {
 	Transactions repository.Transactions
 }
 
-func NewClient(db *db.DB, llm ai.LLM) *Client {
+func NewClient(logger *logrus.Logger, db *db.DB, llm ai.LLM) *Client {
 	config := Config{
 		AllowedUsers: make(map[string]struct{}),
 	}
@@ -39,6 +42,7 @@ func NewClient(db *db.DB, llm ai.LLM) *Client {
 	}
 
 	return &Client{
+		Logger: logger,
 		Config: config,
 		Repositories: Repositories{
 			Users: repository.Users{DB: db},

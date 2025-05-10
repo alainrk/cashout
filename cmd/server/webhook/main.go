@@ -4,6 +4,7 @@ import (
 	"cashout/internal/ai"
 	"cashout/internal/client"
 	"cashout/internal/db"
+	"cashout/internal/logging"
 	"log"
 	"os"
 	"strings"
@@ -32,20 +33,12 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
+	logger := logging.GetLogger(os.Getenv("LOG_LEVEL"))
+
 	// Get token from the environment variable
 	token := os.Getenv("TELEGRAM_BOT_API_TOKEN")
 	if token == "" {
-		panic("TELEGRAM_BOT_API_TOKEN environment variable is empty")
-	}
-
-	webhookDomain := os.Getenv("WEBHOOK_DOMAIN")
-	if webhookDomain == "" {
-		panic("WEBHOOK_DOMAIN environment variable is empty")
-	}
-
-	webhookSecret := os.Getenv("WEBHOOK_SECRET")
-	if webhookSecret == "" {
-		panic("WEBHOOK_SECRET environment variable is empty")
+		logger.Fatalln("TELEGRAM_BOT_API_TOKEN environment variable is empty")
 	}
 
 	// API key and endpoint
@@ -59,27 +52,29 @@ func main() {
 	// Initialize database
 	postgresURL := os.Getenv("DATABASE_URL")
 	if postgresURL == "" {
-		panic("DATABASE_URL environment variable is empty")
+		logger.Fatalln("DATABASE_URL environment variable is empty")
 	}
+
 	db, err := db.NewDB(postgresURL)
 	if err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
+		logger.Fatalf("Failed to initialize database: %s\n", err.Error())
 	}
+
 	defer db.Close()
 
 	// Initialize client
-	c := client.NewClient(db, llm)
+	c := client.NewClient(logger, db, llm)
 
 	// Create bot from environment value.
 	b, err := gotgbot.NewBot(token, nil)
 	if err != nil {
-		panic("failed to create new bot: " + err.Error())
+		logger.Fatalf("failed to create new bot: %s\n", err.Error())
 	}
 
-	// Create updater and dispatcher for webhook management
+	// Create updater and dispatcher.
 	dispatcher := ext.NewDispatcher(&ext.DispatcherOpts{
 		Error: func(b *gotgbot.Bot, ctx *ext.Context, err error) ext.DispatcherAction {
-			log.Println("an error occurred while handling update:", err.Error())
+			logger.Errorf("an error occurred while handling update: %s\n", err.Error())
 			return ext.DispatcherActionNoop
 		},
 		MaxRoutines: ext.DefaultMaxRoutines,
@@ -88,6 +83,18 @@ func main() {
 	updater := ext.NewUpdater(dispatcher, nil)
 
 	client.SetupHandlers(dispatcher, c)
+
+	///////////////////////////////////////
+
+	webhookDomain := os.Getenv("WEBHOOK_DOMAIN")
+	if webhookDomain == "" {
+		log.Fatalln("WEBHOOK_DOMAIN environment variable is empty")
+	}
+
+	webhookSecret := os.Getenv("WEBHOOK_SECRET")
+	if webhookSecret == "" {
+		panic("WEBHOOK_SECRET environment variable is empty")
+	}
 
 	// Start the webhook server, but before start the server so we're ready when Telegram starts sending updates.
 	webhookOpts := ext.WebhookOpts{
