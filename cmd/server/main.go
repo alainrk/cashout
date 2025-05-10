@@ -95,12 +95,12 @@ func main() {
 	case "webhook":
 		webhookDomain := os.Getenv("WEBHOOK_DOMAIN")
 		if webhookDomain == "" {
-			log.Fatalln("WEBHOOK_DOMAIN environment variable is empty")
+			logger.Fatalln("WEBHOOK_DOMAIN environment variable is empty")
 		}
 
 		webhookSecret := os.Getenv("WEBHOOK_SECRET")
 		if webhookSecret == "" {
-			panic("WEBHOOK_SECRET environment variable is empty")
+			logger.Fatalln("WEBHOOK_SECRET environment variable is empty")
 		}
 
 		// Start the webhook server, but before start the server so we're ready when Telegram starts sending updates.
