@@ -8,21 +8,12 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 	"github.com/joho/godotenv"
 )
-
-// Create a matcher which only matches text which is not a command.
-func noCommands(msg *gotgbot.Message) bool {
-	return message.Text(msg) && !message.Command(msg)
-}
-
-func confirmCommand(msg *gotgbot.Message) bool {
-	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Confirm"
-}
 
 // This bot demonstrates some example interactions with commands ontelegram.
 // It has a basic start command with a bot intro.
@@ -84,42 +75,61 @@ func main() {
 
 	client.SetupHandlers(dispatcher, c)
 
-	///////////////////////////////////////
+	runMode := strings.ToLower(os.Getenv("RUN_MODE"))
 
-	webhookDomain := os.Getenv("WEBHOOK_DOMAIN")
-	if webhookDomain == "" {
-		log.Fatalln("WEBHOOK_DOMAIN environment variable is empty")
+	switch runMode {
+	case "polling":
+		// Start receiving updates.
+		err = updater.StartPolling(b, &ext.PollingOpts{
+			DropPendingUpdates: true,
+			GetUpdatesOpts: &gotgbot.GetUpdatesOpts{
+				Timeout: 9,
+				RequestOpts: &gotgbot.RequestOpts{
+					Timeout: time.Second * 10,
+				},
+			},
+		})
+		if err != nil {
+			logger.Fatalf("failed to start polling: %s\n", err.Error())
+		}
+	case "webhook":
+		webhookDomain := os.Getenv("WEBHOOK_DOMAIN")
+		if webhookDomain == "" {
+			log.Fatalln("WEBHOOK_DOMAIN environment variable is empty")
+		}
+
+		webhookSecret := os.Getenv("WEBHOOK_SECRET")
+		if webhookSecret == "" {
+			panic("WEBHOOK_SECRET environment variable is empty")
+		}
+
+		// Start the webhook server, but before start the server so we're ready when Telegram starts sending updates.
+		webhookOpts := ext.WebhookOpts{
+			ListenAddr:  "localhost:8080", // TODO: Put it into config
+			SecretToken: webhookSecret,
+		}
+
+		// The bot's urlPath can be anything.
+		// It's a good idea to contain the bot token, as that makes it very difficult for outside
+		// parties to find the update endpoint (which would allow them to inject their own updates).
+		err = updater.StartWebhook(b, "cashout/"+token, webhookOpts)
+		if err != nil {
+			panic("failed to start webhook: " + err.Error())
+		}
+
+		err = updater.SetAllBotWebhooks(webhookDomain, &gotgbot.SetWebhookOpts{
+			MaxConnections:     100,
+			DropPendingUpdates: true,
+			SecretToken:        webhookOpts.SecretToken,
+		})
+		if err != nil {
+			panic("failed to set webhook: " + err.Error())
+		}
+	default:
+		logger.Fatalf("unknown run mode: %s\n", runMode)
 	}
 
-	webhookSecret := os.Getenv("WEBHOOK_SECRET")
-	if webhookSecret == "" {
-		panic("WEBHOOK_SECRET environment variable is empty")
-	}
-
-	// Start the webhook server, but before start the server so we're ready when Telegram starts sending updates.
-	webhookOpts := ext.WebhookOpts{
-		ListenAddr:  "localhost:8080", // TODO: Put it into config
-		SecretToken: webhookSecret,
-	}
-
-	// The bot's urlPath can be anything.
-	// It's a good idea to contain the bot token, as that makes it very difficult for outside
-	// parties to find the update endpoint (which would allow them to inject their own updates).
-	err = updater.StartWebhook(b, "cashout/"+token, webhookOpts)
-	if err != nil {
-		panic("failed to start webhook: " + err.Error())
-	}
-
-	err = updater.SetAllBotWebhooks(webhookDomain, &gotgbot.SetWebhookOpts{
-		MaxConnections:     100,
-		DropPendingUpdates: true,
-		SecretToken:        webhookOpts.SecretToken,
-	})
-	if err != nil {
-		panic("failed to set webhook: " + err.Error())
-	}
-
-	log.Printf("%s has been started...\n", b.User.Username)
+	logger.Infof("%s has been started in %s mode...\n", b.Username, runMode)
 
 	// Idle, to keep updates coming in, and avoid bot stopping.
 	updater.Idle()

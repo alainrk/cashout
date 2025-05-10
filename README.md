@@ -147,6 +147,29 @@ make run
 make run/live
 ```
 
+## Run Mode
+
+The bot can run both in `webhook` and `polling` mode.
+
+### Webhook Mode
+
+You need to set the relevant environment variables:
+
+```
+RUN_MODE='webhook'
+WEBHOOK_DOMAIN='https://your-domain.com'
+WEBHOOK_SECRET='xxxyyyzzz'
+WEBHOOK_PORT='8080'
+```
+
+### Polling Mode
+
+You need to set the relevant environment variable:
+
+```
+RUN_MODE='polling'
+```
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
