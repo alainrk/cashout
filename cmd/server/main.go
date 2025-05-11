@@ -103,9 +103,19 @@ func main() {
 			logger.Fatalln("WEBHOOK_SECRET environment variable is empty")
 		}
 
+		webhookHost := os.Getenv("WEBHOOK_HOST")
+		if webhookHost == "" {
+			webhookHost = "0.0.0.0"
+		}
+
+		webhookPort := os.Getenv("WEBHOOK_PORT")
+		if webhookPort == "" {
+			webhookPort = "8080"
+		}
+
 		// Start the webhook server, but before start the server so we're ready when Telegram starts sending updates.
 		webhookOpts := ext.WebhookOpts{
-			ListenAddr:  "localhost:8080", // TODO: Put it into config
+			ListenAddr:  webhookHost + ":" + webhookPort,
 			SecretToken: webhookSecret,
 		}
 
