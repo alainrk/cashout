@@ -1,13 +1,12 @@
 package repository
 
 import (
-	"cashout/internal/db"
 	"cashout/internal/model"
 	"time"
 )
 
 type Transactions struct {
-	DB *db.DB
+	Repository
 }
 
 func (r *Transactions) Add(transaction model.Transaction) error {

@@ -41,14 +41,18 @@ func NewClient(logger *logrus.Logger, db *db.DB, llm ai.LLM) *Client {
 		}
 	}
 
+	// For repositories structs embedding common fields
+	repo := repository.Repository{
+		DB:     db,
+		Logger: logger,
+	}
+
 	return &Client{
 		Logger: logger,
 		Config: config,
 		Repositories: Repositories{
-			Users: repository.Users{DB: db},
-			Transactions: repository.Transactions{
-				DB: db,
-			},
+			Users:        repository.Users{Repository: repo},
+			Transactions: repository.Transactions{Repository: repo},
 		},
 		LLM: llm,
 	}

@@ -9,11 +9,14 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 type LLM struct {
 	APIKey   string
 	Endpoint string
+	Logger   *logrus.Logger
 }
 
 type ExtractedTransaction struct {
@@ -37,7 +40,7 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 	// Generate prompt using the template
 	prompt, err := GeneratePrompt(userText, tmpl)
 	if err != nil {
-		fmt.Printf("Error generating prompt: %v\n", err)
+		llm.Logger.Errorf("Error generating prompt: %v\n", err)
 		return transaction, err
 	}
 
@@ -53,14 +56,14 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 		"max_tokens": 250,
 	})
 	if err != nil {
-		fmt.Printf("Error creating request: %v\n", err)
+		llm.Logger.Errorf("Error creating request: %v\n", err)
 		return transaction, err
 	}
 
 	// Create request
 	req, err := http.NewRequest("POST", llm.Endpoint, bytes.NewBuffer(requestBody))
 	if err != nil {
-		fmt.Printf("Error creating request: %v\n", err)
+		llm.Logger.Errorf("Error creating request: %v\n", err)
 		return transaction, err
 	}
 
@@ -72,7 +75,7 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Printf("Error sending request: %v\n", err)
+		llm.Logger.Errorf("Error sending request: %v\n", err)
 		return transaction, err
 	}
 	defer resp.Body.Close()
@@ -80,15 +83,15 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 	// Read response
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("Error reading response: %v\n", err)
+		llm.Logger.Errorf("Error reading response: %v\n", err)
 		return transaction, err
 	}
 
 	// Parse response
 	var result map[string]interface{}
 	if err := json.Unmarshal(body, &result); err != nil {
-		fmt.Printf("Error parsing response: %v\n", err)
-		fmt.Println("Raw response:", string(body))
+		llm.Logger.Errorf("Error parsing response: %v\n", err)
+		llm.Logger.Errorln("Raw response", body)
 		return transaction, err
 	}
 
@@ -97,12 +100,12 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 	if choices, ok := result["choices"].([]interface{}); ok && len(choices) > 0 {
 		if choice, ok := choices[0].(map[string]interface{}); ok {
 			if message, ok := choice["message"].(map[string]interface{}); ok {
-				fmt.Printf("%+v	", message)
+				llm.Logger.Debugln("LLM Message", message)
 				content = fmt.Sprintf("%v", message["content"])
 			}
 		}
 	} else {
-		fmt.Println("Raw response:", string(body))
+		llm.Logger.Errorln("Raw response", body)
 		return transaction, fmt.Errorf("invalid response format")
 	}
 
@@ -130,7 +133,7 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 	// Parse the LLM JSON response
 	var transactionData map[string]interface{}
 	if err := json.Unmarshal([]byte(content), &transactionData); err != nil {
-		fmt.Printf("Error parsing LLM response as JSON: %v\n", err)
+		llm.Logger.Errorln("Error parsing LLM response as JSON", err)
 		return transaction, err
 	}
 

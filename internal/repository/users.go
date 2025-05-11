@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"cashout/internal/db"
 	"cashout/internal/model"
 	"strings"
 
@@ -9,7 +8,7 @@ import (
 )
 
 type Users struct {
-	DB *db.DB
+	Repository
 }
 
 func (r *Users) GetByUsername(username string) (model.User, bool, error) {

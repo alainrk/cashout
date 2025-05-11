@@ -131,7 +131,7 @@ func (c *Client) addTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 		},
 	})
 	if err != nil {
-		fmt.Printf("failed to send confirm message: %v\n", err)
+		c.Logger.Errorln("failed to send confirm message", err)
 		return err
 	}
 
@@ -380,7 +380,7 @@ func (c *Client) Confirm(b *gotgbot.Bot, ctx *ext.Context) error {
 	err = c.Repositories.Transactions.Add(transaction)
 	if err != nil {
 		// TODO: Handle send failure message to the user
-		fmt.Printf("failed to add transaction: %v\n", err)
+		c.Logger.Errorln("failed to add transaction", err)
 		return fmt.Errorf("failed to add transaction: %w", err)
 	}
 

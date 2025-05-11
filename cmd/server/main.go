@@ -36,6 +36,7 @@ func main() {
 	aiApiKey := os.Getenv("DEEPSEEK_API_KEY")
 	aiEndpoint := "https://api.deepseek.com/v1/chat/completions"
 	llm := ai.LLM{
+		Logger:   logger,
 		APIKey:   aiApiKey,
 		Endpoint: aiEndpoint,
 	}
