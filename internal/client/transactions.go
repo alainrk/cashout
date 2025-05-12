@@ -90,7 +90,7 @@ func (c *Client) addTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 	}
 
 	// Store the transaction in the session
-	user.Session.State = model.StateNormal
+	user.Session.State = model.StateWaitingConfirm
 	user.Session.LastMessage = ctx.Message.Text
 	s, err := json.Marshal(transaction)
 	if err != nil {
@@ -235,8 +235,6 @@ func (c *Client) editTransactionDate(b *gotgbot.Bot, ctx *ext.Context, user mode
 		return fmt.Errorf("failed to extract transaction from the session: %w", err)
 	}
 
-	// TODO: Handle this with LLM to support different formats automatically and also yesterday, 2 days ago etc.
-
 	// Get date from DD-MM-YYYY to date
 	date, err := utils.ParseDate(ctx.Message.Text)
 	if err != nil {
@@ -365,6 +363,27 @@ func (c *Client) Confirm(b *gotgbot.Bot, ctx *ext.Context) error {
 		return fmt.Errorf("failed to extract transaction from the session: %w", err)
 	}
 
+	transaction.TgID = user.TgID
+	transaction.Currency = model.CurrencyEUR
+
+	err = c.Repositories.Transactions.Add(transaction)
+	if err != nil {
+		SendMessage(ctx, b, "There has been an error saving your transaction, please retry", nil)
+		c.Logger.Errorln("failed to add transaction", err)
+
+		// Reset the state
+		user.Session.State = model.StateInsertingIncome
+		if transaction.Type == model.TypeExpense {
+			user.Session.State = model.StateInsertingExpense
+		}
+		err = c.Repositories.Users.Update(&user)
+		if err != nil {
+			return fmt.Errorf("failed to set user data to reset the state: %w", err)
+		}
+
+		return fmt.Errorf("failed to add transaction: %w", err)
+	}
+
 	user.Session.State = model.StateNormal
 	user.Session.LastMessage = "confirm"
 	user.Session.Body = ""
@@ -372,16 +391,6 @@ func (c *Client) Confirm(b *gotgbot.Bot, ctx *ext.Context) error {
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
-	}
-
-	transaction.TgID = user.TgID
-	transaction.Currency = model.CurrencyEUR
-
-	err = c.Repositories.Transactions.Add(transaction)
-	if err != nil {
-		// TODO: Handle send failure message to the user
-		c.Logger.Errorln("failed to add transaction", err)
-		return fmt.Errorf("failed to add transaction: %w", err)
 	}
 
 	// Remove the keyboard from the previous message

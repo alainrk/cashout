@@ -40,12 +40,12 @@ func IsValidTransactionCategory(category string) bool {
 }
 
 // Value implements the driver.Valuer interface for TransactionCategory
-func (ec TransactionCategory) Value() (driver.Value, error) {
-	return string(ec), nil
+func (t TransactionCategory) Value() (driver.Value, error) {
+	return string(t), nil
 }
 
 // Scan implements the sql.Scanner interface for TransactionCategory
-func (ec *TransactionCategory) Scan(value interface{}) error {
+func (t *TransactionCategory) Scan(value interface{}) error {
 	if value == nil {
 		return errors.New("transaction category cannot be null")
 	}
@@ -55,7 +55,7 @@ func (ec *TransactionCategory) Scan(value interface{}) error {
 		return errors.New("invalid transaction category type")
 	}
 
-	*ec = TransactionCategory(strVal)
+	*t = TransactionCategory(strVal)
 	return nil
 }
 
@@ -69,12 +69,12 @@ const (
 )
 
 // Value implements the driver.Valuer interface for TransactionType
-func (et TransactionType) Value() (driver.Value, error) {
-	return string(et), nil
+func (t TransactionType) Value() (driver.Value, error) {
+	return string(t), nil
 }
 
 // Scan implements the sql.Scanner interface for TransactionType
-func (et *TransactionType) Scan(value interface{}) error {
+func (t *TransactionType) Scan(value interface{}) error {
 	if value == nil {
 		return errors.New("transaction type cannot be null")
 	}
@@ -84,7 +84,7 @@ func (et *TransactionType) Scan(value interface{}) error {
 		return errors.New("invalid transaction type")
 	}
 
-	*et = TransactionType(strVal)
+	*t = TransactionType(strVal)
 	return nil
 }
 
@@ -101,12 +101,12 @@ const (
 )
 
 // Value implements the driver.Valuer interface for CurrencyType
-func (ct CurrencyType) Value() (driver.Value, error) {
-	return string(ct), nil
+func (t CurrencyType) Value() (driver.Value, error) {
+	return string(t), nil
 }
 
 // Scan implements the sql.Scanner interface for CurrencyType
-func (ct *CurrencyType) Scan(value interface{}) error {
+func (t *CurrencyType) Scan(value interface{}) error {
 	if value == nil {
 		return errors.New("currency type cannot be null")
 	}
@@ -116,7 +116,7 @@ func (ct *CurrencyType) Scan(value interface{}) error {
 		return errors.New("invalid currency type")
 	}
 
-	*ct = CurrencyType(strVal)
+	*t = CurrencyType(strVal)
 	return nil
 }
 
