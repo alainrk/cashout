@@ -13,7 +13,7 @@ type StateType string
 // State type constants
 const (
 	// Normal state where the user has to give commands.
-	StateNormal StateType = "start"
+	StateNormal StateType = "normal"
 	// Only when the user has started the bot.
 	StateStart StateType = "start"
 	// The user has to add an expense after having set the bot to accept it.
@@ -24,7 +24,7 @@ const (
 	StateEditingTransactionDate     StateType = "editing_transaction_date"
 	StateEditingTransactionCategory StateType = "editing_transaction_category"
 	// The user has to confirm an action.
-	StateWaitingConfirm StateType = "confirm"
+	StateWaitingConfirm StateType = "waiting_confirm"
 )
 
 // CommandType represents the type of command sent by the user
