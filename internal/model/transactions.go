@@ -28,6 +28,7 @@ const (
 	CategoryTech          TransactionCategory = "Tech"
 	CategoryGifts         TransactionCategory = "Gifts"
 	CategoryTravel        TransactionCategory = "Travel"
+	CategoryOtherExpenses TransactionCategory = "OtherExpenses"
 )
 
 func IsValidTransactionCategory(category string) bool {
@@ -162,6 +163,7 @@ func GetTransactionCategories() []string {
 		string(CategoryTech),
 		string(CategoryGifts),
 		string(CategoryTravel),
+		string(CategoryOtherExpenses),
 	}
 }
 

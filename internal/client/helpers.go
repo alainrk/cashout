@@ -40,6 +40,7 @@ func getCategoryEmoji(category model.TransactionCategory) string {
 		model.CategoryTech:          "💻",
 		model.CategoryGifts:         "🎁",
 		model.CategoryTravel:        "✈️",
+		model.CategoryOtherExpenses: "📌",
 	}
 
 	if emoji, ok := emojiMap[category]; ok {

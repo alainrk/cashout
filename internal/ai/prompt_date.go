@@ -20,13 +20,13 @@ Format the result as a JSON object with the following structure:
 { "category": "Category", "amount": 12.34, "description": "Description", "date": "dd-mm-yyyy" }
 
 Available categories (use ONLY these):
-"Car", "Clothes", "Grocery", "House", "Bills", "Entertainment", "Sport", "EatingOut", "Transport", "Learning", "Toiletry", "Health", "Tech", "Gifts", "Travel", "Others"
+"Car", "Clothes", "Grocery", "House", "Bills", "Entertainment", "Sport", "EatingOut", "Transport", "Learning", "Toiletry", "Health", "Tech", "Gifts", "Travel", "OtherExpenses"
 
 Follow these rules:
 1. For category selection:
    - First try to find the category directly mentioned in the text (accounting for typos/synonyms)
    - If no category is directly mentioned, infer it from the description
-   - If category cannot be determined, use "Others"
+   - If category cannot be determined, use "OtherExpenses"
 2. For description:
    - Use the main item mentioned in the text
    - Capitalize the first letter of the description
@@ -45,7 +45,7 @@ Examples:
 - "bread 5 euro an 20, grocery" → { "category": "Grocery", "amount": 5.2, "description": "Bread" }
 - "pam 4.31 grocertw" → { "category": "Grocery", "amount": 4.31, "description": "Pam" }
 - "car 25,30" → { "category": "Car", "amount": 25.3, "description": "Car" }
-- "34 usd 23-04" → { "category": "Others", "amount": 34, "description": "Others", "date": "23-04-2025" }
+- "34 usd 23-04" → { "category": "OtherExpenses", "amount": 34, "description": "OtherExpenses", "date": "23-04-2025" }
 - "Great sea food 12 euro e 25" → { "category": "EatingOut", "amount": 12.25, "description": "Great see food" }
 
 IMPORTANT: Respond with ONLY the JSON object but without markdown syntax. Your answer is plaintext being JSON to be parsed as it is, don't include the triple backticks syntax or anything similar.
