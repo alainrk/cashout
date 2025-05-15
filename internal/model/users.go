@@ -23,6 +23,7 @@ const (
 	// The user has to edit the transaction
 	StateEditingTransactionDate     StateType = "editing_transaction_date"
 	StateEditingTransactionCategory StateType = "editing_transaction_category"
+	StateEditingTransactionAmount   StateType = "editing_transaction_amount"
 	// The user has to confirm an action.
 	StateWaitingConfirm StateType = "waiting_confirm"
 )
