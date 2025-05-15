@@ -21,6 +21,10 @@ func (r *Transactions) GetByID(id int64) (model.Transaction, error) {
 	return *transaction, nil
 }
 
+func (r *Transactions) Update(transaction *model.Transaction) error {
+	return r.DB.UpdateTransaction(transaction)
+}
+
 func (r *Transactions) Delete(id int64, tgID int64) error {
 	return r.DB.DeleteTransactionByID(id, tgID)
 }
