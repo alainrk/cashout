@@ -26,12 +26,15 @@ func (c *Client) SendHomeKeyboard(b *gotgbot.Bot, ctx *ext.Context, text string)
 			{Text: "💸 Add Expense", CallbackData: "transactions.new.expense"},
 		},
 		{
-			{Text: "🗑 Delete Transaction", CallbackData: "home.delete"},
-			{Text: "📄 Full List", CallbackData: "home.list"},
+			{Text: "✏️ Edit", CallbackData: "home.edit"},
+			{Text: "🗑 Delete", CallbackData: "home.delete"},
 		},
 		{
 			{Text: "Month Recap", CallbackData: "home.month"},
 			{Text: "Year Recap", CallbackData: "home.year"},
+		},
+		{
+			{Text: "📄 Full List", CallbackData: "home.list"},
 		},
 	}
 

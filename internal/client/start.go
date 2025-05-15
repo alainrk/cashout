@@ -15,7 +15,8 @@ func (c *Client) Start(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 
-	msg := fmt.Sprintf("Welcome to Cashout, %s!\nWhat can I do for you?\n\n/delete - Delete a transaction\n/list - List your transactions\n/month Month Recap\n/year Year Recap", user.Name)
+	msg := fmt.Sprintf("Welcome to Cashout, %s!\nWhat can I do for you?\n\n/edit - Edit a transaction\n/delete - Delete a transaction\n/list - List your transactions\n/month Month Recap\n/year Year Recap", user.Name)
+
 	c.SendHomeKeyboard(b, ctx, msg)
 
 	return nil
