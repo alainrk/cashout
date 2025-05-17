@@ -5,6 +5,7 @@ import (
 	"cashout/internal/utils"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -112,9 +113,17 @@ func (c *Client) addTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 						Text:         "Edit category",
 						CallbackData: "transactions.edit.category",
 					},
+				},
+				{
 					{
 						Text:         "Edit date",
 						CallbackData: "transactions.edit.date",
+					},
+				},
+				{
+					{
+						Text:         "Edit amount",
+						CallbackData: "transactions.edit.amount",
 					},
 				},
 				{
@@ -159,6 +168,20 @@ func (c *Client) EditTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 	var opts *gotgbot.SendMessageOpts
 
 	switch field {
+	case "amount":
+		user.Session.State = model.StateEditingTransactionAmount
+		user.Session.LastMessage = "edit_amount"
+
+		keyboard := [][]gotgbot.InlineKeyboardButton{
+			{
+				{
+					Text:         "Cancel",
+					CallbackData: "transactions.cancel",
+				},
+			},
+		}
+		opts = &gotgbot.SendMessageOpts{ReplyMarkup: gotgbot.InlineKeyboardMarkup{InlineKeyboard: keyboard}}
+		text = fmt.Sprintf("Enter a new amount for the transaction:\n\nCurrent: %.2f€ ", transaction.Amount)
 	case "date":
 		user.Session.State = model.StateEditingTransactionDate
 		text = "Add your date (e.g. dd mm, dd-mm, dd-mm-yyyy)."
@@ -271,9 +294,100 @@ func (c *Client) editTransactionDate(b *gotgbot.Bot, ctx *ext.Context, user mode
 						Text:         "Edit category",
 						CallbackData: "transactions.edit.category",
 					},
+				},
+				{
 					{
 						Text:         "Edit date",
 						CallbackData: "transactions.edit.date",
+					},
+				},
+				{
+					{
+						Text:         "Edit amount",
+						CallbackData: "transactions.edit.amount",
+					},
+				},
+				{
+					{
+						Text:         "Confirm",
+						CallbackData: "transactions.confirm",
+					},
+					{
+						Text:         "Cancel",
+						CallbackData: "transactions.cancel",
+					},
+				},
+			},
+		},
+	})
+
+	return nil
+}
+
+func (c *Client) editTransactionAmount(b *gotgbot.Bot, ctx *ext.Context, user model.User) error {
+	var transaction model.Transaction
+	err := json.Unmarshal([]byte(user.Session.Body), &transaction)
+	if err != nil {
+		return fmt.Errorf("failed to extract transaction from the session: %w", err)
+	}
+
+	// Parse new amount from message
+	amountStr := strings.TrimSpace(ctx.Message.Text)
+	amountStr = strings.ReplaceAll(amountStr, ",", ".")
+	newAmount, err := strconv.ParseFloat(amountStr, 64)
+	if err != nil {
+		_, err = b.SendMessage(
+			ctx.EffectiveSender.ChatId,
+			"Invalid amount. Please enter a valid number.",
+			nil,
+		)
+		return err
+	}
+
+	if newAmount <= 0 {
+		_, err = b.SendMessage(
+			ctx.EffectiveSender.ChatId,
+			"Amount must be greater than zero.",
+			nil,
+		)
+		return err
+	}
+
+	// Update the transaction
+	transaction.Amount = newAmount
+
+	user.Session.LastMessage = ctx.Message.Text
+	s, err := json.Marshal(transaction)
+	if err != nil {
+		return fmt.Errorf("failed to stringify the body: %w", err)
+	}
+	user.Session.Body = string(s)
+
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to set user data: %w", err)
+	}
+
+	m := fmt.Sprintf("%s (€ %.2f), %s on %s. Confirm?", transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
+	b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
+		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+				{
+					{
+						Text:         "Edit category",
+						CallbackData: "transactions.edit.category",
+					},
+				},
+				{
+					{
+						Text:         "Edit date",
+						CallbackData: "transactions.edit.date",
+					},
+				},
+				{
+					{
+						Text:         "Edit amount",
+						CallbackData: "transactions.edit.amount",
 					},
 				},
 				{
@@ -327,9 +441,17 @@ func (c *Client) editTransactionCategory(b *gotgbot.Bot, ctx *ext.Context, user 
 						Text:         "Edit category",
 						CallbackData: "transactions.edit.category",
 					},
+				},
+				{
 					{
 						Text:         "Edit date",
 						CallbackData: "transactions.edit.date",
+					},
+				},
+				{
+					{
+						Text:         "Edit amount",
+						CallbackData: "transactions.edit.amount",
 					},
 				},
 				{

@@ -146,7 +146,6 @@ func (c *Client) EditTransactionField(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 }
 
-// editTransactionCategory shows a keyboard to select a new category
 func (c *Client) editTopLevelTransactionCategory(b *gotgbot.Bot, ctx *ext.Context, transaction model.Transaction) error {
 	// Create keyboard with appropriate categories
 	var keyboard [][]gotgbot.KeyboardButton
@@ -186,7 +185,7 @@ func (c *Client) editTopLevelTransactionCategory(b *gotgbot.Bot, ctx *ext.Contex
 		return err
 	}
 
-	user.Session.State = model.StateEditingTransactionCategory
+	user.Session.State = model.StateTopLevelEditingTransactionCategory
 	user.Session.LastMessage = "edit_category"
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
@@ -220,7 +219,6 @@ func (c *Client) editTopLevelTransactionCategory(b *gotgbot.Bot, ctx *ext.Contex
 	return err
 }
 
-// EditTransactionCategoryConfirm handles the category update after user selects a new category
 func (c *Client) EditTransactionCategoryConfirm(b *gotgbot.Bot, ctx *ext.Context) error {
 	_, u := c.getUserFromContext(ctx)
 	user, err := c.authAndGetUser(u)
@@ -314,7 +312,6 @@ func (c *Client) EditTransactionCategoryConfirm(b *gotgbot.Bot, ctx *ext.Context
 	return err
 }
 
-// editTransactionAmount prompts for a new amount
 func (c *Client) editTopLevelTransactionAmount(b *gotgbot.Bot, ctx *ext.Context, transaction model.Transaction) error {
 	// Set user state
 	_, u := c.getUserFromContext(ctx)
@@ -323,7 +320,7 @@ func (c *Client) editTopLevelTransactionAmount(b *gotgbot.Bot, ctx *ext.Context,
 		return err
 	}
 
-	user.Session.State = model.StateEditingTransactionAmount
+	user.Session.State = model.StateTopLevelEditingTransactionAmount
 	user.Session.LastMessage = "edit_amount"
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
@@ -345,7 +342,6 @@ func (c *Client) editTopLevelTransactionAmount(b *gotgbot.Bot, ctx *ext.Context,
 	return err
 }
 
-// EditTransactionAmountConfirm handles the amount update after user enters a new amount
 func (c *Client) EditTransactionAmountConfirm(b *gotgbot.Bot, ctx *ext.Context) error {
 	_, u := c.getUserFromContext(ctx)
 	user, err := c.authAndGetUser(u)
@@ -437,7 +433,7 @@ func (c *Client) editTopLevelTransactionDate(b *gotgbot.Bot, ctx *ext.Context, t
 		return err
 	}
 
-	user.Session.State = model.StateEditingTransactionDate
+	user.Session.State = model.StateTopLevelEditingTransactionDate
 	user.Session.LastMessage = "edit_date"
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
@@ -459,7 +455,6 @@ func (c *Client) editTopLevelTransactionDate(b *gotgbot.Bot, ctx *ext.Context, t
 	return err
 }
 
-// EditTransactionDateConfirm handles the date update after user enters a new date
 func (c *Client) EditTransactionDateConfirm(b *gotgbot.Bot, ctx *ext.Context) error {
 	_, u := c.getUserFromContext(ctx)
 	user, err := c.authAndGetUser(u)
