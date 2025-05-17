@@ -195,7 +195,7 @@ func (c *Client) sendMonthSelectionKeyboard(b *gotgbot.Bot, ctx *ext.Context, ye
 
 // Helper function to show transactions page
 func (c *Client) showTransactionPage(b *gotgbot.Bot, ctx *ext.Context, user model.User, year, month, offset int) error {
-	limit := 10
+	limit := 5
 
 	transactions, total, err := c.Repositories.Transactions.GetUserTransactionsByMonthPaginated(user.TgID, year, month, offset, limit)
 	if err != nil {
