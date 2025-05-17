@@ -1,4 +1,4 @@
-# Cashout
+# Cashout AI
 
 Telegram **AI Agent** for Income and Expense Management.
 
