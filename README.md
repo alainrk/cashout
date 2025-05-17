@@ -1,6 +1,6 @@
 # Cashout
 
-Telegram bot for expense tracking **AI-Powered** (_for real!_).
+Telegram **AI Agent** for Income and Expense Management.
 
 <p align="center">
   <img src="/assets/cashout.png" alt="Logo" width="250px">
