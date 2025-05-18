@@ -21,10 +21,6 @@ func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	user.Session.State = model.StateNormal
 
-	msg := GetMessageFromContext(ctx)
-
-	user.Session.LastMessage = msg
-
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)

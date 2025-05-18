@@ -22,7 +22,6 @@ func (c *Client) EditTransactions(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	// Reset user state to normal
 	user.Session.State = model.StateNormal
-	user.Session.LastMessage = GetMessageFromContext(ctx)
 
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
@@ -186,7 +185,6 @@ func (c *Client) editTopLevelTransactionCategory(b *gotgbot.Bot, ctx *ext.Contex
 	}
 
 	user.Session.State = model.StateTopLevelEditingTransactionCategory
-	user.Session.LastMessage = "edit_category"
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to update user data: %w", err)
@@ -286,7 +284,6 @@ func (c *Client) EditTransactionCategoryConfirm(b *gotgbot.Bot, ctx *ext.Context
 
 	// Reset user state
 	user.Session.State = model.StateNormal
-	user.Session.LastMessage = ""
 	user.Session.Body = ""
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
@@ -321,7 +318,6 @@ func (c *Client) editTopLevelTransactionAmount(b *gotgbot.Bot, ctx *ext.Context,
 	}
 
 	user.Session.State = model.StateTopLevelEditingTransactionAmount
-	user.Session.LastMessage = "edit_amount"
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to update user data: %w", err)
@@ -399,7 +395,6 @@ func (c *Client) EditTransactionAmountConfirm(b *gotgbot.Bot, ctx *ext.Context) 
 
 	// Reset user state
 	user.Session.State = model.StateNormal
-	user.Session.LastMessage = ""
 	user.Session.Body = ""
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
@@ -434,7 +429,6 @@ func (c *Client) editTopLevelTransactionDate(b *gotgbot.Bot, ctx *ext.Context, t
 	}
 
 	user.Session.State = model.StateTopLevelEditingTransactionDate
-	user.Session.LastMessage = "edit_date"
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to update user data: %w", err)
@@ -503,7 +497,6 @@ func (c *Client) EditTransactionDateConfirm(b *gotgbot.Bot, ctx *ext.Context) er
 
 	// Reset user state
 	user.Session.State = model.StateNormal
-	user.Session.LastMessage = ""
 	user.Session.Body = ""
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {

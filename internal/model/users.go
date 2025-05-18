@@ -48,9 +48,8 @@ type User struct {
 }
 
 type UserSession struct {
-	State       StateType `json:"state"`
-	LastMessage string    `json:"last_message"`
-	Body        string    `json:"body"`
+	State StateType `json:"state"`
+	Body  string    `json:"body"`
 }
 
 // Value makes the UserSession struct implement the driver.Valuer interface
@@ -61,7 +60,7 @@ func (s UserSession) Value() (driver.Value, error) {
 // Scan makes the UserSession struct implement the sql.Scanner interface
 func (s *UserSession) Scan(value interface{}) error {
 	if value == nil {
-		*s = UserSession{State: "", LastMessage: ""}
+		*s = UserSession{State: ""}
 		return nil
 	}
 

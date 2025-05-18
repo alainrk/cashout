@@ -35,8 +35,6 @@ func (c *Client) AddTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 		return nil
 	}
 
-	user.Session.LastMessage = action
-
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
@@ -71,7 +69,7 @@ func (c *Client) addTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 
 	transaction, err := c.LLM.ExtractTransaction(ctx.Message.Text, transactionType)
 	if err != nil {
-		msg := fmt.Sprintf("I'm sorry, I can't understand your transaction '%s', %s!", user.Session.LastMessage, user.Name)
+		msg := "I'm sorry, I couldn't understand your transaction!"
 		ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
 			ParseMode: "HTML",
 		})
@@ -79,7 +77,7 @@ func (c *Client) addTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 	}
 
 	if transaction.Amount == 0 {
-		msg := fmt.Sprintf("I'm sorry, I can't understand your transaction '%s', %s!", user.Session.LastMessage, user.Name)
+		msg := "I'm sorry, I couldn't understand your transaction!"
 		ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
 			ParseMode: "HTML",
 		})
@@ -88,7 +86,6 @@ func (c *Client) addTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 
 	// Store the transaction in the session
 	user.Session.State = model.StateWaitingConfirm
-	user.Session.LastMessage = ctx.Message.Text
 	s, err := json.Marshal(transaction)
 	if err != nil {
 		return fmt.Errorf("failed to stringify the body: %w", err)
@@ -166,7 +163,6 @@ func (c *Client) EditTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 	switch field {
 	case "amount":
 		user.Session.State = model.StateEditingTransactionAmount
-		user.Session.LastMessage = "edit_amount"
 
 		keyboard := [][]gotgbot.InlineKeyboardButton{
 			{
@@ -236,7 +232,6 @@ func (c *Client) EditTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	c.CleanupKeyboard(b, ctx)
 
-	user.Session.LastMessage = field
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
@@ -269,7 +264,6 @@ func (c *Client) editTransactionDate(b *gotgbot.Bot, ctx *ext.Context, user mode
 
 	transaction.Date = date
 
-	user.Session.LastMessage = ctx.Message.Text
 	s, err := json.Marshal(transaction)
 	if err != nil {
 		return fmt.Errorf("failed to stringify the body: %w", err)
@@ -352,7 +346,6 @@ func (c *Client) editTransactionAmount(b *gotgbot.Bot, ctx *ext.Context, user mo
 	// Update the transaction
 	transaction.Amount = newAmount
 
-	user.Session.LastMessage = ctx.Message.Text
 	s, err := json.Marshal(transaction)
 	if err != nil {
 		return fmt.Errorf("failed to stringify the body: %w", err)
@@ -416,7 +409,6 @@ func (c *Client) editTransactionCategory(b *gotgbot.Bot, ctx *ext.Context, user 
 	}
 	transaction.Category = model.TransactionCategory(ctx.Message.Text)
 
-	user.Session.LastMessage = ctx.Message.Text
 	s, err := json.Marshal(transaction)
 	if err != nil {
 		return fmt.Errorf("failed to stringify the body: %w", err)
@@ -503,7 +495,6 @@ func (c *Client) Confirm(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	user.Session.State = model.StateNormal
-	user.Session.LastMessage = "confirm"
 	user.Session.Body = ""
 
 	err = c.Repositories.Users.Update(&user)
@@ -536,7 +527,6 @@ func (c *Client) Cancel(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	user.Session.State = model.StateNormal
-	user.Session.LastMessage = "cancel"
 
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {

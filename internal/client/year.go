@@ -19,7 +19,6 @@ func (c *Client) YearRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	user.Session.State = model.StateNormal
-	user.Session.LastMessage = GetMessageFromContext(ctx)
 
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {

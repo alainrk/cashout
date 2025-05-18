@@ -20,7 +20,6 @@ func (c *Client) DeleteTransactions(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	// Reset user state to normal
 	user.Session.State = model.StateNormal
-	user.Session.LastMessage = GetMessageFromContext(ctx)
 
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
