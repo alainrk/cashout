@@ -22,15 +22,13 @@ func (c *Client) authAndGetUser(user gotgbot.User) (model.User, error) {
 	}
 
 	if exists {
-		u.Session.Iterations++
 		c.Repositories.Users.Update(&u)
 		return u, nil
 	}
 
 	// First Message, user to be created.
 	session := model.UserSession{
-		Iterations: 0,
-		State:      model.StateStart,
+		State: model.StateStart,
 	}
 
 	if err := c.Repositories.Users.UpsertWithContext(user, session); err != nil {

@@ -22,10 +22,6 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 		return c.Cancel(b, ctx)
 	}
 
-	if user.Session.Iterations == 0 {
-		return c.Start(b, ctx)
-	}
-
 	if user.Session.State == model.StateInsertingIncome || user.Session.State == model.StateInsertingExpense {
 		return c.addTransaction(b, ctx, user)
 	}

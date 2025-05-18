@@ -48,7 +48,6 @@ type User struct {
 }
 
 type UserSession struct {
-	Iterations  uint64    `json:"iterations"`
 	State       StateType `json:"state"`
 	LastMessage string    `json:"last_message"`
 	Body        string    `json:"body"`

@@ -20,10 +20,6 @@ func (c *Client) AddTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 
-	if user.Session.Iterations == 0 {
-		return c.Start(b, ctx)
-	}
-
 	query := ctx.CallbackQuery
 	msg := query.Message
 
