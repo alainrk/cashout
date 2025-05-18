@@ -201,6 +201,16 @@ func (c *Client) editTopLevelTransactionCategory(b *gotgbot.Bot, ctx *ext.Contex
 			transaction.Date.Format("02-01-2006")),
 		&gotgbot.EditMessageTextOpts{
 			ParseMode: "HTML",
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+					{
+						{
+							Text:         "Cancel",
+							CallbackData: "transactions.cancel",
+						},
+					},
+				},
+			},
 		},
 	)
 	if err != nil {
@@ -332,6 +342,16 @@ func (c *Client) editTopLevelTransactionDescription(b *gotgbot.Bot, ctx *ext.Con
 			transaction.Description, transaction.Category),
 		&gotgbot.EditMessageTextOpts{
 			ParseMode: "HTML",
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+					{
+						{
+							Text:         "Cancel",
+							CallbackData: "transactions.cancel",
+						},
+					},
+				},
+			},
 		},
 	)
 
@@ -361,6 +381,16 @@ func (c *Client) editTopLevelTransactionAmount(b *gotgbot.Bot, ctx *ext.Context,
 			transaction.Date.Format("02-01-2006")),
 		&gotgbot.EditMessageTextOpts{
 			ParseMode: "HTML",
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+					{
+						{
+							Text:         "Cancel",
+							CallbackData: "transactions.cancel",
+						},
+					},
+				},
+			},
 		},
 	)
 
@@ -538,6 +568,16 @@ func (c *Client) editTopLevelTransactionDate(b *gotgbot.Bot, ctx *ext.Context, t
 			transaction.Date.Format("02-01-2006")),
 		&gotgbot.EditMessageTextOpts{
 			ParseMode: "HTML",
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+					{
+						{
+							Text:         "Cancel",
+							CallbackData: "transactions.cancel",
+						},
+					},
+				},
+			},
 		},
 	)
 
