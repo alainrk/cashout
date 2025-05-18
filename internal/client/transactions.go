@@ -103,6 +103,12 @@ func (c *Client) addTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 				{
 					{
+						Text:         "Edit description",
+						CallbackData: "transactions.edit.description",
+					},
+				},
+				{
+					{
 						Text:         "Edit category",
 						CallbackData: "transactions.edit.category",
 					},
@@ -161,6 +167,19 @@ func (c *Client) EditTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 	var opts *gotgbot.SendMessageOpts
 
 	switch field {
+	case "description":
+		user.Session.State = model.StateEditingTransactionDescription
+
+		keyboard := [][]gotgbot.InlineKeyboardButton{
+			{
+				{
+					Text:         "Cancel",
+					CallbackData: "transactions.cancel",
+				},
+			},
+		}
+		opts = &gotgbot.SendMessageOpts{ReplyMarkup: gotgbot.InlineKeyboardMarkup{InlineKeyboard: keyboard}}
+		text = fmt.Sprintf("Enter a new description for the transaction:\n\nCurrent: %s ", transaction.Description)
 	case "amount":
 		user.Session.State = model.StateEditingTransactionAmount
 
@@ -281,6 +300,12 @@ func (c *Client) editTransactionDate(b *gotgbot.Bot, ctx *ext.Context, user mode
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 				{
 					{
+						Text:         "Edit description",
+						CallbackData: "transactions.edit.description",
+					},
+				},
+				{
+					{
 						Text:         "Edit category",
 						CallbackData: "transactions.edit.category",
 					},
@@ -363,6 +388,85 @@ func (c *Client) editTransactionAmount(b *gotgbot.Bot, ctx *ext.Context, user mo
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 				{
 					{
+						Text:         "Edit description",
+						CallbackData: "transactions.edit.description",
+					},
+				},
+				{
+					{
+						Text:         "Edit category",
+						CallbackData: "transactions.edit.category",
+					},
+				},
+				{
+					{
+						Text:         "Edit date",
+						CallbackData: "transactions.edit.date",
+					},
+				},
+				{
+					{
+						Text:         "Edit amount",
+						CallbackData: "transactions.edit.amount",
+					},
+				},
+				{
+					{
+						Text:         "Cancel",
+						CallbackData: "transactions.cancel",
+					},
+					{
+						Text:         "Confirm",
+						CallbackData: "transactions.confirm",
+					},
+				},
+			},
+		},
+	})
+
+	return nil
+}
+
+func (c *Client) editTransactionDescription(b *gotgbot.Bot, ctx *ext.Context, user model.User) error {
+	var transaction model.Transaction
+	err := json.Unmarshal([]byte(user.Session.Body), &transaction)
+	if err != nil {
+		return fmt.Errorf("failed to extract transaction from the session: %w", err)
+	}
+
+	transaction.Description = strings.TrimSpace(ctx.Message.Text)
+	if transaction.Description == "" {
+		_, err = b.SendMessage(
+			ctx.EffectiveSender.ChatId,
+			"Description cannot be empty.",
+			nil,
+		)
+		return err
+	}
+
+	s, err := json.Marshal(transaction)
+	if err != nil {
+		return fmt.Errorf("failed to stringify the body: %w", err)
+	}
+	user.Session.Body = string(s)
+
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to set user data: %w", err)
+	}
+
+	m := fmt.Sprintf("%s (€ %.2f), %s on %s. Confirm?", transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
+	b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
+		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+				{
+					{
+						Text:         "Edit description",
+						CallbackData: "transactions.edit.description",
+					},
+				},
+				{
+					{
 						Text:         "Edit category",
 						CallbackData: "transactions.edit.category",
 					},
@@ -424,6 +528,12 @@ func (c *Client) editTransactionCategory(b *gotgbot.Bot, ctx *ext.Context, user 
 	b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+				{
+					{
+						Text:         "Edit description",
+						CallbackData: "transactions.edit.description",
+					},
+				},
 				{
 					{
 						Text:         "Edit category",

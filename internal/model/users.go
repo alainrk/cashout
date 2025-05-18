@@ -21,13 +21,15 @@ const (
 	// The user has to add an income after having set the bot to accept it.
 	StateInsertingIncome StateType = "inserting_income"
 	// The user has to edit the transaction, during an insert flow
-	StateEditingTransactionDate     StateType = "editing_transaction_date"
-	StateEditingTransactionCategory StateType = "editing_transaction_category"
-	StateEditingTransactionAmount   StateType = "editing_transaction_amount"
+	StateEditingTransactionDate        StateType = "editing_transaction_date"
+	StateEditingTransactionCategory    StateType = "editing_transaction_category"
+	StateEditingTransactionAmount      StateType = "editing_transaction_amount"
+	StateEditingTransactionDescription StateType = "editing_transaction_description"
 	// The user has to edit the transaction, during an edit flow
-	StateTopLevelEditingTransactionDate     StateType = "top_level_editing_transaction_date"
-	StateTopLevelEditingTransactionCategory StateType = "top_level_editing_transaction_category"
-	StateTopLevelEditingTransactionAmount   StateType = "top_level_editing_transaction_amount"
+	StateTopLevelEditingTransactionDate        StateType = "top_level_editing_transaction_date"
+	StateTopLevelEditingTransactionCategory    StateType = "top_level_editing_transaction_category"
+	StateTopLevelEditingTransactionAmount      StateType = "top_level_editing_transaction_amount"
+	StateTopLevelEditingTransactionDescription StateType = "top_level_editing_transaction_description"
 	// The user has to confirm an action.
 	StateWaitingConfirm StateType = "waiting_confirm"
 )

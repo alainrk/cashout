@@ -40,6 +40,10 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 		return c.editTransactionAmount(b, ctx, user)
 	}
 
+	if user.Session.State == model.StateEditingTransactionDescription {
+		return c.editTransactionDescription(b, ctx, user)
+	}
+
 	// End of during-insert edit transaction
 
 	// Top-level edit transaction
@@ -54,6 +58,10 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	if user.Session.State == model.StateTopLevelEditingTransactionAmount {
 		return c.EditTransactionAmountConfirm(b, ctx)
+	}
+
+	if user.Session.State == model.StateTopLevelEditingTransactionDescription {
+		return c.EditTransactionDescriptionConfirm(b, ctx)
 	}
 
 	// End of top-level edit transaction

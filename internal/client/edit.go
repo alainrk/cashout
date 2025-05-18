@@ -134,6 +134,8 @@ func (c *Client) EditTransactionField(b *gotgbot.Bot, ctx *ext.Context) error {
 	field := parts[2]
 
 	switch field {
+	case "description":
+		return c.editTopLevelTransactionDescription(b, ctx, transaction)
 	case "category":
 		return c.editTopLevelTransactionCategory(b, ctx, transaction)
 	case "amount":
@@ -309,6 +311,33 @@ func (c *Client) EditTransactionCategoryConfirm(b *gotgbot.Bot, ctx *ext.Context
 	return err
 }
 
+func (c *Client) editTopLevelTransactionDescription(b *gotgbot.Bot, ctx *ext.Context, transaction model.Transaction) error {
+	// Set user state
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	user.Session.State = model.StateTopLevelEditingTransactionDescription
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to update user data: %w", err)
+	}
+
+	// Send message asking for new amount
+	_, _, err = ctx.CallbackQuery.Message.EditText(
+		b,
+		fmt.Sprintf("Enter a new description for the transaction:\n\nCurrent: <b>%s</b> (%s).",
+			transaction.Description, transaction.Category),
+		&gotgbot.EditMessageTextOpts{
+			ParseMode: "HTML",
+		},
+	)
+
+	return err
+}
+
 func (c *Client) editTopLevelTransactionAmount(b *gotgbot.Bot, ctx *ext.Context, transaction model.Transaction) error {
 	// Set user state
 	_, u := c.getUserFromContext(ctx)
@@ -331,6 +360,72 @@ func (c *Client) editTopLevelTransactionAmount(b *gotgbot.Bot, ctx *ext.Context,
 			transaction.Amount,
 			transaction.Date.Format("02-01-2006")),
 		&gotgbot.EditMessageTextOpts{
+			ParseMode: "HTML",
+		},
+	)
+
+	return err
+}
+
+func (c *Client) EditTransactionDescriptionConfirm(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	// Get transaction ID from session
+	transactionID, err := strconv.ParseInt(user.Session.Body, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid transaction ID in session: %v", err)
+	}
+
+	// Get the transaction
+	transaction, err := c.Repositories.Transactions.GetByID(transactionID)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction: %w", err)
+	}
+
+	oldDescription := transaction.Description
+	transaction.Description = strings.TrimSpace(ctx.Message.Text)
+	if transaction.Description == "" {
+		_, err = b.SendMessage(
+			ctx.EffectiveSender.ChatId,
+			"Description cannot be empty.",
+			nil,
+		)
+		return err
+	}
+
+	err = c.Repositories.Transactions.Update(&transaction)
+	if err != nil {
+		_, err = b.SendMessage(
+			ctx.EffectiveSender.ChatId,
+			"Failed to update transaction. Please try again.",
+			nil,
+		)
+		return err
+	}
+
+	// Reset user state
+	user.Session.State = model.StateNormal
+	user.Session.Body = ""
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to update user data: %w", err)
+	}
+
+	// Send confirmation
+	emoji := "💰"
+	if transaction.Type == model.TypeExpense {
+		emoji = "💸"
+	}
+
+	_, err = b.SendMessage(
+		ctx.EffectiveSender.ChatId,
+		fmt.Sprintf("%s Description updated successfully!\n\nChanged from <b>%s</b> to <b>%s</b>",
+			emoji, oldDescription, transaction.Description),
+		&gotgbot.SendMessageOpts{
 			ParseMode: "HTML",
 		},
 	)
@@ -693,19 +788,25 @@ func (c *Client) showEditOptions(b *gotgbot.Bot, ctx *ext.Context, transaction m
 	keyboard := [][]gotgbot.InlineKeyboardButton{
 		{
 			{
-				Text:         "✏️ Category",
-				CallbackData: "edit.field.category",
+				Text:         "🔖 Description",
+				CallbackData: "edit.field.description",
 			},
 			{
-				Text:         "💲 Amount",
-				CallbackData: "edit.field.amount",
+				Text:         "✏️ Category",
+				CallbackData: "edit.field.category",
 			},
 		},
 		{
 			{
+				Text:         "💲 Amount",
+				CallbackData: "edit.field.amount",
+			},
+			{
 				Text:         "📅 Date",
 				CallbackData: "edit.field.date",
 			},
+		},
+		{
 			{
 				Text:         "❌ Cancel",
 				CallbackData: "transactions.cancel",
