@@ -128,12 +128,12 @@ func (c *Client) addTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 				},
 				{
 					{
-						Text:         "Confirm",
-						CallbackData: "transactions.confirm",
-					},
-					{
 						Text:         "Cancel",
 						CallbackData: "transactions.cancel",
+					},
+					{
+						Text:         "Confirm",
+						CallbackData: "transactions.confirm",
 					},
 				},
 			},
@@ -309,12 +309,12 @@ func (c *Client) editTransactionDate(b *gotgbot.Bot, ctx *ext.Context, user mode
 				},
 				{
 					{
-						Text:         "Confirm",
-						CallbackData: "transactions.confirm",
-					},
-					{
 						Text:         "Cancel",
 						CallbackData: "transactions.cancel",
+					},
+					{
+						Text:         "Confirm",
+						CallbackData: "transactions.confirm",
 					},
 				},
 			},
@@ -392,12 +392,12 @@ func (c *Client) editTransactionAmount(b *gotgbot.Bot, ctx *ext.Context, user mo
 				},
 				{
 					{
-						Text:         "Confirm",
-						CallbackData: "transactions.confirm",
-					},
-					{
 						Text:         "Cancel",
 						CallbackData: "transactions.cancel",
+					},
+					{
+						Text:         "Confirm",
+						CallbackData: "transactions.confirm",
 					},
 				},
 			},
@@ -456,12 +456,12 @@ func (c *Client) editTransactionCategory(b *gotgbot.Bot, ctx *ext.Context, user 
 				},
 				{
 					{
-						Text:         "Confirm",
-						CallbackData: "transactions.confirm",
-					},
-					{
 						Text:         "Cancel",
 						CallbackData: "transactions.cancel",
+					},
+					{
+						Text:         "Confirm",
+						CallbackData: "transactions.confirm",
 					},
 				},
 			},
