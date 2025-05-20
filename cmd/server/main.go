@@ -5,7 +5,9 @@ import (
 	"cashout/internal/client"
 	"cashout/internal/db"
 	"cashout/internal/logging"
-	"log"
+	"context"
+	"fmt"
+	stdlog "log" // Renamed to avoid conflict with otel/log
 	"os"
 	"strings"
 	"time"
@@ -13,7 +15,110 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
+	"github.com/uptrace/opentelemetry-go-extra/otellogrus"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
+	sdklog "go.opentelemetry.io/otel/sdk/log"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/resource"
+	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 )
+
+// initOtel initializes OpenTelemetry logging and metrics.
+func initOtel(ctx context.Context, serviceName string, logger *logrus.Logger) (shutdown func(context.Context) error, err error) {
+	// Resource
+	res, err := resource.New(ctx,
+		resource.WithAttributes(
+			semconv.ServiceNameKey.String(serviceName),
+			semconv.ServiceVersionKey.String("0.1.0"),
+		),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create OpenTelemetry resource: %w", err)
+	}
+
+	// Log Exporter & Provider
+	logsEndpoint := os.Getenv("OTEL_EXPORTER_OTLP_LOGS_ENDPOINT")
+	if logsEndpoint == "" {
+		logsEndpoint = "http://localhost:4318/v1/logs"
+	}
+	logExporter, err := otlploghttp.New(ctx,
+		otlploghttp.WithEndpoint(logsEndpoint),
+		otlploghttp.WithInsecure(), // Assuming local collector or non-TLS setup
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create OTLP log exporter: %w", err)
+	}
+	logger.Infof("OTLP Log exporter configured for endpoint: %s", logsEndpoint)
+
+	logProcessor := sdklog.NewBatchProcessor(logExporter)
+	logProvider := sdklog.NewLoggerProvider(
+		sdklog.WithResource(res),
+		sdklog.WithProcessor(logProcessor),
+	)
+	otel.SetLoggerProvider(logProvider) // Set as global logger provider
+	logger.Info("OTLP Log provider configured and set globally.")
+
+	// Metrics Exporter & Provider
+	metricsEndpoint := os.Getenv("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT")
+	if metricsEndpoint == "" {
+		metricsEndpoint = "http://localhost:4318/v1/metrics"
+	}
+	metricExporter, err := otlpmetrichttp.New(ctx,
+		otlpmetrichttp.WithEndpoint(metricsEndpoint),
+		otlpmetrichttp.WithInsecure(), // Assuming local collector or non-TLS setup
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create OTLP metric exporter: %w", err)
+	}
+	logger.Infof("OTLP Metric exporter configured for endpoint: %s", metricsEndpoint)
+
+	meterProvider := sdkmetric.NewMeterProvider(
+		sdkmetric.WithResource(res),
+		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricExporter)),
+	)
+	otel.SetMeterProvider(meterProvider) // Set as global meter provider
+	logger.Info("OTLP Meter provider configured and set globally.")
+
+	// Shutdown function
+	shutdown = func(ctx context.Context) error {
+		var shutdownErr error
+		logger.Info("Starting OpenTelemetry shutdown...")
+
+		if err := logProvider.Shutdown(ctx); err != nil {
+			currentErr := fmt.Errorf("failed to shutdown OTLP log provider: %w", err)
+			logger.Errorf("%v", currentErr)
+			if shutdownErr == nil {
+				shutdownErr = currentErr
+			} else {
+				shutdownErr = fmt.Errorf("%v; %w", shutdownErr, currentErr)
+			}
+		}
+
+		if err := meterProvider.Shutdown(ctx); err != nil {
+			currentErr := fmt.Errorf("failed to shutdown OTLP meter provider: %w", err)
+			logger.Errorf("%v", currentErr)
+			if shutdownErr == nil {
+				shutdownErr = currentErr
+			} else {
+				shutdownErr = fmt.Errorf("%v; %w", shutdownErr, currentErr)
+			}
+		}
+
+		if shutdownErr != nil {
+			logger.Info("OpenTelemetry shutdown completed with errors.")
+		} else {
+			logger.Info("OpenTelemetry shutdown completed successfully.")
+		}
+		return shutdownErr
+	}
+
+	logger.Info("OpenTelemetry initialized successfully.")
+	return shutdown, nil
+}
 
 // This bot demonstrates some example interactions with commands ontelegram.
 // It has a basic start command with a bot intro.
@@ -21,10 +126,34 @@ import (
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		stdlog.Fatal("Error loading .env file") // Use stdlog before custom logger is up
 	}
 
+	// Initialize logger early for use in Otel setup if needed
 	logger := logging.GetLogger(os.Getenv("LOG_LEVEL"))
+
+	// Add OTelLogrus hook
+	logger.AddHook(otellogrus.NewHook(otellogrus.WithLevels(
+		logrus.PanicLevel,
+		logrus.FatalLevel,
+		logrus.ErrorLevel,
+		logrus.WarnLevel,
+		logrus.InfoLevel,
+		logrus.DebugLevel,
+		logrus.TraceLevel,
+	)))
+	logger.Info("OTelLogrus hook added to the logger.")
+
+	// Initialize OpenTelemetry
+	otelServiceName := os.Getenv("OTEL_SERVICE_NAME")
+	if otelServiceName == "" {
+		otelServiceName = "cashout-telegram-bot"
+	}
+	otelShutdown, err := initOtel(context.Background(), otelServiceName, logger)
+	if err != nil {
+		logger.Fatalf("Failed to initialize OpenTelemetry: %v", err)
+	}
+	defer otelShutdown(context.Background()) // Ensure graceful shutdown
 
 	// Get token from the environment variable
 	token := os.Getenv("TELEGRAM_BOT_API_TOKEN")
@@ -125,7 +254,7 @@ func main() {
 		// parties to find the update endpoint (which would allow them to inject their own updates).
 		err = updater.StartWebhook(b, "cashout/"+token, webhookOpts)
 		if err != nil {
-			panic("failed to start webhook: " + err.Error())
+			logger.Fatalf("failed to start webhook: %s\n", err.Error()) // Changed panic to logger.Fatalf
 		}
 
 		err = updater.SetAllBotWebhooks(webhookDomain, &gotgbot.SetWebhookOpts{
@@ -134,7 +263,7 @@ func main() {
 			SecretToken:        webhookOpts.SecretToken,
 		})
 		if err != nil {
-			panic("failed to set webhook: " + err.Error())
+			logger.Fatalf("failed to set webhook: %s\n", err.Error()) // Changed panic to logger.Fatalf
 		}
 	default:
 		logger.Fatalf("unknown run mode: %s\n", runMode)

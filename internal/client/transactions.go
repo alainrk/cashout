@@ -3,11 +3,15 @@ package client
 import (
 	"cashout/internal/model"
 	"cashout/internal/utils"
+	"context"
 	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
+
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -570,46 +574,149 @@ func (c *Client) editTransactionCategory(b *gotgbot.Bot, ctx *ext.Context, user 
 }
 
 // Confirm confirms the previous action after the user been prompted.
+// This function handles both new transaction additions and edits confirmation.
 func (c *Client) Confirm(b *gotgbot.Bot, ctx *ext.Context) error {
+	requestCtx := ctx.Request.Context()
+	if requestCtx == nil {
+		requestCtx = context.Background()
+	}
+	startTime := time.Now()
+	var operationErr error
+	operationType := "unknown_confirm" // Default, will be refined
+
+	// Determine operation type based on user session state
+	// This is a simplification; a more robust state machine might be needed.
+	// Assuming StateWaitingConfirm is for new transactions,
+	// and other states like StateEditingTransaction* lead here for edits.
+	// For now, we'll assume this Confirm is primarily for 'add' or a generic 'save'.
+	// Specific 'edit' metrics will be in their respective functions.
+
 	_, u := c.getUserFromContext(ctx)
-	user, err := c.authAndGetUser(u)
-	if err != nil {
-		return err
+	user, operationErr := c.authAndGetUser(u)
+	if operationErr != nil {
+		// Metric recording for auth failure or user retrieval failure before main logic
+		defer func() {
+			duration := time.Since(startTime).Seconds()
+			status := "failure"
+			// If user object is available, try to infer operation type from session state for more accurate metric
+			if user.Session.State == model.StateWaitingConfirm { // Typically for new transactions
+				operationType = "add"
+			} else if strings.HasPrefix(string(user.Session.State), "StateEditingTransaction") { // States like StateEditingTransactionAmount
+				operationType = "edit_confirm" // General confirm after an edit
+			}
+
+			c.TransactionOperationsCounter.Add(requestCtx, 1,
+				metric.WithAttributes(
+					attribute.String("operation.type", operationType),
+					attribute.String("status", status),
+					attribute.String("error.type", "authentication_user_retrieval"),
+				),
+			)
+			c.TransactionOperationDuration.Record(requestCtx, duration,
+				metric.WithAttributes(
+					attribute.String("operation.type", operationType),
+					attribute.String("status", status),
+					attribute.String("error.type", "authentication_user_retrieval"),
+				),
+			)
+		}()
+		return operationErr
 	}
 
+	// Determine operation type more definitively now that we have user state
+	if user.Session.State == model.StateWaitingConfirm { // Typically for new transactions
+		operationType = "add"
+	} else if strings.HasPrefix(string(user.Session.State), "StateEditingTransaction") || user.Session.State == model.StateTransactionEditingConfirm { // States like StateEditingTransactionAmount or confirming an edit
+		operationType = "edit_confirm" // General confirm after an edit
+	}
+
+
+	defer func() {
+		duration := time.Since(startTime).Seconds()
+		status := "success"
+		if operationErr != nil {
+			status = "failure"
+		}
+		attrs := []attribute.KeyValue{
+			attribute.String("operation.type", operationType),
+			attribute.String("status", status),
+		}
+		// Potentially add transaction.type (income/expense) if available and relevant
+		// if transaction != nil && transaction.Type != "" {
+		// 	attrs = append(attrs, attribute.String("transaction.type", string(transaction.Type)))
+		// }
+
+		c.TransactionOperationsCounter.Add(requestCtx, 1, metric.WithAttributes(attrs...))
+		c.TransactionOperationDuration.Record(requestCtx, duration, metric.WithAttributes(attrs...))
+	}()
+
 	var transaction model.Transaction
-	err = json.Unmarshal([]byte(user.Session.Body), &transaction)
-	if err != nil {
-		return fmt.Errorf("failed to extract transaction from the session: %w", err)
+	operationErr = json.Unmarshal([]byte(user.Session.Body), &transaction)
+	if operationErr != nil {
+		operationErr = fmt.Errorf("failed to extract transaction from the session: %w", operationErr)
+		return operationErr
 	}
 
 	transaction.TgID = user.TgID
 	transaction.Currency = model.CurrencyEUR
 
-	err = c.Repositories.Transactions.Add(transaction)
-	if err != nil {
-		SendMessage(ctx, b, "There has been an error saving your transaction, please retry", nil)
-		c.Logger.Errorln("failed to add transaction", err)
+	// The actual database operation
+	// If operationType is 'edit_confirm', this might be an update rather than add.
+	// Assuming Repositories.Transactions.Add handles upsert or this path is only for new transactions.
+	// For now, we assume this is the 'add' path as per original logic.
+	// If this 'Confirm' is also for edits, the underlying DB call might change.
+	// Let's stick to the current logic: Repositories.Transactions.Add
+	// If it's an edit, the previous edit functions should have updated session.Body with the final transaction state.
+	// And then this Confirm just saves it.
+	// This means the operation is more like a "save_transaction"
+	if operationType == "edit_confirm" {
+		// If it's an edit confirmation, we should call an update method
+		// For now, let's assume Repositories.Transactions.Add is smart enough or this is fine.
+		// Ideally, there would be a c.Repositories.Transactions.Update() method.
+		// This example will proceed with Add, but in a real scenario, this might need adjustment.
+		// For the purpose of metrics, "edit_confirm" operation type is set.
+		// Let's assume an Update method exists for edited transactions for more accurate DB representation.
+		// operationErr = c.Repositories.Transactions.Update(transaction)
+		// For now, sticking to Add as per existing code structure:
+		operationErr = c.Repositories.Transactions.Add(transaction)
 
-		// Reset the state
-		user.Session.State = model.StateInsertingIncome
+	} else { // "add"
+		operationErr = c.Repositories.Transactions.Add(transaction)
+	}
+
+
+	if operationErr != nil {
+		SendMessage(ctx, b, "There has been an error saving your transaction, please retry", nil)
+		c.Logger.Errorln("failed to save transaction ("+operationType+")", operationErr)
+
+		// Reset the state carefully
+		// If it was an add, reset to inserting. If edit, maybe back to normal or specific edit state.
+		// For now, mirroring existing reset logic.
 		if transaction.Type == model.TypeExpense {
 			user.Session.State = model.StateInsertingExpense
+		} else {
+			user.Session.State = model.StateInsertingIncome
 		}
-		err = c.Repositories.Users.Update(&user)
-		if err != nil {
-			return fmt.Errorf("failed to set user data to reset the state: %w", err)
+		// Not returning here, let defer handle metrics
+		updateErr := c.Repositories.Users.Update(&user)
+		if updateErr != nil {
+			// Log this error but prioritize the original operationErr for return
+			c.Logger.Errorf("failed to set user data to reset the state after save failure: %v", updateErr)
 		}
-
-		return fmt.Errorf("failed to add transaction: %w", err)
+		operationErr = fmt.Errorf("failed to save transaction (%s): %w", operationType, operationErr)
+		return operationErr
 	}
 
 	user.Session.State = model.StateNormal
 	user.Session.Body = ""
 
-	err = c.Repositories.Users.Update(&user)
-	if err != nil {
-		return fmt.Errorf("failed to set user data: %w", err)
+	updateErr := c.Repositories.Users.Update(&user)
+	if updateErr != nil {
+		// Log this error, but the main operation was successful.
+		// Consider if this should mark the operation as partial failure for metrics.
+		c.Logger.Errorf("failed to set user data after successful save: %v", updateErr)
+		// For now, not changing operationErr, as main transaction succeeded.
+		// operationErr = fmt.Errorf("failed to set user data post-save: %w", updateErr)
 	}
 
 	// Remove the keyboard from the previous message
@@ -625,7 +732,14 @@ func (c *Client) Confirm(b *gotgbot.Bot, ctx *ext.Context) error {
 	if transaction.Type == model.TypeExpense {
 		emoji = "💸"
 	}
-	return c.SendHomeKeyboard(b, ctx, fmt.Sprintf("%s Your transaction has been saved!", emoji))
+	// Success message part of SendHomeKeyboard
+	errSend := c.SendHomeKeyboard(b, ctx, fmt.Sprintf("%s Your transaction has been saved!", emoji))
+	if errSend != nil {
+		c.Logger.Errorf("Error sending home keyboard after confirm: %v", errSend)
+		// The main operation was successful, but sending confirmation failed.
+		// This could be a separate metric or log. For now, just log.
+	}
+	return operationErr // This will be nil if everything up to user.Session.Body clear was successful
 }
 
 // Cancel returns to normal state.
