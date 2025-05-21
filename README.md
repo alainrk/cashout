@@ -14,7 +14,7 @@ Telegram **AI Agent** for Income and Expense Management.
 
 ## Features
 
-<details open>
+<details closed>
 
 <p align="center">
   <img src="/assets/7.png" alt="Cashout app welcome screen" width="450px">
