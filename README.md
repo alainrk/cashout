@@ -3,66 +3,60 @@
 Telegram **AI Agent** for Income and Expense Management.
 
 <p align="center">
-  <img src="/assets/cashout.png" alt="Logo" width="250px">
-</p>
-
-## Demo
-
-<p align="center">
   <img src="/assets/demo.gif" alt="Demo" height="550px">
 </p>
 
-## Features
+<!-- ## Features -->
 
-<details closed>
-
-<p align="center">
-  <img src="/assets/7.png" alt="Cashout app welcome screen" width="450px">
-</p>
-
-Navigate your transactions in a simple way.
-
-<p align="center">
-  <img src="/assets/8.png" alt="List command" width="450px">
-</p>
-
-<p align="center">
-  <img src="/assets/9.png" alt="List output" width="450px">
-</p>
-
-Expense and income creation with options to edit or confirm. It tries to automatically categorize your transactions and fix some common errors. Also, it tries to extract the correct amount despite given in a natural language or anyway, not in a standard format.
-
-<p align="center">
-  <img src="/assets/3.png" alt="Transaction confirmation interface" width="450px">
-</p>
-
-<p align="center">
-  <img src="/assets/6.png" alt="Income entry interface" width="450px">
-</p>
-
-Change the date or category of a transaction with any intelligible format.
-
-<p align="center">
-  <img src="/assets/4.png" alt="Date entry interface" width="450px">
-</p>
-
-<p align="center">
-  <img src="/assets/2.png" alt="Category selection interface" width="450px">
-</p>
-
-Select and delete transactions from your records.
-
-<p align="center">
-  <img src="/assets/1.png" alt="Delete Transaction interface" width="450px">
-</p>
-
-Monthly and yearly financial summary.
-
-<p align="center">
-  <img src="/assets/5.png" alt="Financial summary displays" width="450px">
-</p>
-
-</details>
+<!-- <details closed> -->
+<!---->
+<!-- <p align="center"> -->
+<!--   <img src="/assets/7.png" alt="Cashout app welcome screen" width="450px"> -->
+<!-- </p> -->
+<!---->
+<!-- Navigate your transactions in a simple way. -->
+<!---->
+<!-- <p align="center"> -->
+<!--   <img src="/assets/8.png" alt="List command" width="450px"> -->
+<!-- </p> -->
+<!---->
+<!-- <p align="center"> -->
+<!--   <img src="/assets/9.png" alt="List output" width="450px"> -->
+<!-- </p> -->
+<!---->
+<!-- Expense and income creation with options to edit or confirm. It tries to automatically categorize your transactions and fix some common errors. Also, it tries to extract the correct amount despite given in a natural language or anyway, not in a standard format. -->
+<!---->
+<!-- <p align="center"> -->
+<!--   <img src="/assets/3.png" alt="Transaction confirmation interface" width="450px"> -->
+<!-- </p> -->
+<!---->
+<!-- <p align="center"> -->
+<!--   <img src="/assets/6.png" alt="Income entry interface" width="450px"> -->
+<!-- </p> -->
+<!---->
+<!-- Change the date or category of a transaction with any intelligible format. -->
+<!---->
+<!-- <p align="center"> -->
+<!--   <img src="/assets/4.png" alt="Date entry interface" width="450px"> -->
+<!-- </p> -->
+<!---->
+<!-- <p align="center"> -->
+<!--   <img src="/assets/2.png" alt="Category selection interface" width="450px"> -->
+<!-- </p> -->
+<!---->
+<!-- Select and delete transactions from your records. -->
+<!---->
+<!-- <p align="center"> -->
+<!--   <img src="/assets/1.png" alt="Delete Transaction interface" width="450px"> -->
+<!-- </p> -->
+<!---->
+<!-- Monthly and yearly financial summary. -->
+<!---->
+<!-- <p align="center"> -->
+<!--   <img src="/assets/5.png" alt="Financial summary displays" width="450px"> -->
+<!-- </p> -->
+<!---->
+<!-- </details> -->
 
 ## Getting Started
 
