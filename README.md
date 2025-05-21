@@ -167,3 +167,20 @@ RUN_MODE='polling'
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## OpenTelemetry Integration
+
+This application integrates with OpenTelemetry to provide enhanced logging and metrics capabilities, allowing for better observability into application performance and behavior. Logs are captured from the existing Logrus setup (via `otellogrus`), and key operations across command handling, AI interactions, database repositories, and transaction processing are instrumented for metrics.
+
+### Configuration
+
+To enable OpenTelemetry exporting, configure the following environment variables. These should typically point to your OpenTelemetry Collector instance (e.g., running locally or in your infrastructure).
+
+*   **`OTEL_SERVICE_NAME`**: Identifies the service name in OpenTelemetry.
+    *   Default: `cashout-telegram-bot`
+*   **`OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`**: The OTLP endpoint where logs (exported from Logrus) will be sent.
+    *   Default: `http://localhost:4318/v1/logs`
+*   **`OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`**: The OTLP endpoint where metrics will be sent.
+    *   Default: `http://localhost:4318/v1/metrics`
+
+**Note:** The current OTLP exporters for logs and metrics are configured to use insecure (HTTP) connections. This is generally suitable for local development or when the OpenTelemetry Collector is on a trusted network. For production environments exposed to the internet, ensure appropriate security measures (like TLS, authentication) are in place for the collector endpoints and consider configuring secure exporters if needed.

@@ -2,9 +2,14 @@ package client
 
 import (
 	"cashout/internal/model"
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
+
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -56,10 +61,31 @@ func (c *Client) DeleteTransactionPage(b *gotgbot.Bot, ctx *ext.Context) error {
 
 // DeleteTransactionConfirm handles the confirmation callback for deleting a transaction
 func (c *Client) DeleteTransactionConfirm(b *gotgbot.Bot, ctx *ext.Context) error {
+	requestCtx := ctx.Request.Context()
+	if requestCtx == nil {
+		requestCtx = context.Background()
+	}
+	startTime := time.Now()
+	var operationErr error
+
+	defer func() {
+		duration := time.Since(startTime).Seconds()
+		status := "success"
+		if operationErr != nil {
+			status = "failure"
+		}
+		attrs := []attribute.KeyValue{
+			attribute.String("operation.type", "delete"),
+			attribute.String("status", status),
+		}
+		c.TransactionOperationsCounter.Add(requestCtx, 1, metric.WithAttributes(attrs...))
+		c.TransactionOperationDuration.Record(requestCtx, duration, metric.WithAttributes(attrs...))
+	}()
+
 	_, u := c.getUserFromContext(ctx)
-	user, err := c.authAndGetUser(u)
-	if err != nil {
-		return err
+	user, operationErr := c.authAndGetUser(u)
+	if operationErr != nil {
+		return operationErr
 	}
 
 	query := ctx.CallbackQuery
@@ -67,52 +93,82 @@ func (c *Client) DeleteTransactionConfirm(b *gotgbot.Bot, ctx *ext.Context) erro
 	// Parse callback data (format: delete.confirm.TRANSACTION_ID)
 	parts := strings.Split(query.Data, ".")
 	if len(parts) != 3 {
-		return fmt.Errorf("invalid callback data format")
+		operationErr = fmt.Errorf("invalid callback data format for delete.confirm")
+		return operationErr
 	}
 
-	transactionID, err := strconv.ParseInt(parts[2], 10, 64)
-	if err != nil {
-		return fmt.Errorf("invalid transaction ID: %v", err)
+	transactionID, parseErr := strconv.ParseInt(parts[2], 10, 64)
+	if parseErr != nil {
+		operationErr = fmt.Errorf("invalid transaction ID: %v", parseErr)
+		return operationErr
 	}
 
 	// Get the transaction before deleting it (for confirmation message)
-	transaction, err := c.Repositories.Transactions.GetByID(transactionID)
-	if err != nil {
-		return fmt.Errorf("failed to get transaction: %w", err)
+	// This is good practice, but if it fails, the delete operation itself hasn't failed yet.
+	transaction, getErr := c.Repositories.Transactions.GetByID(transactionID)
+	if getErr != nil {
+		// Log this, but proceed to attempt deletion if user is authorized.
+		// The delete operation itself will be the primary point of failure assessment for the metric.
+		c.Logger.Warnf("Failed to get transaction %d before deletion (for confirmation message): %v", transactionID, getErr)
+		// We might not have transaction.Type for the emoji later, handle this.
 	}
 
-	// Verify ownership
-	if transaction.TgID != user.TgID {
-		_, _, err = ctx.CallbackQuery.Message.EditText(
+	// Verify ownership - this is crucial. If GetByID failed, transaction might be nil.
+	if transaction != nil && transaction.TgID != user.TgID {
+		_, _, sendErr := ctx.CallbackQuery.Message.EditText(
 			b,
 			"⚠️ This transaction doesn't belong to you.",
 			&gotgbot.EditMessageTextOpts{},
 		)
-		return err
+		if sendErr != nil {
+			c.Logger.Warnf("Error sending ownership error message: %v", sendErr)
+		}
+		operationErr = fmt.Errorf("user %d attempted to delete transaction %d owned by %d", user.TgID, transactionID, transaction.TgID)
+		return operationErr
+	} else if transaction == nil && getErr != nil {
+		// If we couldn't get the transaction, we can't verify ownership this way.
+		// The .Delete method should internally handle ownership or TgID matching for safety.
+		// For now, we proceed, relying on the Delete method's own checks.
+		c.Logger.Warnf("Could not verify ownership for transaction %d due to GetByID error. Proceeding with delete attempt.", transactionID)
 	}
 
+
 	// Delete the transaction
-	err = c.Repositories.Transactions.Delete(transactionID, user.TgID)
-	if err != nil {
-		return fmt.Errorf("failed to delete transaction: %w", err)
+	operationErr = c.Repositories.Transactions.Delete(transactionID, user.TgID)
+	if operationErr != nil {
+		// Don't return yet, let defer handle metrics.
+		// Error message will be sent by caller or not at all if this is a background task.
+		// For now, we assume this function sends its own errors if needed.
+		// SendMessage(ctx, b, "Failed to delete transaction.", nil) // Example if needed
+		operationErr = fmt.Errorf("failed to delete transaction %d: %w", transactionID, operationErr)
+		return operationErr // Return after setting operationErr so defer captures it.
 	}
 
 	// Create emoji and message based on transaction type
-	emoji := "💰"
-	if transaction.Type == model.TypeExpense {
-		emoji = "💸"
-	}
-
-	// Send success message
-	_, _, err = ctx.CallbackQuery.Message.EditText(
-		b,
-		fmt.Sprintf("%s Transaction deleted successfully!\n\n%s: %s - %.2f€ (%s)",
+	emoji := "🗑" // General delete emoji
+	var confirmationMessage string
+	if transaction != nil { // If we successfully got the transaction details
+		if transaction.Type == model.TypeExpense {
+			emoji = "💸🗑"
+		} else {
+			emoji = "💰🗑"
+		}
+		confirmationMessage = fmt.Sprintf("%s Transaction deleted successfully!\n\nDetails: %s - %.2f€ on %s",
 			emoji,
 			transaction.Category,
-			transaction.Description,
+			// transaction.Description, // Description can be long, keep it concise
 			transaction.Amount,
 			transaction.Date.Format("02-01-2006"),
-		),
+		)
+	} else { // Fallback message if transaction details weren't available
+		confirmationMessage = fmt.Sprintf("%s Transaction (ID: %d) deleted successfully!", emoji, transactionID)
+	}
+
+
+	// Send success message
+	_, _, sendEditErr := ctx.CallbackQuery.Message.EditText(
+		b,
+		confirmationMessage,
 		&gotgbot.EditMessageTextOpts{
 			ParseMode: "HTML",
 			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
@@ -120,19 +176,24 @@ func (c *Client) DeleteTransactionConfirm(b *gotgbot.Bot, ctx *ext.Context) erro
 					{
 						{
 							Text:         "Delete Another",
-							CallbackData: "delete.page.0",
+							CallbackData: "delete.page.0", // Navigate to first page of delete options
 						},
 						{
 							Text:         "Done",
-							CallbackData: "transactions.cancel",
+							CallbackData: "transactions.cancel", // Go to home/cancel
 						},
 					},
 				},
 			},
 		},
 	)
+	if sendEditErr != nil {
+		c.Logger.Warnf("Error sending delete confirmation message: %v", sendEditErr)
+		// The delete operation was successful, but sending confirmation failed.
+		// Not changing operationErr as the core DB operation succeeded.
+	}
 
-	return err
+	return operationErr // should be nil if successful
 }
 
 // showDeletableTransactionPage displays a paginated list of all user transactions

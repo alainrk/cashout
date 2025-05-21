@@ -3,10 +3,14 @@ package client
 import (
 	"cashout/internal/model"
 	"cashout/internal/utils"
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
+
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -230,22 +234,46 @@ func (c *Client) editTopLevelTransactionCategory(b *gotgbot.Bot, ctx *ext.Contex
 }
 
 func (c *Client) EditTransactionCategoryConfirm(b *gotgbot.Bot, ctx *ext.Context) error {
+	requestCtx := ctx.Request.Context()
+	if requestCtx == nil {
+		requestCtx = context.Background()
+	}
+	startTime := time.Now()
+	var operationErr error
+
+	defer func() {
+		duration := time.Since(startTime).Seconds()
+		status := "success"
+		if operationErr != nil {
+			status = "failure"
+		}
+		attrs := []attribute.KeyValue{
+			attribute.String("operation.type", "edit"),
+			attribute.String("edit.field", "category"),
+			attribute.String("status", status),
+		}
+		c.TransactionOperationsCounter.Add(requestCtx, 1, metric.WithAttributes(attrs...))
+		c.TransactionOperationDuration.Record(requestCtx, duration, metric.WithAttributes(attrs...))
+	}()
+
 	_, u := c.getUserFromContext(ctx)
-	user, err := c.authAndGetUser(u)
-	if err != nil {
-		return err
+	user, operationErr := c.authAndGetUser(u)
+	if operationErr != nil {
+		return operationErr
 	}
 
 	// Get transaction ID from session
-	transactionID, err := strconv.ParseInt(user.Session.Body, 10, 64)
-	if err != nil {
-		return fmt.Errorf("invalid transaction ID in session: %v", err)
+	transactionID, operationErr := strconv.ParseInt(user.Session.Body, 10, 64)
+	if operationErr != nil {
+		operationErr = fmt.Errorf("invalid transaction ID in session: %v", operationErr)
+		return operationErr
 	}
 
 	// Get the transaction
-	transaction, err := c.Repositories.Transactions.GetByID(transactionID)
-	if err != nil {
-		return fmt.Errorf("failed to get transaction: %w", err)
+	transaction, operationErr := c.Repositories.Transactions.GetByID(transactionID)
+	if operationErr != nil {
+		operationErr = fmt.Errorf("failed to get transaction: %w", operationErr)
+		return operationErr
 	}
 
 	// Get new category from message
@@ -253,14 +281,18 @@ func (c *Client) EditTransactionCategoryConfirm(b *gotgbot.Bot, ctx *ext.Context
 
 	// Verify it's a valid category
 	if !model.IsValidTransactionCategory(newCategory) {
-		_, err = b.SendMessage(
+		_, sendErr := b.SendMessage(
 			ctx.EffectiveSender.ChatId,
 			"Invalid category. Please select a valid category.",
 			&gotgbot.SendMessageOpts{
 				ReplyMarkup: gotgbot.ReplyKeyboardRemove{},
 			},
 		)
-		return err
+		if sendErr != nil {
+			c.Logger.Warnf("Error sending message for invalid category: %v", sendErr)
+		}
+		operationErr = fmt.Errorf("invalid category selected: %s", newCategory)
+		return operationErr
 	}
 
 	// Check if category is valid for the transaction type
@@ -268,38 +300,47 @@ func (c *Client) EditTransactionCategoryConfirm(b *gotgbot.Bot, ctx *ext.Context
 	isIncomeCategory := newCategory == "Salary" || newCategory == "OtherIncomes"
 
 	if isIncome != isIncomeCategory {
-		_, err = b.SendMessage(
+		_, sendErr := b.SendMessage(
 			ctx.EffectiveSender.ChatId,
 			fmt.Sprintf("Cannot change between expense and income categories. Please select a valid %s category.", transaction.Type),
 			&gotgbot.SendMessageOpts{
 				ReplyMarkup: gotgbot.ReplyKeyboardRemove{},
 			},
 		)
-		return err
+		if sendErr != nil {
+			c.Logger.Warnf("Error sending message for category type mismatch: %v", sendErr)
+		}
+		operationErr = fmt.Errorf("category type mismatch for: %s", newCategory)
+		return operationErr
 	}
 
 	// Update the transaction
 	oldCategory := transaction.Category
 	transaction.Category = model.TransactionCategory(newCategory)
 
-	err = c.Repositories.Transactions.Update(&transaction)
-	if err != nil {
-		_, err = b.SendMessage(
+	operationErr = c.Repositories.Transactions.Update(&transaction)
+	if operationErr != nil {
+		_, sendErr := b.SendMessage(
 			ctx.EffectiveSender.ChatId,
 			"Failed to update transaction. Please try again.",
 			&gotgbot.SendMessageOpts{
 				ReplyMarkup: gotgbot.ReplyKeyboardRemove{},
 			},
 		)
-		return err
+		if sendErr != nil {
+			c.Logger.Warnf("Error sending message for transaction update failure: %v", sendErr)
+		}
+		return operationErr
 	}
 
 	// Reset user state
 	user.Session.State = model.StateNormal
 	user.Session.Body = ""
-	err = c.Repositories.Users.Update(&user)
-	if err != nil {
-		return fmt.Errorf("failed to update user data: %w", err)
+	updateUserErr := c.Repositories.Users.Update(&user)
+	if updateUserErr != nil {
+		// Log this error, but the main operation (transaction update) was successful.
+		// Consider if this should affect the 'status' for the metric. For now, it doesn't.
+		c.Logger.Errorf("Failed to update user data after category edit: %v", updateUserErr)
 	}
 
 	// Send confirmation
@@ -308,7 +349,7 @@ func (c *Client) EditTransactionCategoryConfirm(b *gotgbot.Bot, ctx *ext.Context
 		emoji = "💸"
 	}
 
-	_, err = b.SendMessage(
+	_, sendErr := b.SendMessage(
 		ctx.EffectiveSender.ChatId,
 		fmt.Sprintf("%s Category updated successfully!\n\nChanged from <b>%s</b> to <b>%s</b>",
 			emoji, oldCategory, transaction.Category),
@@ -317,8 +358,11 @@ func (c *Client) EditTransactionCategoryConfirm(b *gotgbot.Bot, ctx *ext.Context
 			ReplyMarkup: gotgbot.ReplyKeyboardRemove{},
 		},
 	)
+	if sendErr != nil {
+		c.Logger.Warnf("Error sending category update confirmation: %v", sendErr)
+	}
 
-	return err
+	return operationErr // should be nil if successful
 }
 
 func (c *Client) editTopLevelTransactionDescription(b *gotgbot.Bot, ctx *ext.Context, transaction model.Transaction) error {
@@ -398,51 +442,82 @@ func (c *Client) editTopLevelTransactionAmount(b *gotgbot.Bot, ctx *ext.Context,
 }
 
 func (c *Client) EditTransactionDescriptionConfirm(b *gotgbot.Bot, ctx *ext.Context) error {
+	requestCtx := ctx.Request.Context()
+	if requestCtx == nil {
+		requestCtx = context.Background()
+	}
+	startTime := time.Now()
+	var operationErr error
+
+	defer func() {
+		duration := time.Since(startTime).Seconds()
+		status := "success"
+		if operationErr != nil {
+			status = "failure"
+		}
+		attrs := []attribute.KeyValue{
+			attribute.String("operation.type", "edit"),
+			attribute.String("edit.field", "description"),
+			attribute.String("status", status),
+		}
+		c.TransactionOperationsCounter.Add(requestCtx, 1, metric.WithAttributes(attrs...))
+		c.TransactionOperationDuration.Record(requestCtx, duration, metric.WithAttributes(attrs...))
+	}()
+
 	_, u := c.getUserFromContext(ctx)
-	user, err := c.authAndGetUser(u)
-	if err != nil {
-		return err
+	user, operationErr := c.authAndGetUser(u)
+	if operationErr != nil {
+		return operationErr
 	}
 
 	// Get transaction ID from session
-	transactionID, err := strconv.ParseInt(user.Session.Body, 10, 64)
-	if err != nil {
-		return fmt.Errorf("invalid transaction ID in session: %v", err)
+	transactionID, operationErr := strconv.ParseInt(user.Session.Body, 10, 64)
+	if operationErr != nil {
+		operationErr = fmt.Errorf("invalid transaction ID in session: %v", operationErr)
+		return operationErr
 	}
 
 	// Get the transaction
-	transaction, err := c.Repositories.Transactions.GetByID(transactionID)
-	if err != nil {
-		return fmt.Errorf("failed to get transaction: %w", err)
+	transaction, operationErr := c.Repositories.Transactions.GetByID(transactionID)
+	if operationErr != nil {
+		operationErr = fmt.Errorf("failed to get transaction: %w", operationErr)
+		return operationErr
 	}
 
 	oldDescription := transaction.Description
 	transaction.Description = strings.TrimSpace(ctx.Message.Text)
 	if transaction.Description == "" {
-		_, err = b.SendMessage(
+		_, sendErr := b.SendMessage(
 			ctx.EffectiveSender.ChatId,
 			"Description cannot be empty.",
 			nil,
 		)
-		return err
+		if sendErr != nil {
+			c.Logger.Warnf("Error sending message for empty description: %v", sendErr)
+		}
+		operationErr = fmt.Errorf("description cannot be empty")
+		return operationErr
 	}
 
-	err = c.Repositories.Transactions.Update(&transaction)
-	if err != nil {
-		_, err = b.SendMessage(
+	operationErr = c.Repositories.Transactions.Update(&transaction)
+	if operationErr != nil {
+		_, sendErr := b.SendMessage(
 			ctx.EffectiveSender.ChatId,
 			"Failed to update transaction. Please try again.",
 			nil,
 		)
-		return err
+		if sendErr != nil {
+			c.Logger.Warnf("Error sending message for transaction update failure: %v", sendErr)
+		}
+		return operationErr
 	}
 
 	// Reset user state
 	user.Session.State = model.StateNormal
 	user.Session.Body = ""
-	err = c.Repositories.Users.Update(&user)
-	if err != nil {
-		return fmt.Errorf("failed to update user data: %w", err)
+	updateUserErr := c.Repositories.Users.Update(&user)
+	if updateUserErr != nil {
+		c.Logger.Errorf("Failed to update user data after description edit: %v", updateUserErr)
 	}
 
 	// Send confirmation
@@ -451,7 +526,7 @@ func (c *Client) EditTransactionDescriptionConfirm(b *gotgbot.Bot, ctx *ext.Cont
 		emoji = "💸"
 	}
 
-	_, err = b.SendMessage(
+	_, sendErr := b.SendMessage(
 		ctx.EffectiveSender.ChatId,
 		fmt.Sprintf("%s Description updated successfully!\n\nChanged from <b>%s</b> to <b>%s</b>",
 			emoji, oldDescription, transaction.Description),
@@ -459,71 +534,109 @@ func (c *Client) EditTransactionDescriptionConfirm(b *gotgbot.Bot, ctx *ext.Cont
 			ParseMode: "HTML",
 		},
 	)
+	if sendErr != nil {
+		c.Logger.Warnf("Error sending description update confirmation: %v", sendErr)
+	}
 
-	return err
+	return operationErr
 }
 
 func (c *Client) EditTransactionAmountConfirm(b *gotgbot.Bot, ctx *ext.Context) error {
+	requestCtx := ctx.Request.Context()
+	if requestCtx == nil {
+		requestCtx = context.Background()
+	}
+	startTime := time.Now()
+	var operationErr error
+
+	defer func() {
+		duration := time.Since(startTime).Seconds()
+		status := "success"
+		if operationErr != nil {
+			status = "failure"
+		}
+		attrs := []attribute.KeyValue{
+			attribute.String("operation.type", "edit"),
+			attribute.String("edit.field", "amount"),
+			attribute.String("status", status),
+		}
+		c.TransactionOperationsCounter.Add(requestCtx, 1, metric.WithAttributes(attrs...))
+		c.TransactionOperationDuration.Record(requestCtx, duration, metric.WithAttributes(attrs...))
+	}()
+
 	_, u := c.getUserFromContext(ctx)
-	user, err := c.authAndGetUser(u)
-	if err != nil {
-		return err
+	user, operationErr := c.authAndGetUser(u)
+	if operationErr != nil {
+		return operationErr
 	}
 
 	// Get transaction ID from session
-	transactionID, err := strconv.ParseInt(user.Session.Body, 10, 64)
-	if err != nil {
-		return fmt.Errorf("invalid transaction ID in session: %v", err)
+	transactionID, operationErr := strconv.ParseInt(user.Session.Body, 10, 64)
+	if operationErr != nil {
+		operationErr = fmt.Errorf("invalid transaction ID in session: %v", operationErr)
+		return operationErr
 	}
 
 	// Get the transaction
-	transaction, err := c.Repositories.Transactions.GetByID(transactionID)
-	if err != nil {
-		return fmt.Errorf("failed to get transaction: %w", err)
+	transaction, operationErr := c.Repositories.Transactions.GetByID(transactionID)
+	if operationErr != nil {
+		operationErr = fmt.Errorf("failed to get transaction: %w", operationErr)
+		return operationErr
 	}
 
 	// Parse new amount from message
 	amountStr := strings.TrimSpace(ctx.Message.Text)
 	amountStr = strings.ReplaceAll(amountStr, ",", ".")
-	newAmount, err := strconv.ParseFloat(amountStr, 64)
-	if err != nil {
-		_, err = b.SendMessage(
+	newAmount, parseErr := strconv.ParseFloat(amountStr, 64)
+	if parseErr != nil {
+		_, sendErr := b.SendMessage(
 			ctx.EffectiveSender.ChatId,
 			"Invalid amount. Please enter a valid number.",
 			nil,
 		)
-		return err
+		if sendErr != nil {
+			c.Logger.Warnf("Error sending message for invalid amount: %v", sendErr)
+		}
+		operationErr = fmt.Errorf("invalid amount format: %v", parseErr)
+		return operationErr
 	}
 
 	if newAmount <= 0 {
-		_, err = b.SendMessage(
+		_, sendErr := b.SendMessage(
 			ctx.EffectiveSender.ChatId,
 			"Amount must be greater than zero.",
 			nil,
 		)
-		return err
+		if sendErr != nil {
+			c.Logger.Warnf("Error sending message for non-positive amount: %v", sendErr)
+		}
+		operationErr = fmt.Errorf("amount must be greater than zero")
+		return operationErr
 	}
 
 	// Update the transaction
 	oldAmount := transaction.Amount
 	transaction.Amount = newAmount
 
-	err = c.Repositories.Transactions.Update(&transaction)
-	if err != nil {
-		_, err = b.SendMessage(
+	operationErr = c.Repositories.Transactions.Update(&transaction)
+	if operationErr != nil {
+		_, sendErr := b.SendMessage(
 			ctx.EffectiveSender.ChatId,
 			"Failed to update transaction. Please try again.",
 			nil,
 		)
-		return err
+		if sendErr != nil {
+			c.Logger.Warnf("Error sending message for transaction update failure: %v", sendErr)
+		}
+		return operationErr
 	}
 
 	// Reset user state
 	user.Session.State = model.StateNormal
 	user.Session.Body = ""
-	err = c.Repositories.Users.Update(&user)
-	if err != nil {
-		return fmt.Errorf("failed to update user data: %w", err)
+	updateUserErr := c.Repositories.Users.Update(&user)
+	if updateUserErr != nil {
+		c.Logger.Errorf("Failed to update user data after amount edit: %v", updateUserErr)
 	}
 
 	// Send confirmation
@@ -532,7 +645,7 @@ func (c *Client) EditTransactionAmountConfirm(b *gotgbot.Bot, ctx *ext.Context) 
 		emoji = "💸"
 	}
 
-	_, err = b.SendMessage(
+	_, sendErr := b.SendMessage(
 		ctx.EffectiveSender.ChatId,
 		fmt.Sprintf("%s Amount updated successfully!\n\nChanged from <b>%.2f€</b> to <b>%.2f€</b>",
 			emoji, oldAmount, transaction.Amount),
@@ -540,8 +653,11 @@ func (c *Client) EditTransactionAmountConfirm(b *gotgbot.Bot, ctx *ext.Context) 
 			ParseMode: "HTML",
 		},
 	)
+	if sendErr != nil {
+		c.Logger.Warnf("Error sending amount update confirmation: %v", sendErr)
+	}
 
-	return err
+	return operationErr
 }
 
 // editTransactionDate prompts for a new date
@@ -585,57 +701,86 @@ func (c *Client) editTopLevelTransactionDate(b *gotgbot.Bot, ctx *ext.Context, t
 }
 
 func (c *Client) EditTransactionDateConfirm(b *gotgbot.Bot, ctx *ext.Context) error {
+	requestCtx := ctx.Request.Context()
+	if requestCtx == nil {
+		requestCtx = context.Background()
+	}
+	startTime := time.Now()
+	var operationErr error
+
+	defer func() {
+		duration := time.Since(startTime).Seconds()
+		status := "success"
+		if operationErr != nil {
+			status = "failure"
+		}
+		attrs := []attribute.KeyValue{
+			attribute.String("operation.type", "edit"),
+			attribute.String("edit.field", "date"),
+			attribute.String("status", status),
+		}
+		c.TransactionOperationsCounter.Add(requestCtx, 1, metric.WithAttributes(attrs...))
+		c.TransactionOperationDuration.Record(requestCtx, duration, metric.WithAttributes(attrs...))
+	}()
+
 	_, u := c.getUserFromContext(ctx)
-	user, err := c.authAndGetUser(u)
-	if err != nil {
-		return err
+	user, operationErr := c.authAndGetUser(u)
+	if operationErr != nil {
+		return operationErr
 	}
 
 	// Get transaction ID from session
-	transactionID, err := strconv.ParseInt(user.Session.Body, 10, 64)
-	if err != nil {
-		return fmt.Errorf("invalid transaction ID in session: %v", err)
+	transactionID, operationErr := strconv.ParseInt(user.Session.Body, 10, 64)
+	if operationErr != nil {
+		operationErr = fmt.Errorf("invalid transaction ID in session: %v", operationErr)
+		return operationErr
 	}
 
 	// Get the transaction
-	transaction, err := c.Repositories.Transactions.GetByID(transactionID)
-	if err != nil {
-		return fmt.Errorf("failed to get transaction: %w", err)
+	transaction, operationErr := c.Repositories.Transactions.GetByID(transactionID)
+	if operationErr != nil {
+		operationErr = fmt.Errorf("failed to get transaction: %w", operationErr)
+		return operationErr
 	}
 
 	// Get date from DD-MM-YYYY to date
-	newDate, err := utils.ParseDate(ctx.Message.Text)
-	if err != nil {
-		fmt.Printf("failed to parse date: %v\n", err)
+	newDate, parseErr := utils.ParseDate(ctx.Message.Text)
+	if parseErr != nil {
+		c.Logger.Warnf("failed to parse date: %v", parseErr)
 		b.SendMessage(ctx.EffectiveSender.ChatId, "Invalid date, please try again.", nil)
-		return err
+		operationErr = fmt.Errorf("failed to parse date: %v", parseErr)
+		return operationErr
 	}
 
 	if newDate.After(time.Now()) {
 		b.SendMessage(ctx.EffectiveSender.ChatId, "I don't support future dates, please try again.", nil)
-		return fmt.Errorf("invalid date: %s", ctx.Message.Text)
+		operationErr = fmt.Errorf("invalid date (future): %s", ctx.Message.Text)
+		return operationErr
 	}
 
 	// Update the transaction
 	oldDate := transaction.Date
 	transaction.Date = newDate
 
-	err = c.Repositories.Transactions.Update(&transaction)
-	if err != nil {
-		_, err = b.SendMessage(
+	operationErr = c.Repositories.Transactions.Update(&transaction)
+	if operationErr != nil {
+		_, sendErr := b.SendMessage(
 			ctx.EffectiveSender.ChatId,
 			"Failed to update transaction. Please try again.",
 			nil,
 		)
-		return err
+		if sendErr != nil {
+			c.Logger.Warnf("Error sending message for transaction update failure: %v", sendErr)
+		}
+		return operationErr
 	}
 
 	// Reset user state
 	user.Session.State = model.StateNormal
 	user.Session.Body = ""
-	err = c.Repositories.Users.Update(&user)
-	if err != nil {
-		return fmt.Errorf("failed to update user data: %w", err)
+	updateUserErr := c.Repositories.Users.Update(&user)
+	if updateUserErr != nil {
+		c.Logger.Errorf("Failed to update user data after date edit: %v", updateUserErr)
 	}
 
 	// Send confirmation
@@ -644,7 +789,7 @@ func (c *Client) EditTransactionDateConfirm(b *gotgbot.Bot, ctx *ext.Context) er
 		emoji = "💸"
 	}
 
-	_, err = b.SendMessage(
+	_, sendErr := b.SendMessage(
 		ctx.EffectiveSender.ChatId,
 		fmt.Sprintf("%s Date updated successfully!\n\nChanged from <b>%s</b> to <b>%s</b>",
 			emoji,
@@ -654,8 +799,10 @@ func (c *Client) EditTransactionDateConfirm(b *gotgbot.Bot, ctx *ext.Context) er
 			ParseMode: "HTML",
 		},
 	)
-
-	return err
+	if sendErr != nil {
+		c.Logger.Warnf("Error sending date update confirmation: %v", sendErr)
+	}
+	return operationErr
 }
 
 // showEditableTransactionPage displays a paginated list of all user transactions for editing
