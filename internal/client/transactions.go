@@ -644,7 +644,7 @@ func (c *Client) Cancel(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	c.CleanupKeyboard(b, ctx)
-	c.SendHomeKeyboard(b, ctx, "Your operation has been canceled!\nWhat else can I do for you?\n\n/edit - Edit a transaction\n/delete - Delete a transaction\n/list - List your transactions\n/month Month Recap\n/year Year Recap")
+	c.SendHomeKeyboard(b, ctx, "Your operation has been canceled!\nWhat else can I do for you?\n\n/edit - Edit a transaction\n/delete - Delete a transaction\n/list - List your transactions\n/month Month Recap\n/year Year Recap\n/export - Export all transactions to CSV")
 
 	return ext.EndGroups
 }

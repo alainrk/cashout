@@ -94,3 +94,8 @@ func (r *Transactions) GetYearCategorizedTotals(tgID int64, year int) (map[model
 		model.TypeIncome:  incomeTotals,
 	}, nil
 }
+
+// GetUserTransactions retrieves all transactions for a user (no pagination)
+func (r *Transactions) GetUserTransactions(tgID int64) ([]model.Transaction, error) {
+	return r.DB.GetUserTransactions(tgID)
+}
