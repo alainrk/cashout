@@ -51,10 +51,12 @@ func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
 	dispatcher.AddHandler(handlers.NewCommand("delete", c.DeleteTransactions))
 	dispatcher.AddHandler(handlers.NewCommand("start", c.Start))
 	dispatcher.AddHandler(handlers.NewCommand("new", c.Start))
+	dispatcher.AddHandler(handlers.NewCommand("week", c.WeekRecap))
 	dispatcher.AddHandler(handlers.NewCommand("month", c.MonthRecap))
 	dispatcher.AddHandler(handlers.NewCommand("year", c.YearRecap))
 	dispatcher.AddHandler(handlers.NewCommand("export", c.ExportTransactions))
 
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.week"), c.WeekRecap))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.month"), c.MonthRecap))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.year"), c.YearRecap))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.list"), c.ListTransactions))

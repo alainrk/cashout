@@ -99,3 +99,8 @@ func (r *Transactions) GetYearCategorizedTotals(tgID int64, year int) (map[model
 func (r *Transactions) GetUserTransactions(tgID int64) ([]model.Transaction, error) {
 	return r.DB.GetUserTransactions(tgID)
 }
+
+// GetUserTransactionsByDateRange retrieves transactions for a user within a date range
+func (r *Transactions) GetUserTransactionsByDateRange(tgID int64, startDate, endDate time.Time) ([]model.Transaction, error) {
+	return r.DB.GetUserTransactionsByDateRange(tgID, startDate, endDate)
+}
