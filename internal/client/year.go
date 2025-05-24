@@ -2,6 +2,7 @@ package client
 
 import (
 	"cashout/internal/model"
+	"cashout/internal/utils"
 	"fmt"
 	"sort"
 	"strings"
@@ -122,7 +123,7 @@ func (c *Client) YearRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 
 			for i := 0; i < maxCategories; i++ {
 				entry := categories[i]
-				emoji := getCategoryEmoji(entry.Category)
+				emoji := utils.GetCategoryEmoji(entry.Category)
 				percentage := (entry.Amount / yearExpense) * 100
 				msg.WriteString(fmt.Sprintf("  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
 					emoji, entry.Category, entry.Amount, percentage))
@@ -170,7 +171,7 @@ func (c *Client) YearRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 
 			// Display all income categories (usually fewer than expenses)
 			for _, entry := range categories {
-				emoji := getCategoryEmoji(entry.Category)
+				emoji := utils.GetCategoryEmoji(entry.Category)
 				percentage := (entry.Amount / yearIncome) * 100
 				msg.WriteString(fmt.Sprintf("  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
 					emoji, entry.Category, entry.Amount, percentage))

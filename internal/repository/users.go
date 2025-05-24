@@ -42,3 +42,11 @@ func (r *Users) UpsertWithContext(user gotgbot.User, session model.UserSession) 
 func (u *Users) Update(user *model.User) error {
 	return u.DB.SetUser(user)
 }
+
+func (r *Users) GetByTgID(tgID int64) (model.User, error) {
+	user, err := r.DB.GetUser(tgID)
+	if err != nil {
+		return model.User{}, err
+	}
+	return *user, nil
+}

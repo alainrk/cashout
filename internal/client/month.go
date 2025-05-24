@@ -2,6 +2,7 @@ package client
 
 import (
 	"cashout/internal/model"
+	"cashout/internal/utils"
 	"fmt"
 	"sort"
 	"strings"
@@ -85,7 +86,7 @@ func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 
 			// Display each category with emoji
 			for _, entry := range categories {
-				emoji := getCategoryEmoji(entry.Category)
+				emoji := utils.GetCategoryEmoji(entry.Category)
 				percentage := (entry.Amount / expenseAmount) * 100
 				text.WriteString(fmt.Sprintf("  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
 					emoji, entry.Category, entry.Amount, percentage))
@@ -122,7 +123,7 @@ func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 
 			// Display each category with emoji
 			for _, entry := range categories {
-				emoji := getCategoryEmoji(entry.Category)
+				emoji := utils.GetCategoryEmoji(entry.Category)
 				percentage := (entry.Amount / incomeAmount) * 100
 				text.WriteString(fmt.Sprintf("  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
 					emoji, entry.Category, entry.Amount, percentage))

@@ -5,6 +5,7 @@ import (
 	"cashout/internal/client"
 	"cashout/internal/db"
 	"cashout/internal/logging"
+	"cashout/internal/scheduler"
 	"log"
 	"os"
 	"strings"
@@ -13,6 +14,8 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/joho/godotenv"
+
+	_ "github.com/go-co-op/gocron" // Add to go.mod
 )
 
 // This bot demonstrates some example interactions with commands ontelegram.
@@ -141,6 +144,11 @@ func main() {
 	}
 
 	logger.Infof("%s has been started in %s mode...\n", b.Username, runMode)
+
+	// Initialize scheduler for automated reminders
+	sched := scheduler.NewScheduler(b, c.Repositories, logger)
+	sched.Start()
+	defer sched.Stop()
 
 	// Idle, to keep updates coming in, and avoid bot stopping.
 	updater.Idle()

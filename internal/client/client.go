@@ -26,6 +26,7 @@ type Client struct {
 type Repositories struct {
 	Users        repository.Users
 	Transactions repository.Transactions
+	Reminders    repository.Reminders
 }
 
 func NewClient(logger *logrus.Logger, db *db.DB, llm ai.LLM) *Client {
@@ -53,6 +54,7 @@ func NewClient(logger *logrus.Logger, db *db.DB, llm ai.LLM) *Client {
 		Repositories: Repositories{
 			Users:        repository.Users{Repository: repo},
 			Transactions: repository.Transactions{Repository: repo},
+			Reminders:    repository.Reminders{Repository: repo},
 		},
 		LLM: llm,
 	}
