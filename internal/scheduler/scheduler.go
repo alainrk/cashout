@@ -34,7 +34,7 @@ func NewScheduler(bot *gotgbot.Bot, repos client.Repositories, logger *logrus.Lo
 func (s *Scheduler) Start() {
 	// Schedule the creation of weekly recaps "reminders", every day, just to be sure
 	// s.scheduler.Every(1).Minute().Do(func() { /* TEST */
-	s.scheduler.Every(1).Day().At("05:00").Do(func() {
+	s.scheduler.Every(1).Day().At("15:00").Do(func() {
 		if err := s.createWeeklyReminders(); err != nil {
 			s.logger.Errorf("Failed to create weekly reminders: %v", err)
 		}

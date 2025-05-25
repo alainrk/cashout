@@ -30,9 +30,9 @@ func (s *Scheduler) createWeeklyReminders() error {
 		return fmt.Errorf("failed to get active users: %w", err)
 	}
 
-	// Schedule for 10:00 GMT on Monday
+	// Schedule for 6:00 GMT on Monday
 	monday := getNextMonday()
-	scheduledFor := time.Date(monday.Year(), monday.Month(), monday.Day(), 10, 0, 0, 0, time.UTC)
+	scheduledFor := time.Date(monday.Year(), monday.Month(), monday.Day(), 6, 0, 0, 0, time.UTC)
 
 	createdCount := 0
 	for _, user := range users {
