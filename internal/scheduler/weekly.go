@@ -10,6 +10,16 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 )
 
+func getNextMonday() time.Time {
+	now := time.Now()
+	daysUntilMonday := (8 - int(now.Weekday())) % 7
+	if daysUntilMonday == 0 {
+		daysUntilMonday = 7
+	}
+	nextMonday := now.AddDate(0, 0, daysUntilMonday)
+	return nextMonday
+}
+
 // createWeeklyReminders creates reminder records for all active users
 func (s *Scheduler) createWeeklyReminders() error {
 	s.logger.Info("Creating weekly reminders...")
@@ -20,9 +30,9 @@ func (s *Scheduler) createWeeklyReminders() error {
 		return fmt.Errorf("failed to get active users: %w", err)
 	}
 
-	// Schedule for 8:00 GMT on Monday
-	now := time.Now().UTC()
-	scheduledFor := time.Date(now.Year(), now.Month(), now.Day(), 8, 0, 0, 0, time.UTC)
+	// Schedule for 10:00 GMT on Monday
+	monday := getNextMonday()
+	scheduledFor := time.Date(monday.Year(), monday.Month(), monday.Day(), 10, 0, 0, 0, time.UTC)
 
 	createdCount := 0
 	for _, user := range users {
