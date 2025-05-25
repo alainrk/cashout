@@ -10,6 +10,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const MIN_YEAR_ALLOWED = 2015
+
 type Config struct {
 	// Dev Purpose, telegram usernames
 	AuthEnabled  bool

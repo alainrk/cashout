@@ -5,6 +5,7 @@ import (
 	"cashout/internal/utils"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 )
 
+// YearRecap now shows year selection keyboard
 func (c *Client) YearRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 	_, u := c.getUserFromContext(ctx)
 	user, err := c.authAndGetUser(u)
@@ -20,23 +22,105 @@ func (c *Client) YearRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	user.Session.State = model.StateNormal
-
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	// Get current year
+	// Show year selection keyboard
+	return c.sendYearRecapSelectionKeyboard(b, ctx)
+}
+
+// YearRecapSelected displays the recap for selected year
+func (c *Client) YearRecapSelected(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	query := ctx.CallbackQuery
+
+	// Parse callback data (format: yearrecap.year.YYYY)
+	parts := strings.Split(query.Data, ".")
+	if len(parts) != 3 {
+		return fmt.Errorf("invalid callback data format")
+	}
+
+	year, err := strconv.Atoi(parts[2])
+	if err != nil {
+		return fmt.Errorf("invalid year: %v", err)
+	}
+
+	return c.showYearRecap(b, ctx, user, year)
+}
+
+// Helper function to send year selection keyboard
+func (c *Client) sendYearRecapSelectionKeyboard(b *gotgbot.Bot, ctx *ext.Context) error {
 	currentYear := time.Now().Year()
 
+	var keyboard [][]gotgbot.InlineKeyboardButton
+
+	// Create year buttons (4 years per row)
+	var row []gotgbot.InlineKeyboardButton
+
+	// Show years from current year down to MIN_YEAR_ALLOWED
+	for year := MIN_YEAR_ALLOWED; year <= currentYear; year++ {
+		button := gotgbot.InlineKeyboardButton{
+			Text:         fmt.Sprintf("%d", year),
+			CallbackData: fmt.Sprintf("yearrecap.year.%d", year),
+		}
+		row = append(row, button)
+
+		if len(row) == 4 {
+			keyboard = append(keyboard, row)
+			row = []gotgbot.InlineKeyboardButton{}
+		}
+	}
+
+	// Add remaining years if any
+	if len(row) > 0 {
+		keyboard = append(keyboard, row)
+	}
+
+	// Add cancel button
+	keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
+		{
+			Text:         "❌ Cancel",
+			CallbackData: "yearrecap.cancel",
+		},
+	})
+
+	// Send the keyboard
+	if ctx.CallbackQuery != nil {
+		// Edit existing message
+		_, _, err := ctx.CallbackQuery.Message.EditText(b, "📊 Select a year for recap:", &gotgbot.EditMessageTextOpts{
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: keyboard,
+			},
+		})
+		return err
+	} else {
+		// Send new message
+		_, err := b.SendMessage(ctx.EffectiveSender.ChatId, "📊 Select a year for recap:", &gotgbot.SendMessageOpts{
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: keyboard,
+			},
+		})
+		return err
+	}
+}
+
+// Helper function to show the year recap for a specific year
+func (c *Client) showYearRecap(b *gotgbot.Bot, ctx *ext.Context, user model.User, year int) error {
 	// Get monthly totals for all months
-	res, err := c.Repositories.Transactions.GetMonthlyTotalsCurrentYear(user.TgID)
+	res, err := c.Repositories.Transactions.GetMonthlyTotalsInYear(user.TgID, year)
 	if err != nil {
 		return err
 	}
 
 	// Get category breakdown for the entire year
-	categoryTotals, err := c.Repositories.Transactions.GetYearCategorizedTotals(user.TgID, currentYear)
+	categoryTotals, err := c.Repositories.Transactions.GetYearCategorizedTotals(user.TgID, year)
 	if err != nil {
 		return err
 	}
@@ -46,15 +130,33 @@ func (c *Client) YearRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 	var yearExpense float64
 	var yearIncome float64
 
-	currMonth := time.Now().Month()
+	// Determine which months to show
+	endMonth := 12
+	if year == time.Now().Year() {
+		endMonth = int(time.Now().Month())
+	}
 
 	// Format header
-	msg.WriteString(fmt.Sprintf("📊 <b>%d Year to Date Summary</b>\n\n", currentYear))
+	msg.WriteString(fmt.Sprintf("📊 <b>%d Year Summary</b>\n\n", year))
+
+	// Check if there are any transactions
+	hasTransactions := false
+	for m := 1; m <= endMonth; m++ {
+		if _, ok := res[m]; ok {
+			hasTransactions = true
+			break
+		}
+	}
+
+	if !hasTransactions {
+		msg.WriteString(fmt.Sprintf("No transactions recorded for %d", year))
+		return c.sendRecapWithNavigation(b, ctx, msg.String(), "year", year, 0)
+	}
 
 	// --- MONTHLY BREAKDOWN SECTION ---
 	msg.WriteString("<b>Monthly Breakdown:</b>\n\n")
 
-	for m := 1; m <= int(currMonth); m++ {
+	for m := 1; m <= endMonth; m++ {
 		monthT, hasTransactions := res[m]
 		if !hasTransactions {
 			continue // Skip months with no transactions
@@ -88,7 +190,7 @@ func (c *Client) YearRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	// --- YEAR TOTAL SECTION ---
-	msg.WriteString("\n<b>💰 Year to Date Summary</b>\n")
+	msg.WriteString("\n<b>💰 Year Summary</b>\n")
 
 	// Add expense summary with category breakdown
 	if yearExpense > 0 {
@@ -191,5 +293,6 @@ func (c *Client) YearRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	msg.WriteString(fmt.Sprintf("\n%s <b>Year Balance:</b> %.2f€", balanceEmoji, yearTotal))
 
-	return c.SendHomeKeyboard(b, ctx, msg.String())
+	return c.sendRecapWithNavigation(b, ctx, msg.String(), "year", year, 0)
+	// return c.SendHomeKeyboard(b, ctx, msg.String())
 }

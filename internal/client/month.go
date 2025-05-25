@@ -5,6 +5,7 @@ import (
 	"cashout/internal/utils"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -12,7 +13,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 )
 
-// MonthRecap returns to the user the breakdown and the total for the expenses and income of the current month.
+// MonthRecap now shows year/month selection keyboard
 func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 	_, u := c.getUserFromContext(ctx)
 	user, err := c.authAndGetUser(u)
@@ -21,34 +22,170 @@ func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	user.Session.State = model.StateNormal
-
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	// Get current month and year
-	now := time.Now()
-	month := now.Month()
-	year := now.Year()
+	// Start with current year
+	currentYear := time.Now().Year()
+	return c.sendMonthRecapSelectionKeyboard(b, ctx, currentYear)
+}
 
+// MonthRecapYearNavigation handles year navigation in month selection for recap
+func (c *Client) MonthRecapYearNavigation(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	_, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	query := ctx.CallbackQuery
+
+	// Parse year from callback data (format: monthrecap.year.YYYY)
+	parts := strings.Split(query.Data, ".")
+	if len(parts) != 3 {
+		return fmt.Errorf("invalid callback data format")
+	}
+
+	year, err := strconv.Atoi(parts[2])
+	if err != nil {
+		return fmt.Errorf("invalid year: %v", err)
+	}
+
+	return c.sendMonthRecapSelectionKeyboard(b, ctx, year)
+}
+
+// MonthRecapSelected displays the recap for selected month
+func (c *Client) MonthRecapSelected(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	query := ctx.CallbackQuery
+
+	// Parse callback data (format: monthrecap.month.YYYY.MM)
+	parts := strings.Split(query.Data, ".")
+	if len(parts) != 4 {
+		return fmt.Errorf("invalid callback data format")
+	}
+
+	year, err := strconv.Atoi(parts[2])
+	if err != nil {
+		return fmt.Errorf("invalid year: %v", err)
+	}
+
+	month, err := strconv.Atoi(parts[3])
+	if err != nil {
+		return fmt.Errorf("invalid month: %v", err)
+	}
+
+	return c.showMonthRecap(b, ctx, user, year, month)
+}
+
+// Helper function to send month selection keyboard for recap
+func (c *Client) sendMonthRecapSelectionKeyboard(b *gotgbot.Bot, ctx *ext.Context, year int) error {
+	currentYear := time.Now().Year()
+	currentMonth := time.Now().Month()
+
+	var keyboard [][]gotgbot.InlineKeyboardButton
+
+	// Create month buttons (3 months per row)
+	var row []gotgbot.InlineKeyboardButton
+	for m := 1; m <= 12; m++ {
+		monthName := time.Month(m).String()[:3] // Short month name
+
+		// Disable future months for current year
+		if year == currentYear && m > int(currentMonth) {
+			continue
+		}
+
+		button := gotgbot.InlineKeyboardButton{
+			Text:         monthName,
+			CallbackData: fmt.Sprintf("monthrecap.month.%d.%02d", year, m),
+		}
+		row = append(row, button)
+
+		if len(row) == 3 {
+			keyboard = append(keyboard, row)
+			row = []gotgbot.InlineKeyboardButton{}
+		}
+	}
+
+	// Add remaining months if any
+	if len(row) > 0 {
+		keyboard = append(keyboard, row)
+	}
+
+	// Add navigation buttons
+	navigationRow := []gotgbot.InlineKeyboardButton{}
+	if year > MIN_YEAR_ALLOWED {
+		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
+			Text:         "⬅️ Previous Year",
+			CallbackData: fmt.Sprintf("monthrecap.year.%d", year-1),
+		})
+	}
+
+	if year < currentYear {
+		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
+			Text:         "Next Year ➡️",
+			CallbackData: fmt.Sprintf("monthrecap.year.%d", year+1),
+		})
+	}
+
+	if len(navigationRow) > 0 {
+		keyboard = append(keyboard, navigationRow)
+	}
+
+	// Add cancel button
+	keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
+		{
+			Text:         "❌ Cancel",
+			CallbackData: "monthrecap.cancel",
+		},
+	})
+
+	// Send the keyboard
+	if ctx.CallbackQuery != nil {
+		// Edit existing message
+		_, _, err := ctx.CallbackQuery.Message.EditText(b, fmt.Sprintf("📊 Select a month from %d for recap:", year), &gotgbot.EditMessageTextOpts{
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: keyboard,
+			},
+		})
+		return err
+	} else {
+		// Send new message
+		_, err := b.SendMessage(ctx.EffectiveSender.ChatId, fmt.Sprintf("📊 Select a month from %d for recap:", year), &gotgbot.SendMessageOpts{
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: keyboard,
+			},
+		})
+		return err
+	}
+}
+
+// Helper function to show the month recap for a specific month
+func (c *Client) showMonthRecap(b *gotgbot.Bot, ctx *ext.Context, user model.User, year int, month int) error {
 	// Get monthly totals
-	totals, err := c.Repositories.Transactions.GetMonthlyTotalsCurrentYear(user.TgID)
+	totals, err := c.Repositories.Transactions.GetMonthlyTotalsInYear(user.TgID, year)
 	if err != nil {
 		return err
 	}
 
 	// Get category breakdown
-	categoryTotals, err := c.Repositories.Transactions.GetMonthCategorizedTotals(user.TgID, year, int(month))
+	categoryTotals, err := c.Repositories.Transactions.GetMonthCategorizedTotals(user.TgID, year, month)
 	if err != nil {
 		return err
 	}
 
-	t, ok := totals[int(month)]
+	t, ok := totals[month]
 
 	if !ok {
-		txt := "No transactions for this month"
-		return SendMessage(ctx, b, txt, [][]gotgbot.InlineKeyboardButton{})
+		txt := fmt.Sprintf("No transactions for %s %d", time.Month(month).String(), year)
+		return c.sendRecapWithNavigation(b, ctx, txt, "month", year, month)
 	}
 
 	// Format the message
@@ -56,7 +193,7 @@ func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 	var monthTotal float64
 
 	// Header with month name
-	text.WriteString(fmt.Sprintf("📊 <b>%s %d Summary</b>\n\n", month.String(), year))
+	text.WriteString(fmt.Sprintf("📊 <b>%s %d Summary</b>\n\n", time.Month(month).String(), year))
 
 	// --- EXPENSES SECTION ---
 	if expenseAmount, ok := t[model.TypeExpense]; ok && expenseAmount > 0 {
@@ -142,5 +279,5 @@ func (c *Client) MonthRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	text.WriteString(fmt.Sprintf("\n%s <b>Month Balance:</b> %.2f€", balanceEmoji, monthTotal))
 
-	return c.SendHomeKeyboard(b, ctx, text.String())
+	return c.sendRecapWithNavigation(b, ctx, text.String(), "month", year, month)
 }

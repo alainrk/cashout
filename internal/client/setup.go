@@ -56,6 +56,13 @@ func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
 	dispatcher.AddHandler(handlers.NewCommand("year", c.YearRecap))
 	dispatcher.AddHandler(handlers.NewCommand("export", c.ExportTransactions))
 
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("monthrecap.cancel"), c.Cancel))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("monthrecap.year."), c.MonthRecapYearNavigation))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("monthrecap.month."), c.MonthRecapSelected))
+
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("yearrecap.cancel"), c.Cancel))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("yearrecap.year."), c.YearRecapSelected))
+
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.week"), c.WeekRecap))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.month"), c.MonthRecap))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.year"), c.YearRecap))

@@ -29,8 +29,7 @@ func (r *Transactions) Delete(id int64, tgID int64) error {
 	return r.DB.DeleteTransactionByID(id, tgID)
 }
 
-func (r *Transactions) GetMonthlyTotalsCurrentYear(tgID int64) (map[int]map[model.TransactionType]float64, error) {
-	year := time.Now().Year()
+func (r *Transactions) GetMonthlyTotalsInYear(tgID int64, year int) (map[int]map[model.TransactionType]float64, error) {
 	return r.DB.GetMonthlyTotalsInYear(tgID, year)
 }
 
