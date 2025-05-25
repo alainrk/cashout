@@ -2,6 +2,7 @@ package client
 
 import (
 	"cashout/internal/model"
+	"cashout/internal/utils"
 	"fmt"
 	"strconv"
 	"strings"
@@ -240,22 +241,16 @@ func formatTransactions(year, month int, transactions []model.Transaction, offse
 
 	for i, t := range transactions {
 		// Choose emoji based on transaction type
-		emoji := "💰"
-		if t.Type == model.TypeExpense {
-			emoji = "💸"
-		}
+		emoji := utils.GetCategoryEmoji(t.Category)
 
-		msg.WriteString(fmt.Sprintf("%d. %s <b>%s</b> - %.2f€\n",
+		msg.WriteString(fmt.Sprintf("%d. <b>%s</b> - %.2f€\n",
 			offset+i+1,
-			emoji,
-			t.Category,
+			t.Description,
 			t.Amount,
 		))
-		msg.WriteString(fmt.Sprintf("   📅 %s\n", t.Date.Format("02-01-2006")))
 
-		if t.Description != "" {
-			msg.WriteString(fmt.Sprintf("   📝 %s\n", t.Description))
-		}
+		msg.WriteString(fmt.Sprintf("   %s %s\n", emoji, t.Category))
+		msg.WriteString(fmt.Sprintf("   📅 %s\n", t.Date.Format("02-01-2006")))
 		msg.WriteString("\n")
 	}
 
