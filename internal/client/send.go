@@ -33,12 +33,14 @@ func (c *Client) SendHomeKeyboard(b *gotgbot.Bot, ctx *ext.Context, text string)
 			{Text: "🗑 Delete", CallbackData: "home.delete"},
 		},
 		{
-			{Text: "Week Recap", CallbackData: "home.week"},
-			{Text: "Month Recap", CallbackData: "home.month"},
+			{Text: "📄 Full List", CallbackData: "home.list"},
+		},
+		{
+			{Text: "Current Week Recap", CallbackData: "home.week"},
 		},
 		{
 			{Text: "Year Recap", CallbackData: "home.year"},
-			{Text: "📄 Full List", CallbackData: "home.list"},
+			{Text: "Month Recap", CallbackData: "home.month"},
 		},
 	}
 
@@ -182,12 +184,14 @@ func (c *Client) sendRecapWithNavigation(b *gotgbot.Bot, ctx *ext.Context, text 
 			{Text: "🗑 Delete", CallbackData: "home.delete"},
 		},
 		{
-			{Text: "Week Recap", CallbackData: "home.week"},
-			{Text: "Month Recap", CallbackData: "home.month"},
+			{Text: "📄 Full List", CallbackData: "home.list"},
+		},
+		{
+			{Text: "Current Week Recap", CallbackData: "home.week"},
 		},
 		{
 			{Text: "Year Recap", CallbackData: "home.year"},
-			{Text: "📄 Full List", CallbackData: "home.list"},
+			{Text: "Month Recap", CallbackData: "home.month"},
 		},
 	}...)
 
