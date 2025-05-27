@@ -22,6 +22,7 @@ func GetCategoryEmoji(category model.TransactionCategory) string {
 		model.CategoryTech:          "💻",
 		model.CategoryGifts:         "🎁",
 		model.CategoryTravel:        "✈️",
+		model.CategoryPets:          "🐈",
 		model.CategoryOtherExpenses: "📌",
 	}
 

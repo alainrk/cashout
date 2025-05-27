@@ -240,7 +240,6 @@ func formatTransactions(year, month int, transactions []model.Transaction, offse
 	msg.WriteString(fmt.Sprintf("Showing %d-%d of %d transactions\n\n", offset+1, offset+len(transactions), total))
 
 	for i, t := range transactions {
-		// Choose emoji based on transaction type
 		emoji := utils.GetCategoryEmoji(t.Category)
 
 		msg.WriteString(fmt.Sprintf("%d. <b>%s</b> - %.2f€\n",

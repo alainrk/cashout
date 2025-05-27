@@ -20,7 +20,7 @@ Format the result as a JSON object with the following structure:
 { "category": "Category", "amount": 12.34, "description": "Description", "date": "dd-mm-yyyy" }
 
 Available categories (use ONLY these):
-"Car", "Clothes", "Grocery", "House", "Bills", "Entertainment", "Sport", "EatingOut", "Transport", "Learning", "Toiletry", "Health", "Tech", "Gifts", "Travel", "OtherExpenses"
+"Car", "Clothes", "Grocery", "House", "Bills", "Entertainment", "Sport", "EatingOut", "Transport", "Learning", "Toiletry", "Health", "Tech", "Gifts", "Travel", "Pets", "OtherExpenses"
 
 Follow these rules:
 1. For category selection:

@@ -28,6 +28,7 @@ const (
 	CategoryTech          TransactionCategory = "Tech"
 	CategoryGifts         TransactionCategory = "Gifts"
 	CategoryTravel        TransactionCategory = "Travel"
+	CategoryPets          TransactionCategory = "Pets"
 	CategoryOtherExpenses TransactionCategory = "OtherExpenses"
 )
 
@@ -163,6 +164,7 @@ func GetTransactionCategories() []string {
 		string(CategoryTech),
 		string(CategoryGifts),
 		string(CategoryTravel),
+		string(CategoryPets),
 		string(CategoryOtherExpenses),
 	}
 }

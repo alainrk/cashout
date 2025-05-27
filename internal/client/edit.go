@@ -175,6 +175,7 @@ func (c *Client) editTopLevelTransactionCategory(b *gotgbot.Bot, ctx *ext.Contex
 			{{Text: "Tech"}},
 			{{Text: "Gifts"}},
 			{{Text: "Travel"}},
+			{{Text: "Pets"}},
 			{{Text: "OtherExpenses"}},
 		}
 	}

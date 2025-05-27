@@ -233,6 +233,7 @@ func (c *Client) EditTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 				{{Text: "Tech"}},
 				{{Text: "Gifts"}},
 				{{Text: "Travel"}},
+				{{Text: "Pets"}},
 				{{Text: "OtherExpenses"}},
 			}
 		}
