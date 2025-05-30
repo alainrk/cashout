@@ -1,6 +1,7 @@
 main_package_path = ./cmd/server/main.go
 
 migrate_package_path = ./cmd/migrate/main.go
+seed_package_path = ./cmd/seed/*.go
 binary_name = cashout
 linux_binary_name = ${binary_name}-linux
 
@@ -116,3 +117,18 @@ db/status: db/build
 .PHONY: db/rollback
 db/rollback: db/build confirm
 	/tmp/bin/migrate -command down
+
+
+# ==================================================================================== #
+# DATABASE SEEDING
+# ==================================================================================== #
+
+## db/seed/build: build the seed tool
+.PHONY: db/seed/build
+db/seed/build:
+	go build -o=/tmp/bin/seed ${seed_package_path}
+
+## db/seed: seed the database with random transactions for a user (requires SEED_USER_TG_ID env var)
+.PHONY: db/seed
+db/seed: db/seed/build
+	/tmp/bin/seed

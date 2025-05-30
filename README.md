@@ -164,6 +164,26 @@ You need to set the relevant environment variable:
 RUN_MODE='polling'
 ```
 
+### Database Seeding
+
+The Dev DB Seeder generates test transaction data for development:
+
+```bash
+# Set the user's Telegram ID you want to seed data for
+export SEED_USER_TG_ID=123456789
+
+# Seed the database with random transactions
+make db/seed
+```
+
+The seeder will:
+
+- Generate 5 years of transaction history
+- Create 90% expenses and 10% income transactions
+- Distribute transactions across all categories
+- Ensure at least one salary per month
+- Delete existing transactions before seeding (idempotent)
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
