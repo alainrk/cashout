@@ -2,61 +2,60 @@
 
 Telegram **AI Agent** for Income and Expense Management.
 
+You can self-host it following the Developer section down below.
+
 <p align="center">
   <img src="/assets/demo.gif" alt="Demo" height="550px">
 </p>
 
-<!-- ## Features -->
+## Features
 
-<!-- <details closed> -->
-<!---->
-<!-- <p align="center"> -->
-<!--   <img src="/assets/7.png" alt="Cashout app welcome screen" width="450px"> -->
-<!-- </p> -->
-<!---->
-<!-- Navigate your transactions in a simple way. -->
-<!---->
-<!-- <p align="center"> -->
-<!--   <img src="/assets/8.png" alt="List command" width="450px"> -->
-<!-- </p> -->
-<!---->
-<!-- <p align="center"> -->
-<!--   <img src="/assets/9.png" alt="List output" width="450px"> -->
-<!-- </p> -->
-<!---->
-<!-- Expense and income creation with options to edit or confirm. It tries to automatically categorize your transactions and fix some common errors. Also, it tries to extract the correct amount despite given in a natural language or anyway, not in a standard format. -->
-<!---->
-<!-- <p align="center"> -->
-<!--   <img src="/assets/3.png" alt="Transaction confirmation interface" width="450px"> -->
-<!-- </p> -->
-<!---->
-<!-- <p align="center"> -->
-<!--   <img src="/assets/6.png" alt="Income entry interface" width="450px"> -->
-<!-- </p> -->
-<!---->
-<!-- Change the date or category of a transaction with any intelligible format. -->
-<!---->
-<!-- <p align="center"> -->
-<!--   <img src="/assets/4.png" alt="Date entry interface" width="450px"> -->
-<!-- </p> -->
-<!---->
-<!-- <p align="center"> -->
-<!--   <img src="/assets/2.png" alt="Category selection interface" width="450px"> -->
-<!-- </p> -->
-<!---->
-<!-- Select and delete transactions from your records. -->
-<!---->
-<!-- <p align="center"> -->
-<!--   <img src="/assets/1.png" alt="Delete Transaction interface" width="450px"> -->
-<!-- </p> -->
-<!---->
-<!-- Monthly and yearly financial summary. -->
-<!---->
-<!-- <p align="center"> -->
-<!--   <img src="/assets/5.png" alt="Financial summary displays" width="450px"> -->
-<!-- </p> -->
-<!---->
-<!-- </details> -->
+Cashout is an intelligent Telegram bot that leverages AI to make expense tracking effortless. Simply send a message in natural language, and the bot will understand and categorize your transactions automatically.
+
+### 🤖 AI-Powered Transaction Processing
+
+- **Natural Language Understanding**: Just type "coffee 3.50" or "salary 3000 yesterday" - no complex commands needed
+- **Smart Categorization**: Automatically assigns the right category based on your description
+- **Flexible Date Recognition**: Understands various date formats (dd/mm, dd-mm-yyyy, "yesterday", etc.)
+- **Multi-language Support**: Works with transaction descriptions in any language
+
+### 💰 Transaction Management
+
+- **Quick Entry**: Add expenses and income with a single message
+- **Inline Editing**: Modify amount, category, description, or date before confirming
+- **Bulk Operations**: Edit or delete existing transactions with paginated navigation
+- **Transaction Types**: Track both expenses (18 categories) and income (2 categories)
+- **Export Functionality**: Download all your transactions as CSV files
+
+### 📊 Financial Insights
+
+- **Weekly Recap**: Get detailed breakdowns of your current week's spending
+- **Monthly Summary**: View month-by-month financial performance with category breakdowns
+- **Yearly Overview**: See annual trends and top spending categories
+- **Balance Tracking**: Instant calculation of income vs expenses for any period
+- **Category Analysis**: Understand where your money goes with percentage breakdowns
+
+### 🔔 Smart Reminders
+
+- **Automated Weekly Recaps**: Receive your previous week's summary every Monday
+- **Intelligent Scheduling**: Only sends reminders to active users
+- **Reliable Delivery**: Built-in retry mechanism for failed notifications
+
+### 🎯 User Experience
+
+- **Intuitive Interface**: Clean inline keyboards for all operations
+- **Smart Navigation**: Year/month selectors for browsing historical data
+- **Pagination**: Handle large transaction lists with ease
+- **Quick Actions**: Home screen with instant access to all major functions
+- **Cancel Anytime**: Every operation can be cancelled mid-flow
+
+### 🛠️ Technical Features
+
+- **Database Migrations**: Version-controlled schema management
+- **Webhook & Polling Support**: Flexible deployment options
+- **Development Tools**: Built-in database seeder for testing
+- **Modular Architecture**: Clean separation of concerns for easy maintenance
+- **Configurable Access**: Optional user whitelist for private deployments
 
 ## Getting Started
 
