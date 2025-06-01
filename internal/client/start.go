@@ -12,6 +12,7 @@ func (c *Client) Start(b *gotgbot.Bot, ctx *ext.Context) error {
 	_, u := c.getUserFromContext(ctx)
 	user, err := c.authAndGetUser(u)
 	if err != nil {
+		b.SendMessage(ctx.EffectiveChat.Id, fmt.Sprintf("You're not allowed to use this bot.\nContact the admin giving them your Telegram ID: \"%d\", and your username (you must create one): \"%s\"", ctx.EffectiveChat.Id, ctx.EffectiveChat.Username), nil)
 		return err
 	}
 
