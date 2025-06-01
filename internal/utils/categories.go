@@ -1,6 +1,10 @@
 package utils
 
-import "cashout/internal/model"
+import (
+	"cashout/internal/model"
+	"regexp"
+	"strings"
+)
 
 // GetCategoryEmoji returns the appropriate emoji for a transaction category
 func GetCategoryEmoji(category model.TransactionCategory) string {
@@ -30,4 +34,18 @@ func GetCategoryEmoji(category model.TransactionCategory) string {
 		return emoji
 	}
 	return "📌" // Default emoji
+}
+
+// IsAnIncomeTransactionPrompt returns true if the transaction category could be an income category
+func IsAnIncomeTransactionPrompt(text string) bool {
+	incomeWords := []string{"income", "salary", "income", "tip", "stipend", "gratuity", "paycheck", "pay", "earning", "dividend", "payslip", "reward", "refund"}
+
+	pattern := `\b(?i:` + strings.Join(incomeWords, "|") + `)\b`
+
+	matched, err := regexp.MatchString(pattern, strings.ToLower(text))
+	if err != nil {
+		return false
+	}
+
+	return matched
 }

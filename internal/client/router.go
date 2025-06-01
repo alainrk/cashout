@@ -2,6 +2,7 @@ package client
 
 import (
 	"cashout/internal/model"
+	"cashout/internal/utils"
 	"fmt"
 	"strings"
 
@@ -66,10 +67,16 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	// End of top-level edit transaction
 
-	// Default behavior: start expense transaction flow for any unhandled text.
-	// Heuristic: there must be at least a digit in text.
+	// Default behavior: start transaction flow for any unhandled text.
+	// Heuristic 1: there must be at least a digit in text.
 	if strings.ContainsAny(ctx.Message.Text, "0123456789") {
+
+		// Heuristic 2: it's more common to be an expense than an income, set it to default.
 		user.Session.State = model.StateInsertingExpense
+		// Heuristic 3: try to extract if it could be an income by looking in the text.
+		if utils.IsAnIncomeTransactionPrompt(ctx.Message.Text) {
+			user.Session.State = model.StateInsertingIncome
+		}
 		err = c.Repositories.Users.Update(&user)
 		if err != nil {
 			return fmt.Errorf("failed to set user data: %w", err)
