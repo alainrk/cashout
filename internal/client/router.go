@@ -82,7 +82,6 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 			return fmt.Errorf("failed to set user data: %w", err)
 		}
 
-		// Process as expense transaction
 		return c.addTransaction(b, ctx, user)
 	}
 
