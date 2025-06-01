@@ -9,8 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// TODO: Move into config
-const WEEKLY_REMINDER_PROCESSING_MIN = 1
+const WEEKLY_REMINDER_PROCESSING_MIN = 60
 
 type Scheduler struct {
 	scheduler    *gocron.Scheduler
@@ -40,7 +39,6 @@ func (s *Scheduler) Start() {
 		}
 	})
 
-	// Process weekly reminders every minute
 	s.scheduler.Every(WEEKLY_REMINDER_PROCESSING_MIN).Minute().Do(func() {
 		if err := s.processWeeklyReminders(); err != nil {
 			s.logger.Errorf("Failed to process weekly reminders: %v", err)
