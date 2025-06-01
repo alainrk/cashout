@@ -25,6 +25,10 @@ func (r *Reminders) CreateOrUpdateWeeklyReminder(tgID int64, scheduledFor time.T
 	return r.DB.CreateOrUpdateWeeklyReminder(tgID, scheduledFor)
 }
 
+func (r *Reminders) CreateOrUpdateMonthlyReminder(tgID int64, scheduledFor time.Time) error {
+	return r.DB.CreateOrUpdateMonthlyReminder(tgID, scheduledFor)
+}
+
 func (r *Reminders) GetAllActiveUsers() ([]model.User, error) {
 	return r.DB.GetAllActiveUsers()
 }

@@ -38,6 +38,7 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
 ### 🔔 Smart Reminders
 
 - **Automated Weekly Recaps**: Receive your previous week's summary every Monday
+- **Automated Monthly Recaps**: Receive your previous month's summary on the 1st of each month
 - **Intelligent Scheduling**: Only sends reminders to active users
 - **Reliable Delivery**: Built-in retry mechanism for failed notifications
 

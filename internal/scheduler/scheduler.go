@@ -9,7 +9,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const WEEKLY_REMINDER_PROCESSING_MIN = 60
+const (
+	WEEKLY_REMINDER_PROCESSING_MIN  = 60
+	MONTHLY_REMINDER_PROCESSING_MIN = 60
+)
 
 type Scheduler struct {
 	scheduler    *gocron.Scheduler
@@ -31,7 +34,7 @@ func NewScheduler(bot *gotgbot.Bot, repos client.Repositories, logger *logrus.Lo
 }
 
 func (s *Scheduler) Start() {
-	// Schedule the creation of weekly recaps "reminders", every day, just to be sure
+	// Schedule the creation of weekly recaps
 	// s.scheduler.Every(1).Minute().Do(func() { /* TEST */
 	s.scheduler.Every(1).Day().At("15:00").Do(func() {
 		if err := s.createWeeklyReminders(); err != nil {
@@ -39,9 +42,25 @@ func (s *Scheduler) Start() {
 		}
 	})
 
+	// Schedule the creation of monthly recaps
+	// s.scheduler.Every(1).Minute().Do(func() { /* TEST */
+	s.scheduler.Every(1).Day().At("10:00").Do(func() {
+		if err := s.createMonthlyReminders(); err != nil {
+			s.logger.Errorf("Failed to create monthly reminders: %v", err)
+		}
+	})
+
+	// Process weekly reminders
 	s.scheduler.Every(WEEKLY_REMINDER_PROCESSING_MIN).Minute().Do(func() {
 		if err := s.processWeeklyReminders(); err != nil {
 			s.logger.Errorf("Failed to process weekly reminders: %v", err)
+		}
+	})
+
+	// Process monthly reminders
+	s.scheduler.Every(MONTHLY_REMINDER_PROCESSING_MIN).Minute().Do(func() {
+		if err := s.processMonthlyReminders(); err != nil {
+			s.logger.Errorf("Failed to process monthly reminders: %v", err)
 		}
 	})
 

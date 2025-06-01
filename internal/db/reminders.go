@@ -86,6 +86,29 @@ func (db *DB) CreateOrUpdateWeeklyReminder(tgID int64, scheduledFor time.Time) e
 	return result.Error
 }
 
+// CreateOrUpdateMonthlyReminder creates or updates a monthly reminder for a user
+func (db *DB) CreateOrUpdateMonthlyReminder(tgID int64, scheduledFor time.Time) error {
+	reminder := model.Reminder{
+		TgID:         tgID,
+		Type:         model.ReminderTypeMonthlyRecap,
+		Status:       model.ReminderStatusPending,
+		ScheduledFor: scheduledFor,
+	}
+
+	// Use ON CONFLICT to update if exists
+	result := db.conn.Exec(`
+		INSERT INTO reminders (tg_id, type, status, scheduled_for, created_at, updated_at)
+		VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+		ON CONFLICT (tg_id, type, scheduled_for) 
+		DO UPDATE SET 
+			status = EXCLUDED.status,
+			updated_at = CURRENT_TIMESTAMP
+		WHERE reminders.status != ?
+	`, reminder.TgID, reminder.Type, reminder.Status, reminder.ScheduledFor, model.ReminderStatusSent)
+
+	return result.Error
+}
+
 // GetAllActiveUsers
 func (db *DB) GetAllActiveUsers() ([]model.User, error) {
 	var users []model.User
