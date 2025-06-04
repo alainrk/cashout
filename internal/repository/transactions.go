@@ -103,3 +103,8 @@ func (r *Transactions) GetUserTransactions(tgID int64) ([]model.Transaction, err
 func (r *Transactions) GetUserTransactionsByDateRange(tgID int64, startDate, endDate time.Time) ([]model.Transaction, error) {
 	return r.DB.GetUserTransactionsByDateRange(tgID, startDate, endDate)
 }
+
+// SearchUserTransactions searches transactions by description with optional category filter
+func (r *Transactions) SearchUserTransactions(tgID int64, searchQuery string, category string, offset, limit int) ([]model.Transaction, int64, error) {
+	return r.DB.SearchUserTransactions(tgID, searchQuery, category, offset, limit)
+}

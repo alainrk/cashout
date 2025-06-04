@@ -65,6 +65,11 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 		return c.EditTransactionDescriptionConfirm(b, ctx)
 	}
 
+	// Search-related states
+	if user.Session.State == model.StateEnteringSearchQuery {
+		return c.SearchQueryEntered(b, ctx)
+	}
+
 	// End of top-level edit transaction
 
 	// Default behavior: start transaction flow for any unhandled text.
@@ -86,7 +91,7 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	c.CleanupKeyboard(b, ctx)
-	c.SendHomeKeyboard(b, ctx, "Sorry I don't understand, what can I do for you?\n\n/edit - Edit a transaction\n/delete - Delete a transaction\n/list - List your transactions\n/week Week Recap\n/month Month Recap\n/year Year Recap\n/export - Export all transactions to CSV")
+	c.SendHomeKeyboard(b, ctx, "Sorry I don't understand, what can I do for you?\n\n/edit - Edit a transaction\n/delete - Delete a transaction\n/search - Search transactions\n/list - List your transactions\n/week Week Recap\n/month Month Recap\n/year Year Recap\n/export - Export all transactions to CSV")
 
 	return fmt.Errorf("invalid top-level state")
 }

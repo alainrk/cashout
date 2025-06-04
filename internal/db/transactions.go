@@ -261,3 +261,39 @@ func (db *DB) GetUserTransactionsPaginated(tgID int64, offset, limit int) ([]mod
 
 	return transactions, total, nil
 }
+
+// SearchUserTransactions searches transactions by description with optional category filter
+func (db *DB) SearchUserTransactions(tgID int64, searchQuery string, category string, offset, limit int) ([]model.Transaction, int64, error) {
+	var transactions []model.Transaction
+	var total int64
+
+	// Build base query
+	baseQuery := db.conn.Model(&model.Transaction{}).Where("tg_id = ?", tgID)
+
+	// Add search condition (case-insensitive)
+	baseQuery = baseQuery.Where("LOWER(description) LIKE LOWER(?)", "%"+searchQuery+"%")
+
+	// Add category filter if not "all"
+	if category != "" && category != "all" {
+		baseQuery = baseQuery.Where("category = ?", category)
+	}
+
+	// Get total count
+	err := baseQuery.Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Get paginated results
+	result := baseQuery.
+		Order("date DESC").
+		Offset(offset).
+		Limit(limit).
+		Find(&transactions)
+
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+
+	return transactions, total, nil
+}

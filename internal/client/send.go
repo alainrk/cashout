@@ -34,6 +34,7 @@ func (c *Client) SendHomeKeyboard(b *gotgbot.Bot, ctx *ext.Context, text string)
 		},
 		{
 			{Text: "📄 Full List", CallbackData: "home.list"},
+			{Text: "🔍 Search", CallbackData: "home.search"},
 		},
 		{
 			{Text: "Current Week Recap", CallbackData: "home.week"},

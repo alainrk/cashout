@@ -30,6 +30,9 @@ const (
 	StateTopLevelEditingTransactionCategory    StateType = "top_level_editing_transaction_category"
 	StateTopLevelEditingTransactionAmount      StateType = "top_level_editing_transaction_amount"
 	StateTopLevelEditingTransactionDescription StateType = "top_level_editing_transaction_description"
+	// Search-related states
+	StateSelectingSearchCategory StateType = "selecting_search_category"
+	StateEnteringSearchQuery     StateType = "entering_search_query"
 	// The user has to confirm an action.
 	StateWaitingConfirm StateType = "waiting_confirm"
 )
