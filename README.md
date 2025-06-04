@@ -43,7 +43,7 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
 - **Intelligent Scheduling**: Only sends reminders to active users
 - **Reliable Delivery**: Built-in retry mechanism for failed notifications
 
-### Commands
+### 💻 Available Commands
 
 - `/start` - Initialize the bot and see the main menu
 - `/edit` - Edit an existing transaction
