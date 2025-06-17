@@ -16,6 +16,7 @@ import (
 type LLM struct {
 	APIKey   string
 	Endpoint string
+	Model    string
 	Logger   *logrus.Logger
 }
 
@@ -46,7 +47,7 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 
 	// Request payload
 	requestBody, err := json.Marshal(map[string]interface{}{
-		"model": "deepseek-chat",
+		"model": llm.Model,
 		"messages": []map[string]string{
 			{
 				"role":    "user",

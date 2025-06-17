@@ -6,6 +6,7 @@ import (
 	"cashout/internal/db"
 	"cashout/internal/logging"
 	"cashout/internal/scheduler"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -35,13 +36,12 @@ func main() {
 		logger.Fatalln("TELEGRAM_BOT_API_TOKEN environment variable is empty")
 	}
 
-	// API key and endpoint
-	aiApiKey := os.Getenv("DEEPSEEK_API_KEY")
-	aiEndpoint := "https://api.deepseek.com/v1/chat/completions"
+	// OpenAI API Compatible LLM Setup
 	llm := ai.LLM{
 		Logger:   logger,
-		APIKey:   aiApiKey,
-		Endpoint: aiEndpoint,
+		APIKey:   os.Getenv("OPENAI_API_KEY"),
+		Model:    os.Getenv("LLM_MODEL"),
+		Endpoint: fmt.Sprintf("%s/chat/completions", os.Getenv("OPENAI_BASE_URL")),
 	}
 
 	// Initialize database
