@@ -154,7 +154,27 @@ make run
 make run/live
 ```
 
-## Run Mode
+### Database Seeding
+
+The Dev DB Seeder generates test transaction data for development:
+
+```bash
+# Set the user's Telegram ID you want to seed data for
+export SEED_USER_TG_ID=123456789
+
+# Seed the database with random transactions
+make db/seed
+```
+
+The seeder will:
+
+- Generate 5 years of transaction history
+- Create 90% expenses and 10% income transactions
+- Distribute transactions across all categories
+- Ensure at least one salary per month
+- Delete existing transactions before seeding (idempotent)
+
+## How to run
 
 The bot can run both in `webhook` and `polling` mode.
 
@@ -177,25 +197,17 @@ You need to set the relevant environment variable:
 RUN_MODE='polling'
 ```
 
-### Database Seeding
+### LLM Setup
 
-The Dev DB Seeder generates test transaction data for development:
+Any OpenAI compatible API LLM can be used, setting up the following environment variables:
 
-```bash
-# Set the user's Telegram ID you want to seed data for
-export SEED_USER_TG_ID=123456789
+Example with DeepSeek:
 
-# Seed the database with random transactions
-make db/seed
 ```
-
-The seeder will:
-
-- Generate 5 years of transaction history
-- Create 90% expenses and 10% income transactions
-- Distribute transactions across all categories
-- Ensure at least one salary per month
-- Delete existing transactions before seeding (idempotent)
+OPENAI_API_KEY='sk-xxx'
+OPENAI_BASE_URL='https://api.deepseek.com/v1'
+LLM_MODEL='deepseek-chat'
+```
 
 ## License
 
