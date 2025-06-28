@@ -133,6 +133,7 @@ func (s *Seeder) generateTransactions(startDate, endDate time.Time) []model.Tran
 			transaction.Date = d
 			transaction.Currency = model.CurrencyEUR
 
+			// In generateTransactions function...
 			if isExpense {
 				transaction.Type = model.TypeExpense
 				transaction.Category = expenseCategories[rand.Intn(len(expenseCategories))]
@@ -142,7 +143,8 @@ func (s *Seeder) generateTransactions(startDate, endDate time.Time) []model.Tran
 				transaction.Type = model.TypeIncome
 				transaction.Category = incomeCategories[rand.Intn(len(incomeCategories))]
 				transaction.Amount = s.generateIncomeAmount(transaction.Category)
-				transaction.Description = s.generateIncomeDescription(transaction.Category)
+				// Pass the transaction date to generate a correct description
+				transaction.Description = s.generateIncomeDescription(transaction.Category, transaction.Date) // Changed line
 			}
 
 			transactions = append(transactions, transaction)
@@ -242,19 +244,23 @@ func (s *Seeder) generateExpenseDescription(category model.TransactionCategory) 
 		return "Gift for " + gofakeit.FirstName()
 	case model.CategoryTravel:
 		return "Trip to " + gofakeit.City()
+	case model.CategoryPets:
+		descriptions := []string{"Pet food", "Vet visit", "Pet toys", "Grooming", "Medication", "Treats"}
+		return gofakeit.RandomString(descriptions)
+	case model.CategoryOtherExpenses:
+		descriptions := []string{"Miscellaneous goods", "Service payment", "Online purchase", "General expense"}
+		return gofakeit.RandomString(descriptions)
 	default:
-		return gofakeit.Word()
+		// Use a more descriptive fallback than a single word
+		return gofakeit.ProductName()
 	}
 }
 
-func (s *Seeder) generateIncomeDescription(category model.TransactionCategory) string {
+func (s *Seeder) generateIncomeDescription(category model.TransactionCategory, date time.Time) string { // Signature updated
 	switch category {
 	case model.CategorySalary:
-		months := []string{
-			"January", "February", "March", "April", "May", "June",
-			"July", "August", "September", "October", "November", "December",
-		}
-		return gofakeit.RandomString(months) + " salary"
+		// Use the actual month from the transaction's date
+		return fmt.Sprintf("%s salary", date.Format("January"))
 	case model.CategoryOtherIncomes:
 		return gofakeit.RandomString([]string{"Freelance work", "Bonus", "Refund", "Gift received", "Investment return"})
 	default:
