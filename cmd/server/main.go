@@ -6,6 +6,7 @@ import (
 	"cashout/internal/db"
 	"cashout/internal/logging"
 	"cashout/internal/scheduler"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -55,7 +56,9 @@ func main() {
 		logger.Fatalf("Failed to initialize database: %s\n", err.Error())
 	}
 
-	defer db.Close()
+	defer func() {
+		err = errors.Join(err, db.Close())
+	}()
 
 	// Initialize client
 	c := client.NewClient(logger, db, llm)

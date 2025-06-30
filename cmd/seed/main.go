@@ -2,6 +2,7 @@ package main
 
 import (
 	"cashout/internal/db"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -41,7 +42,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
-	defer database.Close()
+	defer func() {
+		err = errors.Join(err, database.Close())
+	}()
 
 	// Create and run the seeder
 	seeder := NewSeeder(database, userTgID)

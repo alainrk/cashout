@@ -5,6 +5,7 @@ import (
 	"cashout/internal/model"
 	"cashout/internal/utils"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -79,7 +80,9 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 		llm.Logger.Errorf("Error sending request: %v\n", err)
 		return transaction, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err = errors.Join(err, resp.Body.Close())
+	}()
 
 	// Read response
 	body, err := io.ReadAll(resp.Body)

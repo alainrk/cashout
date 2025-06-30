@@ -608,12 +608,15 @@ func (c *Client) EditTransactionDateConfirm(b *gotgbot.Bot, ctx *ext.Context) er
 	newDate, err := utils.ParseDate(ctx.Message.Text)
 	if err != nil {
 		fmt.Printf("failed to parse date: %v\n", err)
-		b.SendMessage(ctx.EffectiveSender.ChatId, "Invalid date, please try again.", nil)
+		_, err = b.SendMessage(ctx.EffectiveSender.ChatId, "Invalid date, please try again.", nil)
 		return err
 	}
 
 	if newDate.After(time.Now()) {
-		b.SendMessage(ctx.EffectiveSender.ChatId, "I don't support future dates, please try again.", nil)
+		_, err = b.SendMessage(ctx.EffectiveSender.ChatId, "I don't support future dates, please try again.", nil)
+		if err != nil {
+			return err
+		}
 		return fmt.Errorf("invalid date: %s", ctx.Message.Text)
 	}
 
