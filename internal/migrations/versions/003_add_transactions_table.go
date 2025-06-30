@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	migrations.RegisterMigration("003", "Add transactions table", addTransactionsTable)
+	migrations.RegisterMigrationWithRollback("003", "Add transactions table", addTransactionsTable, rollbacktransactionsTable)
 }
 
 func addTransactionsTable(tx *gorm.DB) error {

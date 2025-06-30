@@ -491,6 +491,6 @@ func (c *Client) SearchNew(b *gotgbot.Bot, ctx *ext.Context) error {
 // SearchNoop handles no-op callbacks (like separators)
 func (c *Client) SearchNoop(b *gotgbot.Bot, ctx *ext.Context) error {
 	// Answer callback query to remove loading state
-	ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{})
-	return nil
+	_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{})
+	return err
 }

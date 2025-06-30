@@ -15,10 +15,6 @@ func noCommands(msg *gotgbot.Message) bool {
 	return message.Text(msg) && !message.Command(msg)
 }
 
-func confirmCommand(msg *gotgbot.Message) bool {
-	return message.Text(msg) && strings.Trim(msg.Text, " ") == "Confirm"
-}
-
 func cancelText(msg *gotgbot.Message) bool {
 	return message.Text(msg) && strings.ToLower(strings.Trim(msg.Text, " ")) == "cancel"
 }

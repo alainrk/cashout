@@ -3,6 +3,7 @@ package scheduler
 import (
 	"cashout/internal/model"
 	"cashout/internal/utils"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -82,18 +83,18 @@ func (s *Scheduler) processWeeklyReminders() error {
 
 		if err != nil {
 			errMsg := err.Error()
-			s.repositories.Reminders.UpdateReminderStatusTransaction(
+			errors.Join(err, s.repositories.Reminders.UpdateReminderStatusTransaction(
 				reminder.ID,
 				model.ReminderStatusFailed,
 				&errMsg,
-			)
+			))
 			s.logger.Errorf("Failed to send weekly recap for user %d: %v", reminder.TgID, err)
 		} else {
-			s.repositories.Reminders.UpdateReminderStatusTransaction(
+			errors.Join(err, s.repositories.Reminders.UpdateReminderStatusTransaction(
 				reminder.ID,
 				model.ReminderStatusSent,
 				nil,
-			)
+			))
 			s.logger.Infof("Successfully sent weekly recap to user %d", reminder.TgID)
 		}
 	}
