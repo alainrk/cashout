@@ -7,7 +7,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/brianvoe/gofakeit/v6"
+	gofakeit "github.com/brianvoe/gofakeit/v6"
 )
 
 type Seeder struct {

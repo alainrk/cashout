@@ -25,32 +25,19 @@ no-dirty:
 
 
 # ==================================================================================== #
-# QUALITY CONTROL
+# TESTS
 # ==================================================================================== #
 
-## lint: run all linters
 .PHONY: lint
 lint:
 	golangci-lint run --timeout 5m --allow-parallel-runners --sort-results
 
-## lint-fix: try to fix all lint errors
 .PHONY: lint-fix
 lint-fix:
 	golangci-lint run --fix
 
-## test: run all tests colorized
-# .PHONY: test
+.PHONY: test
 test: lint
-	./test.sh
-
-## test-ci: run all tests in CI
-.PHONY: test-ci
-test-ci:
-	go test -v -race -buildvcs ./...
-
-## test/cover: run all tests and display coverage
-.PHONY: test/cover
-test/cover:
 	go test -v -race -buildvcs -coverprofile=/tmp/coverage.out ./...
 	go tool cover -html=/tmp/coverage.out
 

@@ -4,7 +4,7 @@ import (
 	"cashout/internal/client"
 	"time"
 
-	"github.com/PaulSonOfLars/gotgbot/v2"
+	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/go-co-op/gocron"
 	"github.com/sirupsen/logrus"
 )

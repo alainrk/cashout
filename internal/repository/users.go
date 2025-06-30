@@ -4,7 +4,7 @@ import (
 	"cashout/internal/model"
 	"strings"
 
-	"github.com/PaulSonOfLars/gotgbot/v2"
+	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 )
 
 type Users struct {

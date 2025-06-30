@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/PaulSonOfLars/gotgbot/v2"
+	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 )
 
