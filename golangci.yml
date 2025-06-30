@@ -1,0 +1,65 @@
+run:
+  # Timeout for analysis
+  timeout: 5m
+
+  # Exit code when at least one issue was found
+  issues-exit-code: 1
+
+  # Include test files
+  tests: true
+
+  # Which dirs to skip
+  skip-dirs:
+    - vendor
+    - third_party
+    - testdata
+    - examples
+    - pb
+    - ci
+    - .git
+    - bin
+
+  # Skip generated files
+  skip-files:
+    - ".*\\.pb\\.go$"
+    - ".*\\.gen\\.go$"
+
+  # Allowed concurrency
+  concurrency: 4
+
+linters:
+  enable:
+    - gofmt
+    - govet
+    - errcheck
+    - staticcheck
+    - gosimple
+    - ineffassign
+    - typecheck
+    - unused
+    - gosec
+    - gocritic
+
+linters-settings:
+  errcheck:
+    # Don't check error return of these functions
+    exclude-functions:
+      - io.Copy
+      - fmt.Fprintf
+      - fmt.Fprintln
+
+issues:
+  # Maximum issues to report
+  max-issues-per-linter: 50
+  max-same-issues: 3
+
+  # Exclude patterns for generated code
+  exclude-dirs:
+    - vendor
+    - node_modules
+
+  # Don't report on code outside the module
+  new: false
+
+  # Fix found issues (if possible)
+  fix: false

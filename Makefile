@@ -30,11 +30,12 @@ no-dirty:
 
 .PHONY: lint
 lint:
-	golangci-lint run --timeout 5m --allow-parallel-runners --sort-results
+	golangci-lint cache clean
+	golangci-lint run ./...
 
 .PHONY: lint-fix
 lint-fix:
-	golangci-lint run --fix
+	golangci-lint run --fix ./...
 
 .PHONY: test
 test: lint
