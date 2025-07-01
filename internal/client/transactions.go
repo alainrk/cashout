@@ -4,6 +4,7 @@ import (
 	"cashout/internal/model"
 	"cashout/internal/utils"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -31,8 +32,8 @@ func (c *Client) AddTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 	case "expense":
 		user.Session.State = model.StateInsertingExpense
 	default:
-		c.SendAddTransactionKeyboard(b, ctx, "Invalid action, add a transaction.")
-		return nil
+		_, err = c.SendAddTransactionKeyboard(b, ctx, "Invalid action, add a transaction.")
+		return err
 	}
 
 	err = c.Repositories.Users.Update(&user)
@@ -70,25 +71,27 @@ func (c *Client) addTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 	case model.StateInsertingExpense:
 		transactionType = model.TypeExpense
 	default:
-		c.SendAddTransactionKeyboard(b, ctx, "Invalid action, add a transaction.")
-		return nil
+		_, err := c.SendAddTransactionKeyboard(b, ctx, "Invalid action, add a transaction.")
+		return err
 	}
 
 	transaction, err := c.LLM.ExtractTransaction(ctx.Message.Text, transactionType)
 	if err != nil {
 		msg := "I'm sorry, I couldn't understand your transaction!"
-		ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
+		_, errm := ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
 			ParseMode: "HTML",
 		})
+		err = errors.Join(err, errm)
 		return err
 	}
 
 	if transaction.Amount == 0 {
 		msg := "I'm sorry, I couldn't understand your transaction!"
-		ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
+		_, errm := ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
 			ParseMode: "HTML",
 		})
-		return nil
+		err = errors.Join(err, errm)
+		return err
 	}
 
 	// Store the transaction in the session
@@ -257,16 +260,19 @@ func (c *Client) EditTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 		return fmt.Errorf("unknown field: %s", field)
 	}
 
-	c.CleanupKeyboard(b, ctx)
+	err = c.CleanupKeyboard(b, ctx)
+	if err != nil {
+		return err
+	}
 
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	b.SendMessage(ctx.EffectiveSender.ChatId, text, opts)
+	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, text, opts)
 
-	return nil
+	return err
 }
 
 func (c *Client) editTransactionDate(b *gotgbot.Bot, ctx *ext.Context, user model.User) error {
@@ -280,13 +286,14 @@ func (c *Client) editTransactionDate(b *gotgbot.Bot, ctx *ext.Context, user mode
 	date, err := utils.ParseDate(ctx.Message.Text)
 	if err != nil {
 		fmt.Printf("failed to parse date: %v\n", err)
-		b.SendMessage(ctx.EffectiveSender.ChatId, "Invalid date, please try again.", nil)
+		_, errm := b.SendMessage(ctx.EffectiveSender.ChatId, "Invalid date, please try again.", nil)
+		err = errors.Join(err, errm)
 		return err
 	}
 
 	if date.After(time.Now()) {
-		b.SendMessage(ctx.EffectiveSender.ChatId, "I don't support future dates, please try again.", nil)
-		return fmt.Errorf("invalid date: %s", ctx.Message.Text)
+		_, err := b.SendMessage(ctx.EffectiveSender.ChatId, "I don't support future dates, please try again.", nil)
+		return errors.Join(err, fmt.Errorf("invalid date: %s", ctx.Message.Text))
 	}
 
 	transaction.Date = date
@@ -303,7 +310,7 @@ func (c *Client) editTransactionDate(b *gotgbot.Bot, ctx *ext.Context, user mode
 	}
 
 	m := fmt.Sprintf("%s (€ %.2f), %s on %s. Confirm?", transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
-	b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
+	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 				{
@@ -344,7 +351,7 @@ func (c *Client) editTransactionDate(b *gotgbot.Bot, ctx *ext.Context, user mode
 		},
 	})
 
-	return nil
+	return err
 }
 
 func (c *Client) editTransactionAmount(b *gotgbot.Bot, ctx *ext.Context, user model.User) error {
@@ -391,7 +398,7 @@ func (c *Client) editTransactionAmount(b *gotgbot.Bot, ctx *ext.Context, user mo
 	}
 
 	m := fmt.Sprintf("%s (€ %.2f), %s on %s. Confirm?", transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
-	b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
+	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 				{
@@ -432,7 +439,7 @@ func (c *Client) editTransactionAmount(b *gotgbot.Bot, ctx *ext.Context, user mo
 		},
 	})
 
-	return nil
+	return err
 }
 
 func (c *Client) editTransactionDescription(b *gotgbot.Bot, ctx *ext.Context, user model.User) error {
@@ -464,7 +471,7 @@ func (c *Client) editTransactionDescription(b *gotgbot.Bot, ctx *ext.Context, us
 	}
 
 	m := fmt.Sprintf("%s (€ %.2f), %s on %s. Confirm?", transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
-	b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
+	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 				{
@@ -505,7 +512,7 @@ func (c *Client) editTransactionDescription(b *gotgbot.Bot, ctx *ext.Context, us
 		},
 	})
 
-	return nil
+	return err
 }
 
 func (c *Client) editTransactionCategory(b *gotgbot.Bot, ctx *ext.Context, user model.User) error {
@@ -516,8 +523,8 @@ func (c *Client) editTransactionCategory(b *gotgbot.Bot, ctx *ext.Context, user 
 	}
 
 	if !model.IsValidTransactionCategory(ctx.Message.Text) {
-		b.SendMessage(ctx.EffectiveSender.ChatId, "Invalid category, please try again.", nil)
-		return fmt.Errorf("invalid category: %s", ctx.Message.Text)
+		_, err = b.SendMessage(ctx.EffectiveSender.ChatId, "Invalid category, please try again.", nil)
+		return errors.Join(err, fmt.Errorf("invalid category: %s", ctx.Message.Text))
 	}
 	transaction.Category = model.TransactionCategory(ctx.Message.Text)
 
@@ -533,7 +540,7 @@ func (c *Client) editTransactionCategory(b *gotgbot.Bot, ctx *ext.Context, user 
 	}
 
 	m := fmt.Sprintf("%s (€ %.2f), %s on %s. Confirm?", transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
-	b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
+	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 				{
@@ -574,7 +581,7 @@ func (c *Client) editTransactionCategory(b *gotgbot.Bot, ctx *ext.Context, user 
 		},
 	})
 
-	return nil
+	return err
 }
 
 // Confirm confirms the previous action after the user been prompted.
@@ -596,7 +603,7 @@ func (c *Client) Confirm(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	err = c.Repositories.Transactions.Add(transaction)
 	if err != nil {
-		SendMessage(ctx, b, "There has been an error saving your transaction, please retry", nil)
+		err = errors.Join(err, SendMessage(ctx, b, "There has been an error saving your transaction, please retry", nil))
 		c.Logger.Errorln("failed to add transaction", err)
 
 		// Reset the state
@@ -623,11 +630,14 @@ func (c *Client) Confirm(b *gotgbot.Bot, ctx *ext.Context) error {
 	// Remove the keyboard from the previous message
 	query := ctx.CallbackQuery
 	msg := query.Message
-	msg.EditReplyMarkup(b, &gotgbot.EditMessageReplyMarkupOpts{
+	_, _, err = msg.EditReplyMarkup(b, &gotgbot.EditMessageReplyMarkupOpts{
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{},
 		},
 	})
+	if err != nil {
+		c.Logger.Errorln("failed to remove the keyboard from the previous message", err)
+	}
 
 	emoji := "💰"
 	if transaction.Type == model.TypeExpense {
@@ -651,8 +661,8 @@ func (c *Client) Cancel(b *gotgbot.Bot, ctx *ext.Context) error {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	c.CleanupKeyboard(b, ctx)
-	c.SendHomeKeyboard(b, ctx, "Your operation has been canceled!\nWhat else can I do for you?\n\n/edit - Edit a transaction\n/delete - Delete a transaction\n/search - Search transactions\n/list - List your transactions\n/week Week Recap\n/month Month Recap\n/year Year Recap\n/export - Export all transactions to CSV")
+	err = c.CleanupKeyboard(b, ctx)
+	err = errors.Join(err, c.SendHomeKeyboard(b, ctx, "Your operation has been canceled!\nWhat else can I do for you?\n\n/edit - Edit a transaction\n/delete - Delete a transaction\n/search - Search transactions\n/list - List your transactions\n/week Week Recap\n/month Month Recap\n/year Year Recap\n/export - Export all transactions to CSV"))
 
-	return ext.EndGroups
+	return err
 }

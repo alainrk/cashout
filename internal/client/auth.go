@@ -22,8 +22,8 @@ func (c *Client) authAndGetUser(user gotgbot.User) (model.User, error) {
 	}
 
 	if exists {
-		c.Repositories.Users.Update(&u)
-		return u, nil
+		err = c.Repositories.Users.Update(&u)
+		return u, err
 	}
 
 	// First Message, user to be created.

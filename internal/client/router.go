@@ -3,6 +3,7 @@ package client
 import (
 	"cashout/internal/model"
 	"cashout/internal/utils"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -90,8 +91,8 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 		return c.addTransaction(b, ctx, user)
 	}
 
-	c.CleanupKeyboard(b, ctx)
-	err = c.SendHomeKeyboard(b, ctx, "Sorry I don't understand, what can I do for you?\n\n/edit - Edit a transaction\n/delete - Delete a transaction\n/search - Search transactions\n/list - List your transactions\n/week Week Recap\n/month Month Recap\n/year Year Recap\n/export - Export all transactions to CSV")
+	err = c.CleanupKeyboard(b, ctx)
+	err = errors.Join(err, c.SendHomeKeyboard(b, ctx, "Sorry I don't understand, what can I do for you?\n\n/edit - Edit a transaction\n/delete - Delete a transaction\n/search - Search transactions\n/list - List your transactions\n/week Week Recap\n/month Month Recap\n/year Year Recap\n/export - Export all transactions to CSV"))
 	if err != nil {
 		return err
 	}
