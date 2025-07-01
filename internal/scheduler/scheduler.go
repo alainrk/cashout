@@ -34,35 +34,48 @@ func NewScheduler(bot *gotgbot.Bot, repos client.Repositories, logger *logrus.Lo
 }
 
 func (s *Scheduler) Start() {
+	var err error
 	// Schedule the creation of weekly recaps
 	// s.scheduler.Every(1).Minute().Do(func() { /* TEST */
-	s.scheduler.Every(1).Day().At("15:00").Do(func() {
+	_, err = s.scheduler.Every(1).Day().At("15:00").Do(func() {
 		if err := s.createWeeklyReminders(); err != nil {
 			s.logger.Errorf("Failed to create weekly reminders: %v", err)
 		}
 	})
+	if err != nil {
+		s.logger.Errorf("Failed to schedule weekly reminders: %v", err)
+	}
 
 	// Schedule the creation of monthly recaps
 	// s.scheduler.Every(1).Minute().Do(func() { /* TEST */
-	s.scheduler.Every(1).Day().At("10:00").Do(func() {
+	_, err = s.scheduler.Every(1).Day().At("10:00").Do(func() {
 		if err := s.createMonthlyReminders(); err != nil {
 			s.logger.Errorf("Failed to create monthly reminders: %v", err)
 		}
 	})
+	if err != nil {
+		s.logger.Errorf("Failed to schedule monthly reminders: %v", err)
+	}
 
 	// Process weekly reminders
-	s.scheduler.Every(WEEKLY_REMINDER_PROCESSING_MIN).Minute().Do(func() {
+	_, err = s.scheduler.Every(WEEKLY_REMINDER_PROCESSING_MIN).Minute().Do(func() {
 		if err := s.processWeeklyReminders(); err != nil {
 			s.logger.Errorf("Failed to process weekly reminders: %v", err)
 		}
 	})
+	if err != nil {
+		s.logger.Errorf("Failed to schedule weekly reminders: %v", err)
+	}
 
 	// Process monthly reminders
-	s.scheduler.Every(MONTHLY_REMINDER_PROCESSING_MIN).Minute().Do(func() {
+	_, err = s.scheduler.Every(MONTHLY_REMINDER_PROCESSING_MIN).Minute().Do(func() {
 		if err := s.processMonthlyReminders(); err != nil {
 			s.logger.Errorf("Failed to process monthly reminders: %v", err)
 		}
 	})
+	if err != nil {
+		s.logger.Errorf("Failed to schedule monthly reminders: %v", err)
+	}
 
 	// Start the scheduler
 	s.scheduler.StartAsync()

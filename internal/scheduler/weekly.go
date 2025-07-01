@@ -83,23 +83,32 @@ func (s *Scheduler) processWeeklyReminders() error {
 
 		if err != nil {
 			errMsg := err.Error()
-			errors.Join(err, s.repositories.Reminders.UpdateReminderStatusTransaction(
+			s.logger.Errorf("Failed to send weekly recap for user %d: %v", reminder.TgID, err)
+
+			err = s.repositories.Reminders.UpdateReminderStatusTransaction(
 				reminder.ID,
 				model.ReminderStatusFailed,
 				&errMsg,
-			))
-			s.logger.Errorf("Failed to send weekly recap for user %d: %v", reminder.TgID, err)
+			)
+			if err != nil {
+				s.logger.Errorf("Failed to update reminder %d to failed: %v", reminder.ID, err)
+				return err
+			}
 		} else {
-			errors.Join(err, s.repositories.Reminders.UpdateReminderStatusTransaction(
+			err = errors.Join(err, s.repositories.Reminders.UpdateReminderStatusTransaction(
 				reminder.ID,
 				model.ReminderStatusSent,
 				nil,
 			))
+			if err != nil {
+				s.logger.Errorf("Failed to update reminder %d to sent: %v", reminder.ID, err)
+				return err
+			}
 			s.logger.Infof("Successfully sent weekly recap to user %d", reminder.TgID)
 		}
 	}
 
-	return nil
+	return err
 }
 
 // sendWeeklyRecap sends the previous week's recap to a user
