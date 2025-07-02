@@ -67,6 +67,7 @@ jobs:
         run: |
           go mod download
           go install gotest.tools/gotestsum@latest
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@${{ env.GOLANGCI_LINT_VERSION }}
 
       - name: Run tests
         env:
