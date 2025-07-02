@@ -71,10 +71,15 @@ jobs:
       - name: Run tests
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+          TELEGRAM_BOT_API_TOKEN: dummy_token_for_ci
+          OPENAI_API_KEY: dummy_key_for_ci
+          OPENAI_BASE_URL: https://api.example.com/v1
+          LLM_MODEL: dummy-model
+          RUN_MODE: polling
+          LOG_LEVEL: info
         run: |
           # Run migrations first
           go run ./cmd/migrate/main.go -command up
-          # Run tests with CI-friendly output
           make test-ci
 
       - name: Upload coverage to Codecov
