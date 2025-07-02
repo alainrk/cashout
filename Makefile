@@ -37,10 +37,18 @@ lint:
 lint-fix:
 	golangci-lint run --fix ./...
 
-.PHONY: test
-test: lint
+.PHONY: test-ci
+test-ci: lint
+	go test -v -race -buildvcs ./...
+
+.PHONY: test-coverage
+test-coverage: lint
 	go test -v -race -buildvcs -coverprofile=/tmp/coverage.out ./...
 	go tool cover -html=/tmp/coverage.out
+
+.PHONY: test
+test: lint
+	gotestsum --format dots -- -race -buildvcs ./...
 
 .PHONY: vet
 vet:
