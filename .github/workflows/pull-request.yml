@@ -7,7 +7,7 @@ on:
 
 env:
   GO_VERSION: "1.24"
-  GOLANGCI_LINT_VERSION: "v2.2"
+  GOLANGCI_LINT_VERSION: "v2.2.1"
 
 jobs:
   lint:
@@ -67,7 +67,7 @@ jobs:
         run: |
           go mod download
           go install gotest.tools/gotestsum@latest
-          go install github.com/golangci/golangci-lint/cmd/golangci-lint@${{ env.GOLANGCI_LINT_VERSION }}
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v2.2.1
 
       - name: Run tests
         env:
