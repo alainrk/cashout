@@ -25,10 +25,9 @@ func main() {
 	flag.StringVar(&envFile, "env", ".env", "Environment file to load (.env, .prod.env, etc)")
 	flag.Parse()
 
-	// Load the specified environment file
-	err := godotenv.Load(envFile)
-	if err != nil {
-		log.Fatalf("Error loading %s file", envFile)
+	// Load the specified environment file, if any
+	if err := godotenv.Load(envFile); err != nil {
+		log.Printf("Warning: Could not load %s file: %v (continuing with existing environment variables)", envFile, err)
 	}
 
 	// Initialize database

@@ -54,6 +54,11 @@ test: lint
 vet:
 	go vet ./...
 
+.PHONY: sec
+sec:
+	go list -json -deps ./... | nancy sleuth
+	govulncheck ./...
+
 
 # ==================================================================================== #
 # DEVELOPMENT
