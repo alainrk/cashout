@@ -25,9 +25,8 @@ func main() {
 	flag.StringVar(&envFile, "env", ".env", "Environment file to load (.env, .prod.env, etc)")
 	flag.Parse()
 
-	// Load the specified environment file
+	// Load the specified environment file, if any
 	if err := godotenv.Load(envFile); err != nil {
-		// Only log a warning, don't fail
 		log.Printf("Warning: Could not load %s file: %v (continuing with existing environment variables)", envFile, err)
 	}
 
