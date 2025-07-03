@@ -725,8 +725,9 @@ func formatEditableTransactions(transactions []model.Transaction, offset, total 
 	for i, t := range transactions {
 		emoji := utils.GetCategoryEmoji(t.Category)
 
+		// Display with relative numbering (1-5)
 		msg.WriteString(fmt.Sprintf("%d. <b>%s</b> - %.2f€\n",
-			offset+i+1,
+			i+1, // Always 1-5 regardless of page
 			t.Description,
 			t.Amount,
 		))
@@ -748,7 +749,7 @@ func createEditPaginationKeyboard(transactions []model.Transaction, offset, limi
 	var row []gotgbot.InlineKeyboardButton
 	for i, t := range transactions {
 		button := gotgbot.InlineKeyboardButton{
-			Text:         fmt.Sprintf("%d", i+1),
+			Text:         fmt.Sprintf("%d", i+1), // Always show 1-5
 			CallbackData: fmt.Sprintf("edit.select.%d", t.ID),
 		}
 		row = append(row, button)
