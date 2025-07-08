@@ -12,7 +12,7 @@ func (db *DB) GetUser(tgID int64) (*model.User, error) {
 	return &user, nil
 }
 
-// GetUserByUsername retrieves a user by Telegram username
+// GetUserByUsername retrieves a user by their Telegram username
 func (db *DB) GetUserByUsername(username string) (*model.User, error) {
 	var user model.User
 	result := db.conn.Where("tg_username = ?", username).First(&user)
