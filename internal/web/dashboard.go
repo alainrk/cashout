@@ -326,7 +326,11 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/html")
-	t.Execute(w, data)
+	err = t.Execute(w, data)
+	if err != nil {
+		http.Error(w, "Template error", http.StatusInternalServerError)
+		return
+	}
 }
 
 // handleAPIStats returns user statistics
@@ -395,7 +399,10 @@ func (s *Server) handleAPITransactions(w http.ResponseWriter, r *http.Request) {
 	// Parse query parameters
 	limit := 10
 	if l := r.URL.Query().Get("limit"); l != "" {
-		fmt.Sscanf(l, "%d", &limit)
+		_, err := fmt.Sscanf(l, "%d", &limit)
+		if err != nil {
+			limit = 10
+		}
 		if limit > 100 {
 			limit = 100
 		}

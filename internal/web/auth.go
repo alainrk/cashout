@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -239,7 +240,10 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 </html>
 `
 	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprint(w, tmpl)
+	_, err := fmt.Fprint(w, tmpl)
+	if err != nil {
+		s.logger.Errorf("Failed to send login page: %v", err)
+	}
 }
 
 // handleAuthRequest handles the initial auth request
@@ -355,7 +359,10 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_id")
 	if err == nil {
 		// Delete session from database
-		s.repositories.Auth.DeleteWebSession(cookie.Value)
+		err = errors.Join(err, s.repositories.Auth.DeleteWebSession(cookie.Value))
+		if err != nil {
+			s.logger.Errorf("Failed to delete session: %v", err)
+		}
 	}
 
 	// Clear cookie
@@ -374,11 +381,17 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 func (s *Server) sendJSONError(w http.ResponseWriter, message string, status int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(map[string]string{"error": message})
+	err := json.NewEncoder(w).Encode(map[string]string{"error": message})
+	if err != nil {
+		s.logger.Errorf("Failed to send error response: %v", err)
+	}
 }
 
 func (s *Server) sendJSONSuccess(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(data)
+	err := json.NewEncoder(w).Encode(data)
+	if err != nil {
+		s.logger.Errorf("Failed to send success response: %v", err)
+	}
 }
