@@ -21,7 +21,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Cashout Dashboard - {{.User.FirstName}}</title>
+    <title>Cashout Dashboard - {{.User.Name}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         * {
@@ -177,7 +177,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
         <div class="header-content">
             <div class="logo">💰 Cashout</div>
             <div class="user-info">
-                <span>Welcome, <strong>{{.User.FirstName}}</strong></span>
+                <span>Welcome, <strong>{{.User.Name}}</strong></span>
                 <a href="/logout" class="logout-btn">Logout</a>
             </div>
         </div>
@@ -201,7 +201,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
         function formatCurrency(amount) {
             return new Intl.NumberFormat('en-US', {
                 style: 'currency',
-                currency: 'USD',
+                currency: 'EUR',
                 minimumFractionDigits: 2
             }).format(amount);
         }
@@ -223,9 +223,9 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
             try {
                 const response = await fetch('/api/stats');
                 const data = await response.json();
-                
+
                 if (!response.ok) throw new Error(data.error || 'Failed to load stats');
-                
+
                 const statsGrid = document.getElementById('statsGrid');
                 statsGrid.innerHTML = ` + "`" + `
                     <div class="stat-card">
@@ -249,7 +249,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
                     </div>
                 ` + "`" + `;
             } catch (error) {
-                document.getElementById('statsGrid').innerHTML = 
+                document.getElementById('statsGrid').innerHTML =
                     '<div class="error">Failed to load statistics: ' + error.message + '</div>';
             }
         }
@@ -259,16 +259,16 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
             try {
                 const response = await fetch('/api/transactions?limit=10');
                 const data = await response.json();
-                
+
                 if (!response.ok) throw new Error(data.error || 'Failed to load transactions');
-                
+
                 const container = document.getElementById('transactionsContainer');
-                
+
                 if (data.transactions.length === 0) {
                     container.innerHTML = '<p>No transactions yet.</p>';
                     return;
                 }
-                
+
                 const tableRows = data.transactions.map(tx => ` + "`" + `
                     <tr>
                         <td>${formatDate(tx.created_at)}</td>
@@ -277,7 +277,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
                         <td class="amount ${tx.type}">${tx.type === 'income' ? '+' : '-'}${formatCurrency(Math.abs(tx.amount))}</td>
                     </tr>
                 ` + "`" + `).join('');
-                
+
                 container.innerHTML = ` + "`" + `
                     <table class="transactions-table">
                         <thead>
@@ -294,7 +294,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
                     </table>
                 ` + "`" + `;
             } catch (error) {
-                document.getElementById('transactionsContainer').innerHTML = 
+                document.getElementById('transactionsContainer').innerHTML =
                     '<div class="error">Failed to load transactions: ' + error.message + '</div>';
             }
         }
@@ -302,7 +302,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
         // Load data on page load
         loadStats();
         loadTransactions();
-        
+
         // Refresh data every 30 seconds
         setInterval(() => {
             loadStats();
@@ -409,13 +409,46 @@ func (s *Server) handleAPITransactions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Sort by date (newest first) and limit
+	// Sort transactions by date in descending order
+	for i := 0; i < len(transactions)-1; i++ {
+		for j := i + 1; j < len(transactions); j++ {
+			if transactions[i].Date.Before(transactions[j].Date) {
+				transactions[i], transactions[j] = transactions[j], transactions[i]
+			}
+		}
+	}
+
 	if len(transactions) > limit {
 		transactions = transactions[:limit]
 	}
 
+	// Convert to response format
+	type TransactionResponse struct {
+		ID          int64     `json:"id"`
+		Date        time.Time `json:"date"`
+		CreatedAt   time.Time `json:"created_at"`
+		Category    string    `json:"category"`
+		Description string    `json:"description"`
+		Amount      float64   `json:"amount"`
+		Type        string    `json:"type"`
+	}
+
+	transactionResponses := make([]TransactionResponse, len(transactions))
+	for i, tx := range transactions {
+		transactionResponses[i] = TransactionResponse{
+			ID:          tx.ID,
+			Date:        tx.Date,
+			CreatedAt:   tx.CreatedAt,
+			Category:    string(tx.Category),
+			Description: tx.Description,
+			Amount:      tx.Amount,
+			Type:        string(tx.Type),
+		}
+	}
+
 	response := map[string]interface{}{
-		"transactions": transactions,
-		"count":        len(transactions),
+		"transactions": transactionResponses,
+		"count":        len(transactionResponses),
 	}
 
 	s.sendJSONSuccess(w, response)
