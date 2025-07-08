@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"strings"
 	"time"
 )
 
@@ -39,11 +40,14 @@ func (r *Auth) CreateAuthToken(tgID int64) (*model.AuthToken, error) {
 		return nil, err
 	}
 
+	// Make token uppercase for easier entry
+	token = strings.ToUpper(token)
+
 	authToken := &model.AuthToken{
 		TgID:      tgID,
 		Token:     token,
 		Status:    model.AuthStatusPending,
-		ExpiresAt: time.Now().Add(5 * time.Minute), // 5 minutes expiry
+		ExpiresAt: time.Now().UTC().Add(5 * time.Minute), // 5 minutes expiry in UTC
 	}
 
 	if err := r.DB.CreateAuthToken(authToken); err != nil {
@@ -62,10 +66,20 @@ func (r *Auth) GetAuthToken(token string) (*model.AuthToken, error) {
 func (r *Auth) VerifyAuthToken(token string) (*model.User, error) {
 	authToken, err := r.DB.GetAuthToken(token)
 	if err != nil {
+		r.Logger.Errorf("Failed to get auth token %s: %v", token, err)
 		return nil, err
 	}
 
+	// Debug logging
+	r.Logger.Debugf("Auth token found: Status=%s, ExpiresAt=%s, Now=%s",
+		authToken.Status,
+		authToken.ExpiresAt.Format(time.RFC3339),
+		time.Now().UTC().Format(time.RFC3339))
+
 	if !authToken.IsValid() {
+		r.Logger.Errorf("Invalid token: Status=%s, Expired=%v",
+			authToken.Status,
+			time.Now().UTC().After(authToken.ExpiresAt))
 		return nil, ErrInvalidToken
 	}
 
@@ -94,7 +108,7 @@ func (r *Auth) CreateWebSession(tgID int64) (*model.WebSession, error) {
 	session := &model.WebSession{
 		ID:        sessionID,
 		TgID:      tgID,
-		ExpiresAt: time.Now().Add(24 * time.Hour), // 24 hours session
+		ExpiresAt: time.Now().UTC().Add(24 * time.Hour), // 24 hours session in UTC
 	}
 
 	if err := r.DB.CreateWebSession(session); err != nil {

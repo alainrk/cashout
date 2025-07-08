@@ -56,7 +56,7 @@ func (AuthToken) TableName() string {
 
 // IsValid checks if the token is still valid
 func (a *AuthToken) IsValid() bool {
-	return a.Status == AuthStatusPending && time.Now().Before(a.ExpiresAt)
+	return a.Status == AuthStatusPending && time.Now().UTC().Before(a.ExpiresAt)
 }
 
 // WebSession represents a web session
@@ -78,5 +78,5 @@ func (WebSession) TableName() string {
 
 // IsValid checks if the session is still valid
 func (s *WebSession) IsValid() bool {
-	return time.Now().Before(s.ExpiresAt)
+	return time.Now().UTC().Before(s.ExpiresAt)
 }

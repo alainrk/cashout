@@ -57,7 +57,7 @@ func (db *DB) DeleteWebSession(sessionID string) error {
 
 // CleanupExpiredAuthData removes expired auth tokens and sessions
 func (db *DB) CleanupExpiredAuthData() error {
-	now := time.Now()
+	now := time.Now().UTC()
 
 	// Delete expired auth tokens
 	if err := db.conn.Where("expires_at < ?", now).Delete(&model.AuthToken{}).Error; err != nil {

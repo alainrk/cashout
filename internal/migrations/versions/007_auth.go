@@ -13,7 +13,7 @@ func init() {
 func createAuthTables(tx *gorm.DB) error {
 	return tx.Exec(`
 		-- Create auth status enum
-		DROP TYPE IF EXISTS auth_status;
+		DROP TYPE IF EXISTS auth_status CASCADE;
 		CREATE TYPE auth_status AS ENUM (
 			'pending',
 			'verified',
@@ -38,7 +38,7 @@ func createAuthTables(tx *gorm.DB) error {
 		CREATE INDEX IF NOT EXISTS idx_auth_tokens_expires_at ON auth_tokens (expires_at);
 		
 		-- Add foreign key constraint
-		ALTER TABLE auth_tokens ADD CONSTRAINT fk_auth_tokens_tg_id FOREIGN KEY (tg_id) REFERENCES users (tg_id);
+		ALTER TABLE auth_tokens ADD CONSTRAINT fk_auth_tokens_tg_id FOREIGN KEY (tg_id) REFERENCES users (tg_id) ON DELETE CASCADE;
 
 		-- Create web_sessions table
 		CREATE TABLE IF NOT EXISTS web_sessions (
@@ -54,7 +54,7 @@ func createAuthTables(tx *gorm.DB) error {
 		CREATE INDEX IF NOT EXISTS idx_web_sessions_expires_at ON web_sessions (expires_at);
 		
 		-- Add foreign key constraint
-		ALTER TABLE web_sessions ADD CONSTRAINT fk_web_sessions_tg_id FOREIGN KEY (tg_id) REFERENCES users (tg_id);
+		ALTER TABLE web_sessions ADD CONSTRAINT fk_web_sessions_tg_id FOREIGN KEY (tg_id) REFERENCES users (tg_id) ON DELETE CASCADE;
 	`).Error
 }
 
