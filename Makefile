@@ -1,9 +1,12 @@
 main_package_path = ./cmd/server/main.go
+web_package_path = ./cmd/web/main.go
 
 migrate_package_path = ./cmd/migrate/main.go
 seed_package_path = ./cmd/seed/*.go
 binary_name = cashout
+web_binary_name = cashout-web
 linux_binary_name = ${binary_name}-linux
+linux_web_binary_name = ${web_binary_name}-linux
 
 # ==================================================================================== #
 # HELPERS
@@ -75,21 +78,60 @@ tidy:
 build:
 	go build -o=/tmp/bin/${binary_name} ${main_package_path}
 
+## build-web: build the web server
+.PHONY: build-web
+build-web:
+	go build -o=/tmp/bin/${web_binary_name} ${web_package_path}
+
+## build-all: build both the bot and web server
+.PHONY: build-all
+build-all: build build-web
+
 ## build-linux: build the application for linux x86_64 (CentOS)
 .PHONY: build-linux
 build-linux:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-w -s" -o=/tmp/bin/${linux_binary_name} ${main_package_path}
+
+## build-linux-web: build the web server for linux x86_64 (CentOS)
+.PHONY: build-linux-web
+build-linux-web:
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-w -s" -o=/tmp/bin/${linux_web_binary_name} ${web_package_path}
+
+## build-linux-all: build both applications for linux
+.PHONY: build-linux-all
+build-linux-all: build-linux build-linux-web
 
 ## run: run the application
 .PHONY: run
 run: build
 	/tmp/bin/${binary_name}
 
+## run-web: run the web server
+.PHONY: run-web
+run-web: build-web
+	/tmp/bin/${web_binary_name}
+
+## run-all: run both the bot and web server (requires two terminals)
+.PHONY: run-all
+run-all:
+	@echo "Starting both services..."
+	@echo "Run 'make run' in one terminal and 'make run-web' in another"
+	@echo "Or use 'make run/live-all' for live reloading of both"
+
 ## run/live: run the application with reloading on file changes
 .PHONY: run/live
 run/live:
 	go run github.com/cosmtrek/air@v1.43.0 \
 		--build.cmd "make build" --build.bin "/tmp/bin/${binary_name}" --build.delay "100" \
+		--build.exclude_dir "" \
+		--build.include_ext "go, tpl, tmpl, html, css, scss, js, ts, sql, jpeg, jpg, gif, png, bmp, svg, webp, ico" \
+		--misc.clean_on_exit "true"
+
+## run/live-web: run the web server with reloading on file changes
+.PHONY: run/live-web
+run/live-web:
+	go run github.com/cosmtrek/air@v1.43.0 \
+		--build.cmd "make build-web" --build.bin "/tmp/bin/${web_binary_name}" --build.delay "100" \
 		--build.exclude_dir "" \
 		--build.include_ext "go, tpl, tmpl, html, css, scss, js, ts, sql, jpeg, jpg, gif, png, bmp, svg, webp, ico" \
 		--misc.clean_on_exit "true"

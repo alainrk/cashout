@@ -22,6 +22,12 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -o cashout \
     ./cmd/server/main.go
 
+# Build the web server
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -ldflags="-w -s" \
+    -o cashout-web \
+    ./cmd/web/main.go
+
 # Build the migration tool
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags="-w -s" \
@@ -43,6 +49,7 @@ WORKDIR /app
 
 # Copy binaries from builder
 COPY --from=builder /app/cashout /app/cashout
+COPY --from=builder /app/cashout-web /app/cashout-web
 COPY --from=builder /app/migrate /app/migrate
 
 # Change ownership
@@ -51,8 +58,8 @@ RUN chown -R cashout:cashout /app
 # Switch to non-root user
 USER cashout
 
-# Expose port (if using webhook mode)
-EXPOSE 8080
+# Expose ports
+EXPOSE 8080 8081
 
-# Set entrypoint
+# Set entrypoint (default to bot, can be overridden)
 ENTRYPOINT ["/app/cashout"]
