@@ -1,6 +1,6 @@
 # Cashout AI
 
-Telegram **AI Agent** for Income and Expense Management.
+Telegram **AI Agent** for Income and Expense Management with **Web Dashboard**.
 
 You can self-host it following the Developer section down below.
 
@@ -35,6 +35,12 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
 - **Yearly Overview**: See annual trends and top spending categories
 - **Balance Tracking**: Instant calculation of income vs expenses for any period
 - **Category Analysis**: Understand where your money goes with percentage breakdowns
+
+### 🌐 Web Dashboard
+
+- **Secure Authentication**: Telegram-based login with verification codes
+- **Monthly Views**: Navigate through different months with intuitive controls
+- **Visual Insights**: Clear categorization and trend analysis
 
 ### 🔔 Smart Reminders
 
@@ -75,7 +81,7 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
 
 ### Prerequisites
 
-- Go 1.23 or higher
+- Go 1.24 or higher
 - PostgreSQL Database
 - Access to an OpenAI-compatible API model, with its API Key and Endpoint (e.g. DeepSeek, OpenAI, etc.)
 
@@ -101,7 +107,32 @@ cp .env.example .env
 ```
 
 Copy the example `.env` file in the project root (or set environment variables) and edit it accordingly:
-Spin up local infrastructure
+
+```env
+TELEGRAM_BOT_API_TOKEN='XXXXXXXXXX:AAAA_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+DATABASE_URL='postgres://postgres:postgres@localhost:5432/postgres'
+OPENAI_API_KEY='sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+OPENAI_BASE_URL='https://api.deepseek.com/v1'
+LLM_MODEL='deepseek-chat'
+RUN_MODE='webhook' # webhook or polling
+WEBHOOK_DOMAIN=''
+WEBHOOK_SECRET=''
+WEBHOOK_HOST='localhost'
+WEBHOOK_PORT='8080'
+LOG_LEVEL='info'
+# Dev purpose, comma separated. Keep it empty to allow all
+ALLOWED_USERS=''
+# Seed purpose - set the Telegram ID of the user to seed transactions for
+SEED_USER_TG_ID=''
+# Web Server Configuration
+WEB_HOST=localhost
+WEB_PORT=8081
+# Session Configuration (optional)
+SESSION_SECRET=your-random-session-secret-here
+SESSION_DURATION=24h
+```
+
+Spin up local infrastructure:
 
 ```bash
 docker compose up -d
@@ -124,7 +155,7 @@ go run ./cmd/migrate/main.go -command up -env .prod.env
 cp internal/migrations/versions/001*.go internal/migrations/versions/00X_your_migration.go
 ```
 
-3. For migrations that support rollback, use the `RegisterMigrationWithRollback` function:
+For migrations that support rollback, use the `RegisterMigrationWithRollback` function:
 
 ```go
 func init() {
@@ -141,17 +172,44 @@ func rollback_email_column(tx *gorm.DB) error {
 
 ### Building and Running
 
-To build and run the application:
+#### Telegram Bot
 
 ```bash
-# Build the application
+# Build the bot
 make build
 
-# Run the application
+# Run the bot
 make run
 
-# Run the application with live reloading (requires Air)
+# Run the bot with live reloading (requires Air)
 make run/live
+```
+
+#### Web Server
+
+```bash
+# Build the web server
+make build-web
+
+# Run the web server
+make run-web
+
+# Run the web server with live reloading
+make run/live-web
+```
+
+#### Both Services
+
+```bash
+# Build both applications
+make build-all
+
+# Build both for Linux
+make build-linux-all
+
+# Note: Running both requires two terminals
+# Terminal 1: make run
+# Terminal 2: make run-web
 ```
 
 ### Database Seeding
@@ -174,39 +232,112 @@ The seeder will:
 - Ensure at least one salary per month
 - Delete existing transactions before seeding (idempotent)
 
-## How to run
+## Deployment
+
+### Docker Compose (Recommended)
+
+The project includes a complete Docker Compose setup:
+
+```bash
+# Start all services (database, bot, web server)
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# Stop all services
+docker compose down
+```
+
+This will start:
+
+- PostgreSQL database on port 5432
+- Telegram bot (webhook mode on port 8080)
+- Web dashboard on port 8081
+- Automatic database migrations
+
+### Manual Deployment
+
+#### Telegram Bot
 
 The bot can run both in `webhook` and `polling` mode.
 
-### Webhook Mode
+**Webhook Mode:**
 
-You need to set the relevant environment variables:
-
-```
+```env
 RUN_MODE='webhook'
 WEBHOOK_DOMAIN='https://your-domain.com'
 WEBHOOK_SECRET='xxxyyyzzz'
 WEBHOOK_PORT='8080'
 ```
 
-### Polling Mode
+**Polling Mode:**
 
-You need to set the relevant environment variable:
-
-```
+```env
 RUN_MODE='polling'
+```
+
+#### Web Server
+
+The web server runs independently and can be configured:
+
+```env
+WEB_HOST=0.0.0.0  # For production
+WEB_PORT=8081
+SESSION_SECRET=your-random-session-secret-here
+SESSION_DURATION=24h
 ```
 
 ### LLM Setup
 
-Any OpenAI compatible API LLM can be used, setting up the following environment variables:
+Any OpenAI compatible API LLM can be used:
 
-Example with DeepSeek:
+**Example with DeepSeek:**
 
-```
+```env
 OPENAI_API_KEY='sk-xxx'
 OPENAI_BASE_URL='https://api.deepseek.com/v1'
 LLM_MODEL='deepseek-chat'
+```
+
+**Example with OpenAI:**
+
+```env
+OPENAI_API_KEY='sk-xxx'
+OPENAI_BASE_URL='https://api.openai.com/v1'
+LLM_MODEL='gpt-4'
+```
+
+## Web Dashboard Usage
+
+1. **Access**: Navigate to `http://localhost:8081` (or your configured domain)
+2. **Login**: Enter your Telegram username
+3. **Verification**: Check Telegram for a 6-digit verification code
+4. **Dashboard**: View your financial data with month navigation
+5. **Statistics**: See real-time balance, income, expenses, and transaction counts
+6. **History**: Browse detailed transaction history with search and filtering
+
+The web dashboard provides a complementary interface to the Telegram bot, offering:
+
+- Better visualization for large datasets
+- Month-by-month navigation
+- Desktop-friendly transaction management
+- Exportable financial reports
+
+## Testing
+
+```bash
+# Run all tests
+make test
+
+# Run tests with coverage
+make test-coverage
+
+# Run tests in CI mode
+make test-ci
+
+# Run security checks
+make sec
 ```
 
 ## License
