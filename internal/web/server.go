@@ -6,9 +6,12 @@ import (
 	"cashout/internal/model"
 	"cashout/internal/repository"
 	"net/http"
+	"sync"
+	"time"
 
 	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/time/rate"
 )
 
 type Repositories struct {
@@ -18,18 +21,22 @@ type Repositories struct {
 }
 
 type Server struct {
-	logger       *logrus.Logger
-	repositories Repositories
-	bot          *gotgbot.Bot
-	llm          ai.LLM
+	logger         *logrus.Logger
+	repositories   Repositories
+	bot            *gotgbot.Bot
+	llm            ai.LLM
+	loginLimiter   map[string]*rate.Limiter
+	loginLimiterMu sync.Mutex
 }
 
 func NewServer(logger *logrus.Logger, repos Repositories, bot *gotgbot.Bot, llm ai.LLM) *Server {
 	return &Server{
-		logger:       logger,
-		repositories: repos,
-		bot:          bot,
-		llm:          llm,
+		logger:         logger,
+		repositories:   repos,
+		bot:            bot,
+		llm:            llm,
+		loginLimiter:   make(map[string]*rate.Limiter),
+		loginLimiterMu: sync.Mutex{},
 	}
 }
 
@@ -43,7 +50,7 @@ func (s *Server) Router() http.Handler {
 	mux.HandleFunc("/", s.handleHome)
 	mux.HandleFunc("/login", s.handleLogin)
 	mux.HandleFunc("/auth/request", s.handleAuthRequest)
-	mux.HandleFunc("/auth/verify", s.handleAuthVerify)
+	mux.HandleFunc("/auth/verify", s.rateLimit(s.handleAuthVerify))
 	mux.HandleFunc("/logout", s.handleLogout)
 
 	// Dashboard routes (protected)
@@ -54,12 +61,37 @@ func (s *Server) Router() http.Handler {
 	return s.loggingMiddleware(mux)
 }
 
+func (s *Server) getLimiter(key string) *rate.Limiter {
+	s.loginLimiterMu.Lock()
+	defer s.loginLimiterMu.Unlock()
+
+	limiter, exists := s.loginLimiter[key]
+	if !exists {
+		limiter = rate.NewLimiter(rate.Every(time.Minute), 5) // 5 requests per minute
+		s.loginLimiter[key] = limiter
+	}
+
+	return limiter
+}
+
 // Middleware to log requests
 func (s *Server) loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		s.logger.Infof("%s %s %s", r.RemoteAddr, r.Method, r.URL.Path)
 		next.ServeHTTP(w, r)
 	})
+}
+
+func (s *Server) rateLimit(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		limiter := s.getLimiter(r.RemoteAddr)
+		if !limiter.Allow() {
+			s.sendJSONError(w, "Too many requests", http.StatusTooManyRequests)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	}
 }
 
 // Middleware to require authentication

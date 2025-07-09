@@ -272,7 +272,7 @@ func (s *Server) handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 	// Get user by username
 	user, exists, err := s.repositories.Users.GetByUsername(username)
 	if err != nil || !exists {
-		s.sendJSONError(w, "User not found. Please make sure you have used the bot first.", http.StatusNotFound)
+		s.sendJSONError(w, "Invalid username or credentials", http.StatusNotFound)
 		return
 	}
 
@@ -343,7 +343,7 @@ func (s *Server) handleAuthVerify(w http.ResponseWriter, r *http.Request) {
 		Value:    session.ID,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false, // Set to true in production with HTTPS
+		Secure:   r.TLS != nil, // Set to true in production with HTTPS
 		SameSite: http.SameSiteLaxMode,
 		MaxAge:   86400, // 24 hours
 	})

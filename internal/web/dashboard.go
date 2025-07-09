@@ -3,10 +3,13 @@ package web
 import (
 	"cashout/internal/client"
 	"cashout/internal/model"
-	"fmt"
 	"html/template"
 	"net/http"
 	"time"
+)
+
+const (
+	monthLayout = "2006-01"
 )
 
 // handleDashboard shows the main dashboard
@@ -16,6 +19,17 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
+
+	// Parse month from query, default to current month
+	monthStr := r.URL.Query().Get("month")
+	currentMonth, err := time.Parse(monthLayout, monthStr)
+	if err != nil {
+		currentMonth = time.Now()
+	}
+
+	// Calculate previous and next months
+	prevMonth := currentMonth.AddDate(0, -1, 0)
+	nextMonth := currentMonth.AddDate(0, 1, 0)
 
 	tmpl := `
 <!DOCTYPE html>
@@ -77,6 +91,28 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
             margin: 2rem auto;
             padding: 0 1rem;
         }
+		.month-navigation {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 2rem;
+		}
+		.month-navigation a {
+			padding: 0.5rem 1rem;
+			background: #007bff;
+			color: white;
+			text-decoration: none;
+			border-radius: 4px;
+			transition: background 0.2s;
+		}
+		.month-navigation a:hover {
+			background: #0056b3;
+		}
+		.month-navigation h2 {
+			margin: 0;
+			font-size: 1.5rem;
+			font-weight: 600;
+		}
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -169,13 +205,17 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
             .stat-value {
                 font-size: 1.5rem;
             }
+			.month-navigation {
+				flex-direction: column;
+				gap: 1rem;
+			}
         }
     </style>
 </head>
 <body>
     <div class="header">
         <div class="header-content">
-            <div class="logo">💰 Cashout</div>
+            <div class="logo">Cashout</div>
             <div class="user-info">
                 <span>Welcome, <strong>{{.User.Name}}</strong></span>
                 <a href="/logout" class="logout-btn">Logout</a>
@@ -184,12 +224,20 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
     </div>
 
     <div class="container">
+		<div class="month-navigation">
+			<a href="/dashboard?month={{.PrevMonth}}">Previous</a>
+			<h2>{{.CurrentMonthTitle}}</h2>
+			<a href="/dashboard?month={{.NextMonth}}">Next</a>
+		</div>
+
+		<input type="hidden" id="currentMonth" value="{{.CurrentMonth}}">
+
         <div class="stats-grid" id="statsGrid">
             <div class="loading">Loading statistics...</div>
         </div>
 
         <div class="section">
-            <h2 class="section-title">Recent Transactions</h2>
+            <h2 class="section-title">Transactions</h2>
             <div id="transactionsContainer">
                 <div class="loading">Loading transactions...</div>
             </div>
@@ -213,15 +261,13 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
                 month: 'short',
                 day: 'numeric',
                 year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
             });
         }
 
         // Load statistics
-        async function loadStats() {
+        async function loadStats(month) {
             try {
-                const response = await fetch('/api/stats');
+                const response = await fetch('/api/stats?month=' + month);
                 const data = await response.json();
 
                 if (!response.ok) throw new Error(data.error || 'Failed to load stats');
@@ -235,17 +281,14 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
                     <div class="stat-card">
                         <div class="stat-label">Total Income</div>
                         <div class="stat-value income">${formatCurrency(data.totalIncome)}</div>
-                        <div class="stat-change positive">+${formatCurrency(data.monthlyIncome)} this month</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Total Expenses</div>
                         <div class="stat-value expense">${formatCurrency(data.totalExpenses)}</div>
-                        <div class="stat-change negative">-${formatCurrency(data.monthlyExpenses)} this month</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Transactions</div>
                         <div class="stat-value">${data.totalTransactions}</div>
-                        <div class="stat-change">${data.monthlyTransactions} this month</div>
                     </div>
                 ` + "`" + `;
             } catch (error) {
@@ -255,9 +298,9 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
         }
 
         // Load transactions
-        async function loadTransactions() {
+        async function loadTransactions(month) {
             try {
-                const response = await fetch('/api/transactions?limit=10');
+                const response = await fetch('/api/transactions?month=' + month);
                 const data = await response.json();
 
                 if (!response.ok) throw new Error(data.error || 'Failed to load transactions');
@@ -265,13 +308,13 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
                 const container = document.getElementById('transactionsContainer');
 
                 if (data.transactions.length === 0) {
-                    container.innerHTML = '<p>No transactions yet.</p>';
+                    container.innerHTML = '<p>No transactions for this month.</p>';
                     return;
                 }
 
                 const tableRows = data.transactions.map(tx => ` + "`" + `
                     <tr>
-                        <td>${formatDate(tx.created_at)}</td>
+                        <td>${formatDate(tx.date)}</td>
                         <td>${tx.category}</td>
                         <td>${tx.description || '-'}</td>
                         <td class="amount ${tx.type}">${tx.type === 'income' ? '+' : '-'}${formatCurrency(Math.abs(tx.amount))}</td>
@@ -300,14 +343,9 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
         }
 
         // Load data on page load
-        loadStats();
-        loadTransactions();
-
-        // Refresh data every 30 seconds
-        setInterval(() => {
-            loadStats();
-            loadTransactions();
-        }, 30000);
+		const currentMonth = document.getElementById('currentMonth').value;
+        loadStats(currentMonth);
+        loadTransactions(currentMonth);
     </script>
 </body>
 </html>
@@ -320,9 +358,17 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := struct {
-		User *model.User
+		User              *model.User
+		CurrentMonthTitle string
+		CurrentMonth      string
+		PrevMonth         string
+		NextMonth         string
 	}{
-		User: user,
+		User:              user,
+		CurrentMonthTitle: currentMonth.Format("January 2006"),
+		CurrentMonth:      currentMonth.Format(monthLayout),
+		PrevMonth:         prevMonth.Format(monthLayout),
+		NextMonth:         nextMonth.Format(monthLayout),
 	}
 
 	w.Header().Set("Content-Type", "text/html")
@@ -333,7 +379,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleAPIStats returns user statistics
+// handleAPIStats returns user statistics for a given month
 func (s *Server) handleAPIStats(w http.ResponseWriter, r *http.Request) {
 	user := client.GetUserFromContext(r.Context())
 	if user == nil {
@@ -341,54 +387,46 @@ func (s *Server) handleAPIStats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get all transactions for the user
-	transactions, err := s.repositories.Transactions.GetUserTransactions(user.TgID)
+	// Parse month from query, default to current month
+	monthStr := r.URL.Query().Get("month")
+	currentMonth, err := time.Parse(monthLayout, monthStr)
+	if err != nil {
+		currentMonth = time.Now()
+	}
+
+	// Get transactions for the month
+	startDate := time.Date(currentMonth.Year(), currentMonth.Month(), 1, 0, 0, 0, 0, time.UTC)
+	endDate := startDate.AddDate(0, 1, 0).Add(-time.Nanosecond)
+	transactions, err := s.repositories.Transactions.GetUserTransactionsByDateRange(user.TgID, startDate, endDate)
 	if err != nil {
 		s.sendJSONError(w, "Failed to get transactions", http.StatusInternalServerError)
 		return
 	}
 
 	// Calculate statistics
-	var totalIncome, totalExpenses, monthlyIncome, monthlyExpenses float64
-	var monthlyTransactions int
-
-	now := time.Now()
-	startOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+	var totalIncome, totalExpenses float64
 
 	for _, tx := range transactions {
 		if tx.Type == model.TypeIncome {
 			totalIncome += tx.Amount
-			if tx.CreatedAt.After(startOfMonth) {
-				monthlyIncome += tx.Amount
-			}
 		} else {
 			totalExpenses += tx.Amount
-			if tx.CreatedAt.After(startOfMonth) {
-				monthlyExpenses += tx.Amount
-			}
-		}
-
-		if tx.CreatedAt.After(startOfMonth) {
-			monthlyTransactions++
 		}
 	}
 
 	balance := totalIncome - totalExpenses
 
 	stats := map[string]interface{}{
-		"balance":             balance,
-		"totalIncome":         totalIncome,
-		"totalExpenses":       totalExpenses,
-		"monthlyIncome":       monthlyIncome,
-		"monthlyExpenses":     monthlyExpenses,
-		"totalTransactions":   len(transactions),
-		"monthlyTransactions": monthlyTransactions,
+		"balance":           balance,
+		"totalIncome":       totalIncome,
+		"totalExpenses":     totalExpenses,
+		"totalTransactions": len(transactions),
 	}
 
 	s.sendJSONSuccess(w, stats)
 }
 
-// handleAPITransactions returns user transactions
+// handleAPITransactions returns user transactions for a given month
 func (s *Server) handleAPITransactions(w http.ResponseWriter, r *http.Request) {
 	user := client.GetUserFromContext(r.Context())
 	if user == nil {
@@ -396,44 +434,26 @@ func (s *Server) handleAPITransactions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse query parameters
-	limit := 10
-	if l := r.URL.Query().Get("limit"); l != "" {
-		_, err := fmt.Sscanf(l, "%d", &limit)
-		if err != nil {
-			limit = 10
-		}
-		if limit > 100 {
-			limit = 100
-		}
+	// Parse month from query, default to current month
+	monthStr := r.URL.Query().Get("month")
+	currentMonth, err := time.Parse(monthLayout, monthStr)
+	if err != nil {
+		currentMonth = time.Now()
 	}
 
-	// Get transactions
-	transactions, err := s.repositories.Transactions.GetUserTransactions(user.TgID)
+	// Get transactions for the month
+	startDate := time.Date(currentMonth.Year(), currentMonth.Month(), 1, 0, 0, 0, 0, time.UTC)
+	endDate := startDate.AddDate(0, 1, 0).Add(-time.Nanosecond)
+	transactions, err := s.repositories.Transactions.GetUserTransactionsByDateRange(user.TgID, startDate, endDate)
 	if err != nil {
 		s.sendJSONError(w, "Failed to get transactions", http.StatusInternalServerError)
 		return
-	}
-
-	// Sort by date (newest first) and limit
-	// Sort transactions by date in descending order
-	for i := 0; i < len(transactions)-1; i++ {
-		for j := i + 1; j < len(transactions); j++ {
-			if transactions[i].Date.Before(transactions[j].Date) {
-				transactions[i], transactions[j] = transactions[j], transactions[i]
-			}
-		}
-	}
-
-	if len(transactions) > limit {
-		transactions = transactions[:limit]
 	}
 
 	// Convert to response format
 	type TransactionResponse struct {
 		ID          int64     `json:"id"`
 		Date        time.Time `json:"date"`
-		CreatedAt   time.Time `json:"created_at"`
 		Category    string    `json:"category"`
 		Description string    `json:"description"`
 		Amount      float64   `json:"amount"`
@@ -445,7 +465,6 @@ func (s *Server) handleAPITransactions(w http.ResponseWriter, r *http.Request) {
 		transactionResponses[i] = TransactionResponse{
 			ID:          tx.ID,
 			Date:        tx.Date,
-			CreatedAt:   tx.CreatedAt,
 			Category:    string(tx.Category),
 			Description: tx.Description,
 			Amount:      tx.Amount,
