@@ -132,7 +132,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 </head>
 <body>
     <div class="login-container">
-        <h1>💰 Cashout Login</h1>
+        <h1>Cashout Login</h1>
         
         <div id="loginSection">
             <form id="loginForm">
@@ -351,7 +351,7 @@ func (s *Server) handleAuthVerify(w http.ResponseWriter, r *http.Request) {
 
 	s.sendJSONSuccess(w, map[string]interface{}{
 		"message":  "Login successful",
-		"redirect": basePath+"/dashboard",
+		"redirect": basePath + "/dashboard",
 	})
 }
 
