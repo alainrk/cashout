@@ -41,24 +41,7 @@ func NewServer(logger *logrus.Logger, repos Repositories, bot *gotgbot.Bot, llm 
 }
 
 func (s *Server) Router() http.Handler {
-	mux := http.NewServeMux()
-
-	// Serve static files
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./web/static"))))
-
-	// Auth routes
-	mux.HandleFunc("/", s.handleHome)
-	mux.HandleFunc("/login", s.handleLogin)
-	mux.HandleFunc("/auth/request", s.handleAuthRequest)
-	mux.HandleFunc("/auth/verify", s.rateLimit(s.handleAuthVerify))
-	mux.HandleFunc("/logout", s.handleLogout)
-
-	// Dashboard routes (protected)
-	mux.HandleFunc("/dashboard", s.requireAuth(s.handleDashboard))
-	mux.HandleFunc("/api/transactions", s.requireAuth(s.handleAPITransactions))
-	mux.HandleFunc("/api/stats", s.requireAuth(s.handleAPIStats))
-
-	return s.loggingMiddleware(mux)
+	return Router(s)
 }
 
 func (s *Server) getLimiter(key string) *rate.Limiter {

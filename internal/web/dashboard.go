@@ -16,7 +16,7 @@ const (
 func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 	user := client.GetUserFromContext(r.Context())
 	if user == nil {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		http.Redirect(w, r, basePath+"/login", http.StatusSeeOther)
 		return
 	}
 
@@ -218,16 +218,16 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
             <div class="logo">Cashout</div>
             <div class="user-info">
                 <span>Welcome, <strong>{{.User.Name}}</strong></span>
-                <a href="/logout" class="logout-btn">Logout</a>
+                <a href="/web/logout" class="logout-btn">Logout</a>
             </div>
         </div>
     </div>
 
     <div class="container">
 		<div class="month-navigation">
-			<a href="/dashboard?month={{.PrevMonth}}">Previous</a>
+			<a href="/web/dashboard?month={{.PrevMonth}}">Previous</a>
 			<h2>{{.CurrentMonthTitle}}</h2>
-			<a href="/dashboard?month={{.NextMonth}}">Next</a>
+			<a href="/web/dashboard?month={{.NextMonth}}">Next</a>
 		</div>
 
 		<input type="hidden" id="currentMonth" value="{{.CurrentMonth}}">
@@ -267,7 +267,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
         // Load statistics
         async function loadStats(month) {
             try {
-                const response = await fetch('/api/stats?month=' + month);
+                const response = await fetch('/web/api/stats?month=' + month);
                 const data = await response.json();
 
                 if (!response.ok) throw new Error(data.error || 'Failed to load stats');
@@ -300,7 +300,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
         // Load transactions
         async function loadTransactions(month) {
             try {
-                const response = await fetch('/api/transactions?month=' + month);
+                const response = await fetch('/web/api/transactions?month=' + month);
                 const data = await response.json();
 
                 if (!response.ok) throw new Error(data.error || 'Failed to load transactions');

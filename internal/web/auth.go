@@ -14,10 +14,10 @@ import (
 func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	session, _ := s.getSession(r)
 	if session != nil && session.IsValid() {
-		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+		http.Redirect(w, r, basePath+"/dashboard", http.StatusSeeOther)
 		return
 	}
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	http.Redirect(w, r, basePath+"/login", http.StatusSeeOther)
 }
 
 // handleLogin shows the login page
@@ -25,7 +25,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	// Check if already logged in
 	session, _ := s.getSession(r)
 	if session != nil && session.IsValid() {
-		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+		http.Redirect(w, r, basePath+"/dashboard", http.StatusSeeOther)
 		return
 	}
 
@@ -160,6 +160,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
     </div>
 
     <script>
+        const basePath = '/web';
         const loginForm = document.getElementById('loginForm');
         const verifyForm = document.getElementById('verifyForm');
         const loginSection = document.getElementById('loginSection');
@@ -180,7 +181,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
             submitBtn.textContent = 'Sending...';
             
             try {
-                const response = await fetch('/auth/request', {
+                const response = await fetch(basePath+'/auth/request', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({username})
@@ -212,7 +213,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
             verifyBtn.textContent = 'Verifying...';
             
             try {
-                const response = await fetch('/auth/verify', {
+                const response = await fetch(basePath+'/auth/verify', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({code})
@@ -223,7 +224,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
                 if (response.ok) {
                     showMessage('Login successful! Redirecting...', 'success');
                     setTimeout(() => {
-                        window.location.href = '/dashboard';
+                        window.location.href = basePath+'/dashboard';
                     }, 1000);
                 } else {
                     showMessage(data.error || 'Invalid code', 'error');
@@ -350,7 +351,7 @@ func (s *Server) handleAuthVerify(w http.ResponseWriter, r *http.Request) {
 
 	s.sendJSONSuccess(w, map[string]interface{}{
 		"message":  "Login successful",
-		"redirect": "/dashboard",
+		"redirect": basePath+"/dashboard",
 	})
 }
 
@@ -374,7 +375,7 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   -1,
 	})
 
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	http.Redirect(w, r, basePath+"/login", http.StatusSeeOther)
 }
 
 // Helper functions for JSON responses

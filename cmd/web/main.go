@@ -88,7 +88,7 @@ func main() {
 	addr := fmt.Sprintf("%s:%s", webHost, webPort)
 	logger.Infof("Starting web server on %s", addr)
 
-	if err := http.ListenAndServe(addr, webServer.Router()); err != nil {
+	if err := http.ListenAndServe(addr, web.Router(webServer)); err != nil {
 		logger.Fatalf("Web server failed: %s", err.Error())
 	}
 }
