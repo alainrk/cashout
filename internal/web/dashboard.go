@@ -321,11 +321,11 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
                 }
 
                 const tableRows = data.transactions.map(tx => ` + "`" + `
-                    <tr>
+											<tr>
                         <td>${formatDate(tx.date)}</td>
                         <td>${tx.category}</td>
                         <td>${tx.description || '-'}</td>
-                        <td class="amount ${tx.type}">${tx.type === 'income' ? '+' : '-'}${formatCurrency(Math.abs(tx.amount))}</td>
+                        <td class="amount ${tx.type.toLowerCase()}">${tx.type.toLowerCase() === 'income' ? '+' : '-'}${formatCurrency(Math.abs(tx.amount))}</td>
                     </tr>
                 ` + "`" + `).join('');
 
