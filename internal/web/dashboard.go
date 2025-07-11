@@ -23,13 +23,17 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 	// Parse month from query, default to current month
 	monthStr := r.URL.Query().Get("month")
 	currentMonth, err := time.Parse(monthLayout, monthStr)
-	if err != nil {
+	if err != nil || currentMonth.After(time.Now()) {
 		currentMonth = time.Now()
 	}
 
 	// Calculate previous and next months
 	prevMonth := currentMonth.AddDate(0, -1, 0)
 	nextMonth := currentMonth.AddDate(0, 1, 0)
+
+	// Disable next month button if it's the future
+	now := time.Now()
+	isCurrentMonth := currentMonth.Format(monthLayout) == now.Format(monthLayout)
 
 	tmpl := `
 <!DOCTYPE html>
@@ -107,6 +111,10 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 		}
 		.month-navigation a:hover {
 			background: #0056b3;
+		}
+		.month-navigation a.disabled {
+			background: #6c757d;
+			pointer-events: none;
 		}
 		.month-navigation h2 {
 			margin: 0;
@@ -227,7 +235,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 		<div class="month-navigation">
 			<a href="/web/dashboard?month={{.PrevMonth}}">Previous</a>
 			<h2>{{.CurrentMonthTitle}}</h2>
-			<a href="/web/dashboard?month={{.NextMonth}}">Next</a>
+			<a href="/web/dashboard?month={{.NextMonth}}" {{if .IsCurrentMonth}}class="disabled"{{end}}>Next</a>
 		</div>
 
 		<input type="hidden" id="currentMonth" value="{{.CurrentMonth}}">
@@ -363,12 +371,14 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 		CurrentMonth      string
 		PrevMonth         string
 		NextMonth         string
+		IsCurrentMonth    bool
 	}{
 		User:              user,
 		CurrentMonthTitle: currentMonth.Format("January 2006"),
 		CurrentMonth:      currentMonth.Format(monthLayout),
 		PrevMonth:         prevMonth.Format(monthLayout),
 		NextMonth:         nextMonth.Format(monthLayout),
+		IsCurrentMonth:    isCurrentMonth,
 	}
 
 	w.Header().Set("Content-Type", "text/html")
