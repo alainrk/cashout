@@ -166,6 +166,33 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
             margin-bottom: 1.5rem;
             color: #333;
         }
+				.section-header {
+					display: flex;
+					justify-content: space-between;
+					align-items: center;
+					margin-bottom: 1.5rem;
+				}
+				.view-toggle button {
+					padding: 0.5rem 1rem;
+					border: 1px solid #007bff;
+					background: white;
+					color: #007bff;
+					cursor: pointer;
+					transition: all 0.2s;
+				}
+				.view-toggle button.active {
+					background: #007bff;
+					color: white;
+				}
+				.view-toggle button:first-child {
+					border-top-left-radius: 4px;
+					border-bottom-left-radius: 4px;
+				}
+         .view-toggle button:last-child {
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+            margin-left: -1px;
+        }
         .transactions-table {
             width: 100%;
             border-collapse: collapse;
@@ -183,6 +210,26 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
         }
         .transactions-table tr:hover {
             background: #f8f9fa;
+        }
+        .cluster {
+            margin-bottom: 1.5rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .cluster-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .cluster-title {
+            font-weight: 600;
+        }
+        .cluster-total {
+            font-weight: 500;
         }
         .amount {
             font-weight: 500;
@@ -245,7 +292,13 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
         </div>
 
         <div class="section">
-            <h2 class="section-title">Transactions</h2>
+			<div class="section-header">
+				<h2 class="section-title">Transactions</h2>
+				<div class="view-toggle">
+					<button id="listViewBtn" class="active">List</button>
+					<button id="clusteredViewBtn">Clustered</button>
+				</div>
+			</div>
             <div id="transactionsContainer">
                 <div class="loading">Loading transactions...</div>
             </div>
@@ -305,6 +358,9 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
             }
         }
 
+        let transactionsData = [];
+        let currentView = 'list';
+
         // Load transactions
         async function loadTransactions(month) {
             try {
@@ -313,42 +369,110 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 
                 if (!response.ok) throw new Error(data.error || 'Failed to load transactions');
 
-                const container = document.getElementById('transactionsContainer');
+                transactionsData = data.transactions;
+                renderTransactions();
 
-                if (data.transactions.length === 0) {
-                    container.innerHTML = '<p>No transactions for this month.</p>';
-                    return;
-                }
-
-                const tableRows = data.transactions.map(tx => ` + "`" + `
-											<tr>
-                        <td>${formatDate(tx.date)}</td>
-                        <td>${tx.category}</td>
-                        <td>${tx.description || '-'}</td>
-                        <td class="amount ${tx.type.toLowerCase()}">${tx.type.toLowerCase() === 'income' ? '+' : '-'}${formatCurrency(Math.abs(tx.amount))}</td>
-                    </tr>
-                ` + "`" + `).join('');
-
-                container.innerHTML = ` + "`" + `
-                    <table class="transactions-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Category</th>
-                                <th>Description</th>
-                                <th>Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${tableRows}
-                        </tbody>
-                    </table>
-                ` + "`" + `;
             } catch (error) {
                 document.getElementById('transactionsContainer').innerHTML =
                     '<div class="error">Failed to load transactions: ' + error.message + '</div>';
             }
         }
+
+        // Render transactions based on the current view
+        function renderTransactions() {
+            if (currentView === 'list') {
+                renderListView();
+            } else {
+                renderClusteredView();
+            }
+        }
+
+        // Render list view
+        function renderListView() {
+            const container = document.getElementById('transactionsContainer');
+
+            if (transactionsData.length === 0) {
+                container.innerHTML = '<p>No transactions for this month.</p>';
+                return;
+            }
+
+            const tableRows = transactionsData.map(tx =>` + "`" + ` 
+                <tr>
+                    <td>${formatDate(tx.date)}</td>
+                    <td>${tx.category}</td>
+                    <td>${tx.description || '-'}</td>
+                    <td class="amount ${tx.type.toLowerCase()}">${tx.type.toLowerCase() === 'income' ? '+' : '-'}${formatCurrency(Math.abs(tx.amount))}</td>
+                </tr>
+            ` + "`" + `).join('');
+
+            container.innerHTML =` + "`" + ` 
+                <table class="transactions-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+            ` + "`" + `;
+        }
+
+        // Render clustered view
+        function renderClusteredView() {
+            const container = document.getElementById('transactionsContainer');
+
+            if (transactionsData.length === 0) {
+                container.innerHTML = '<p>No transactions for this month.</p>';
+                return;
+            }
+
+            const clusteredData = transactionsData.reduce((acc, tx) => {
+                const key = ` + "`" + `${tx.type}-${tx.category}` + "`" + `;
+                if (!acc[key]) {
+                    acc[key] = {
+                        type: tx.type,
+                        category: tx.category,
+                        total: 0,
+                        transactions: []
+                    };
+                }
+                acc[key].total += tx.amount;
+                acc[key].transactions.push(tx);
+                return acc;
+            }, {});
+
+            const sortedClusters = Object.values(clusteredData).sort((a, b) => b.total - a.total);
+
+            container.innerHTML = sortedClusters.map(cluster =>` + "`" + ` 
+                <div class="cluster">
+                    <div class="cluster-header">
+                        <span class="cluster-title">${cluster.category} (${cluster.type})</span>
+                        <span class="cluster-total ${cluster.type.toLowerCase()}">${cluster.type.toLowerCase() === 'income' ? '+' : '-'}${formatCurrency(Math.abs(cluster.total))}</span>
+                    </div>
+                </div>
+            ` + "`" + `).join('');
+        }
+
+
+		// Event Listeners for view toggle
+		document.getElementById('listViewBtn').addEventListener('click', () => {
+			currentView = 'list';
+			document.getElementById('listViewBtn').classList.add('active');
+			document.getElementById('clusteredViewBtn').classList.remove('active');
+			renderTransactions();
+		});
+
+		document.getElementById('clusteredViewBtn').addEventListener('click', () => {
+			currentView = 'clustered';
+			document.getElementById('clusteredViewBtn').classList.add('active');
+			document.getElementById('listViewBtn').classList.remove('active');
+			renderTransactions();
+		});
 
         // Load data on page load
 		const currentMonth = document.getElementById('currentMonth').value;
