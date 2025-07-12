@@ -14,8 +14,9 @@ const MIN_YEAR_ALLOWED = 2015
 
 type Config struct {
 	// Dev Purpose, telegram usernames
-	AuthEnabled  bool
-	AllowedUsers map[string]struct{}
+	AuthEnabled     bool
+	AllowedUsers    map[string]struct{}
+	WebDashboardUrl string
 }
 
 type Client struct {
@@ -43,6 +44,8 @@ func NewClient(logger *logrus.Logger, db *db.DB, llm ai.LLM) *Client {
 			config.AllowedUsers[u] = struct{}{}
 		}
 	}
+
+	config.WebDashboardUrl = os.Getenv("WEB_DASHBOARD_URL")
 
 	// For repositories structs embedding common fields
 	repo := repository.Repository{
