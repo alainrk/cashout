@@ -82,7 +82,7 @@ func (s *Server) requireAuth(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		session, err := s.getSession(r)
 		if err != nil || session == nil || !session.IsValid() {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			http.Redirect(w, r, basePath+"/login", http.StatusSeeOther)
 			return
 		}
 
