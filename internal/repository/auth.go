@@ -5,6 +5,8 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -105,10 +107,21 @@ func (r *Auth) CreateWebSession(tgID int64) (*model.WebSession, error) {
 		return nil, err
 	}
 
+	smin := os.Getenv("SESSION_DURATION_MIN")
+	if smin == "" {
+		smin = "10080" // 7 days
+	}
+
+	expMin, err := strconv.Atoi(smin)
+	if err != nil {
+		r.Logger.Errorf("Failed to parse SESSION_DURATION_MIN: %v, defaulting to 7 days", err)
+		smin = "10080" // 7 days
+	}
+
 	session := &model.WebSession{
 		ID:        sessionID,
 		TgID:      tgID,
-		ExpiresAt: time.Now().UTC().Add(24 * time.Hour), // 24 hours session in UTC
+		ExpiresAt: time.Now().UTC().Add(time.Duration(expMin) * time.Minute),
 	}
 
 	if err := r.DB.CreateWebSession(session); err != nil {
