@@ -108,14 +108,10 @@ func (r *Auth) CreateWebSession(tgID int64) (*model.WebSession, error) {
 	}
 
 	smin := os.Getenv("SESSION_DURATION_MIN")
-	if smin == "" {
-		smin = "10080" // 7 days
-	}
-
 	expMin, err := strconv.Atoi(smin)
 	if err != nil {
 		r.Logger.Errorf("Failed to parse SESSION_DURATION_MIN: %v, defaulting to 7 days", err)
-		smin = "10080" // 7 days
+		expMin = 10080
 	}
 
 	session := &model.WebSession{
