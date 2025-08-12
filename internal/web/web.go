@@ -24,5 +24,8 @@ func Router(s *Server) http.Handler {
 	mux.HandleFunc(basePath+"/api/transactions", s.requireAuth(s.handleAPITransactions))
 	mux.HandleFunc(basePath+"/api/stats", s.requireAuth(s.handleAPIStats))
 
+	// Health check
+	mux.HandleFunc("/health", s.handleHealthCheck)
+
 	return s.loggingMiddleware(mux)
 }

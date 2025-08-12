@@ -37,3 +37,12 @@ func (db *DB) Close() error {
 	}
 	return sqlDB.Close()
 }
+
+// Ping checks the database connection
+func (db *DB) Ping() error {
+	sqlDB, err := db.conn.DB()
+	if err != nil {
+		return err
+	}
+	return sqlDB.Ping()
+}

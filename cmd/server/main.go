@@ -6,9 +6,11 @@ import (
 	"cashout/internal/db"
 	"cashout/internal/logging"
 	"cashout/internal/scheduler"
+	server_health "cashout/internal/server"
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -58,6 +60,19 @@ func main() {
 
 	defer func() {
 		err = errors.Join(err, db.Close())
+	}()
+
+	// Start health check server
+	go func() {
+		http.HandleFunc("/health", server_health.HandleHealthCheck(db))
+		healthPort := os.Getenv("HEALTH_CHECK_PORT")
+		if healthPort == "" {
+			healthPort = "8082"
+		}
+		logger.Infof("Health check server starting on port %s", healthPort)
+		if err := http.ListenAndServe(":"+healthPort, nil); err != nil {
+			logger.Fatalf("Health check server failed: %s", err.Error())
+		}
 	}()
 
 	// Initialize client
