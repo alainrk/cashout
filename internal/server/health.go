@@ -1,4 +1,3 @@
-
 package server
 
 import (
@@ -22,11 +21,18 @@ func HandleHealthCheck(db *db.DB) http.HandlerFunc {
 		err := db.Ping()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(map[string]string{"status": "error", "db": "down"})
+			err = json.NewEncoder(w).Encode(map[string]string{"status": "error", "db": "down"})
+			if err != nil {
+				http.Error(w, "Failed to encode error response", http.StatusInternalServerError)
+			}
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{"status": "ok", "db": "up"})
+		err = json.NewEncoder(w).Encode(map[string]string{"status": "ok", "db": "up"})
+		if err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
 	}
 }
