@@ -286,7 +286,7 @@ func (s *Server) handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send code via Telegram
-	message := fmt.Sprintf("🔐 Your Cashout login code is: <b>%s</b>\n\nThis code will expire in 5 minutes.", authToken.Token)
+	message := fmt.Sprintf("🔐 Your Cashout login code is:\n\n<code>%s</code>\n\nThis code will expire in 5 minutes.", authToken.Token)
 	_, err = s.bot.SendMessage(user.TgID, message, &gotgbot.SendMessageOpts{
 		ParseMode: "HTML",
 	})
