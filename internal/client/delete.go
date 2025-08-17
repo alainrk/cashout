@@ -55,6 +55,81 @@ func (c *Client) DeleteTransactionPage(b *gotgbot.Bot, ctx *ext.Context) error {
 	return c.showDeletableTransactionPage(b, ctx, user, offset)
 }
 
+// ShowDeleteConfirmation handles displaying the confirmation message before deletion
+func (c *Client) ShowDeleteConfirmation(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	query := ctx.CallbackQuery
+
+	// Parse callback data (format: delete.showconfirm.TRANSACTION_ID)
+	parts := strings.Split(query.Data, ".")
+	if len(parts) != 3 {
+		return fmt.Errorf("invalid callback data format")
+	}
+
+	transactionID, err := strconv.ParseInt(parts[2], 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid transaction ID: %v", err)
+	}
+
+	// Get the transaction details
+	transaction, err := c.Repositories.Transactions.GetByID(transactionID)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction: %w", err)
+	}
+
+	// Verify ownership
+	if transaction.TgID != user.TgID {
+		_, _, err = ctx.CallbackQuery.Message.EditText(
+			b,
+			"⚠️ This transaction doesn't belong to you.",
+			&gotgbot.EditMessageTextOpts{},
+		)
+		return err
+	}
+
+	// Format transaction details for confirmation message
+	emoji := utils.GetCategoryEmoji(transaction.Category)
+	message := fmt.Sprintf(
+		"Are you sure you want to delete this transaction?\n\n<b>%s</b> - %.2f€\n%s %s\n📅 %s",
+		transaction.Description,
+		transaction.Amount,
+		emoji,
+		transaction.Category,
+		transaction.Date.Format("02-01-2006"),
+	)
+
+	// Create confirmation keyboard
+	keyboard := [][]gotgbot.InlineKeyboardButton{
+		{
+			{
+				Text:         "✅ Confirm Delete",
+				CallbackData: fmt.Sprintf("delete.confirm.%d", transaction.ID),
+			},
+			{
+				Text:         "❌ Cancel",
+				CallbackData: "delete.page.0", // Go back to the first page of deletable transactions
+			},
+		},
+	}
+
+	_, _, err = ctx.CallbackQuery.Message.EditText(
+		b,
+		message,
+		&gotgbot.EditMessageTextOpts{
+			ParseMode: "HTML",
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: keyboard,
+			},
+		},
+	)
+	return err
+}
+
 // DeleteTransactionConfirm handles the confirmation callback for deleting a transaction
 func (c *Client) DeleteTransactionConfirm(b *gotgbot.Bot, ctx *ext.Context) error {
 	_, u := c.getUserFromContext(ctx)
@@ -200,10 +275,10 @@ func formatDeletableTransactions(transactions []model.Transaction, offset, total
 		emoji := utils.GetCategoryEmoji(t.Category)
 
 		msg.WriteString(fmt.Sprintf("%d. <b>%s</b> - %.2f€\n",
-            i+1,
-            t.Description,
-            t.Amount,
-        ))
+			i+1,
+			t.Description,
+			t.Amount,
+		))
 
 		msg.WriteString(fmt.Sprintf("   %s %s\n", emoji, t.Category))
 		msg.WriteString(fmt.Sprintf("   📅 %s\n", t.Date.Format("02-01-2006")))
@@ -223,7 +298,7 @@ func createDeletionPaginationKeyboard(transactions []model.Transaction, offset, 
 	for i, t := range transactions {
 		button := gotgbot.InlineKeyboardButton{
 			Text:         fmt.Sprintf("%d", i+1),
-			CallbackData: fmt.Sprintf("delete.confirm.%d", t.ID),
+			CallbackData: fmt.Sprintf("delete.showconfirm.%d", t.ID),
 		}
 		row = append(row, button)
 
