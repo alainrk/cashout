@@ -138,7 +138,6 @@ func (c *Client) EditDone(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	// Send confirmation message and home
 	return c.SendHomeKeyboard(b, ctx, "Editing completed!")
-	return err
 }
 
 // EditTransactionField handles editing a specific field of a transaction
