@@ -198,10 +198,6 @@ func (c *Client) DeleteTransactionConfirm(b *gotgbot.Bot, ctx *ext.Context) erro
 							Text:         "Delete Another",
 							CallbackData: "delete.page.0",
 						},
-						{
-							Text:         "Done",
-							CallbackData: "transactions.cancel",
-						},
 					},
 				},
 			},
