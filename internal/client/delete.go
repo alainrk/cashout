@@ -200,10 +200,10 @@ func formatDeletableTransactions(transactions []model.Transaction, offset, total
 		emoji := utils.GetCategoryEmoji(t.Category)
 
 		msg.WriteString(fmt.Sprintf("%d. <b>%s</b> - %.2f€\n",
-			offset+i+1,
-			t.Description,
-			t.Amount,
-		))
+            i+1,
+            t.Description,
+            t.Amount,
+        ))
 
 		msg.WriteString(fmt.Sprintf("   %s %s\n", emoji, t.Category))
 		msg.WriteString(fmt.Sprintf("   📅 %s\n", t.Date.Format("02-01-2006")))
