@@ -104,6 +104,43 @@ func (c *Client) EditTransactionSelect(b *gotgbot.Bot, ctx *ext.Context) error {
 	return c.showEditOptions(b, ctx, transaction)
 }
 
+// EditDone handles the completion of editing a transaction
+func (c *Client) EditDone(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	// Reset user session state
+	user.Session.State = model.StateNormal
+	user.Session.Body = ""
+
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to update user data: %w", err)
+	}
+
+	// Clear any inline keyboard
+	if ctx.CallbackQuery != nil {
+		_, _, err = ctx.CallbackQuery.Message.EditReplyMarkup(
+			b,
+			&gotgbot.EditMessageReplyMarkupOpts{
+				ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+					InlineKeyboard: [][]gotgbot.InlineKeyboardButton{},
+				},
+			},
+		)
+		if err != nil {
+			return fmt.Errorf("failed to clear inline keyboard: %w", err)
+		}
+	}
+
+	// Send confirmation message and home
+	return c.SendHomeKeyboard(b, ctx, "Editing completed!")
+	return err
+}
+
 // EditTransactionField handles editing a specific field of a transaction
 func (c *Client) EditTransactionField(b *gotgbot.Bot, ctx *ext.Context) error {
 	_, u := c.getUserFromContext(ctx)
@@ -314,8 +351,21 @@ func (c *Client) EditTransactionCategoryConfirm(b *gotgbot.Bot, ctx *ext.Context
 		fmt.Sprintf("%s Category updated successfully!\n\nChanged from <b>%s</b> to <b>%s</b>",
 			emoji, oldCategory, transaction.Category),
 		&gotgbot.SendMessageOpts{
-			ParseMode:   "HTML",
-			ReplyMarkup: gotgbot.ReplyKeyboardRemove{},
+			ParseMode: "HTML",
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+					{
+						{
+							Text:         "Keep Editing",
+							CallbackData: fmt.Sprintf("edit.select.%d", transaction.ID),
+						},
+						{
+							Text:         "Done",
+							CallbackData: "edit.done",
+						},
+					},
+				},
+			},
 		},
 	)
 
@@ -458,6 +508,20 @@ func (c *Client) EditTransactionDescriptionConfirm(b *gotgbot.Bot, ctx *ext.Cont
 			emoji, oldDescription, transaction.Description),
 		&gotgbot.SendMessageOpts{
 			ParseMode: "HTML",
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+					{
+						{
+							Text:         "Keep Editing",
+							CallbackData: fmt.Sprintf("edit.select.%d", transaction.ID),
+						},
+						{
+							Text:         "Done",
+							CallbackData: "edit.done",
+						},
+					},
+				},
+			},
 		},
 	)
 
@@ -539,6 +603,20 @@ func (c *Client) EditTransactionAmountConfirm(b *gotgbot.Bot, ctx *ext.Context) 
 			emoji, oldAmount, transaction.Amount),
 		&gotgbot.SendMessageOpts{
 			ParseMode: "HTML",
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+					{
+						{
+							Text:         "Keep Editing",
+							CallbackData: fmt.Sprintf("edit.select.%d", transaction.ID),
+						},
+						{
+							Text:         "Done",
+							CallbackData: "edit.done",
+						},
+					},
+				},
+			},
 		},
 	)
 
@@ -656,6 +734,20 @@ func (c *Client) EditTransactionDateConfirm(b *gotgbot.Bot, ctx *ext.Context) er
 			transaction.Date.Format("02-01-2006")),
 		&gotgbot.SendMessageOpts{
 			ParseMode: "HTML",
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+					{
+						{
+							Text:         "Keep Editing",
+							CallbackData: fmt.Sprintf("edit.select.%d", transaction.ID),
+						},
+						{
+							Text:         "Done",
+							CallbackData: "edit.done",
+						},
+					},
+				},
+			},
 		},
 	)
 
@@ -726,10 +818,10 @@ func formatEditableTransactions(transactions []model.Transaction, offset, total 
 		emoji := utils.GetCategoryEmoji(t.Category)
 
 		msg.WriteString(fmt.Sprintf("%d. <b>%s</b> - %.2f€\n",
-            i+1,
-            t.Description,
-            t.Amount,
-        ))
+			i+1,
+			t.Description,
+			t.Amount,
+		))
 
 		msg.WriteString(fmt.Sprintf("   %s %s\n", emoji, t.Category))
 		msg.WriteString(fmt.Sprintf("   📅 %s\n", t.Date.Format("02-01-2006")))

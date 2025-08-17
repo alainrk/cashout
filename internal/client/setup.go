@@ -39,6 +39,7 @@ func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("edit.page."), c.EditTransactionPage))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("edit.select."), c.EditTransactionSelect))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("edit.field."), c.EditTransactionField))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("edit.done"), c.EditDone))
 
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.page."), c.DeleteTransactionPage))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.showconfirm."), c.ShowDeleteConfirmation))
