@@ -11,44 +11,5 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  migrate:
-    build: .
-    command: ["/app/migrate", "-command", "up"]
-    depends_on:
-      - db
-    env_file:
-      - .env
-    environment:
-      DATABASE_URL: postgres://postgres:postgres@db:5432/postgres?sslmode=disable
-
-  bot:
-    build: .
-    restart: always
-    depends_on:
-      - db
-      - migrate
-    env_file:
-      - .env
-    environment:
-      DATABASE_URL: postgres://postgres:postgres@db:5432/postgres?sslmode=disable
-    ports:
-      - "8080:8080" # If using webhook mode
-
-  web:
-    build: .
-    command: ["/app/cashout-web"]
-    restart: always
-    depends_on:
-      - db
-      - migrate
-    env_file:
-      - .env
-    environment:
-      DATABASE_URL: postgres://postgres:postgres@db:5432/postgres?sslmode=disable
-      WEB_HOST: 0.0.0.0
-      WEB_PORT: 8081
-    ports:
-      - "8081:8081"
-
 volumes:
   postgres_data:
