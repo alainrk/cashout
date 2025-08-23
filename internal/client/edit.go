@@ -20,16 +20,16 @@ func (c *Client) EditTransactions(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 
-	// Reset user state to normal
-	user.Session.State = model.StateNormal
-
+	// Reset user state and start edit search flow
+	user.Session.State = model.StateSelectingEditSearchCategory
+	user.Session.Body = ""
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to update user data: %w", err)
 	}
 
-	// Show first page of editable transactions
-	return c.showEditableTransactionPage(b, ctx, user, 0)
+	// Show category selection for edit search
+	return c.showEditSearchCategorySelection(b, ctx)
 }
 
 // EditTransactionPage handles pagination in the transaction editing interface
@@ -951,4 +951,515 @@ func (c *Client) showEditOptions(b *gotgbot.Bot, ctx *ext.Context, transaction m
 	})
 
 	return err
+}
+
+// showEditSearchCategorySelection displays the category selection keyboard for edit search
+func (c *Client) showEditSearchCategorySelection(b *gotgbot.Bot, ctx *ext.Context) error {
+	var keyboard [][]gotgbot.InlineKeyboardButton
+
+	// Add "All" option first
+	keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
+		{
+			Text:         "🔍 All Categories",
+			CallbackData: "edit.search.category.all",
+		},
+	})
+
+	// Add income categories
+	incomeCategories := []model.TransactionCategory{
+		model.CategorySalary,
+		model.CategoryOtherIncomes,
+	}
+
+	for _, cat := range incomeCategories {
+		emoji := utils.GetCategoryEmoji(cat)
+		keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
+			{
+				Text:         fmt.Sprintf("%s %s", emoji, cat),
+				CallbackData: fmt.Sprintf("edit.search.category.%s", cat),
+			},
+		})
+	}
+
+	// Add expense categories in rows of 2
+	expenseCategories := []model.TransactionCategory{
+		model.CategoryCar,
+		model.CategoryClothes,
+		model.CategoryGrocery,
+		model.CategoryHouse,
+		model.CategoryBills,
+		model.CategoryEntertainment,
+		model.CategorySport,
+		model.CategoryEatingOut,
+		model.CategoryTransport,
+		model.CategoryLearning,
+		model.CategoryToiletry,
+		model.CategoryHealth,
+		model.CategoryTech,
+		model.CategoryGifts,
+		model.CategoryTravel,
+		model.CategoryPets,
+		model.CategoryOtherExpenses,
+	}
+
+	for i := 0; i < len(expenseCategories); i += 2 {
+		row := []gotgbot.InlineKeyboardButton{}
+
+		emoji := utils.GetCategoryEmoji(expenseCategories[i])
+		row = append(row, gotgbot.InlineKeyboardButton{
+			Text:         fmt.Sprintf("%s %s", emoji, expenseCategories[i]),
+			CallbackData: fmt.Sprintf("edit.search.category.%s", expenseCategories[i]),
+		})
+
+		// Add second button if exists
+		if i+1 < len(expenseCategories) {
+			emoji2 := utils.GetCategoryEmoji(expenseCategories[i+1])
+			row = append(row, gotgbot.InlineKeyboardButton{
+				Text:         fmt.Sprintf("%s %s", emoji2, expenseCategories[i+1]),
+				CallbackData: fmt.Sprintf("edit.search.category.%s", expenseCategories[i+1]),
+			})
+		}
+
+		keyboard = append(keyboard, row)
+	}
+
+	// Add cancel button
+	keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
+		{
+			Text:         "❌ Cancel",
+			CallbackData: "edit.search.cancel",
+		},
+	})
+
+	message := "✏️ <b>Edit Transaction</b>\n\nFirst, select a category to search in:"
+
+	// Send or update message
+	if ctx.CallbackQuery != nil {
+		_, _, err := ctx.CallbackQuery.Message.EditText(b, message, &gotgbot.EditMessageTextOpts{
+			ParseMode: "HTML",
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: keyboard,
+			},
+		})
+		return err
+	} else {
+		_, err := b.SendMessage(ctx.EffectiveSender.ChatId, message, &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: keyboard,
+			},
+		})
+		return err
+	}
+}
+
+// EditSearchCategorySelected handles category selection for edit search
+func (c *Client) EditSearchCategorySelected(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	query := ctx.CallbackQuery
+
+	// Parse callback data (format: edit.search.category.CATEGORY)
+	parts := strings.Split(query.Data, ".")
+	if len(parts) != 4 {
+		return fmt.Errorf("invalid callback data format")
+	}
+
+	category := parts[3]
+
+	// Store selected category in session
+	user.Session.State = model.StateEnteringEditSearchQuery
+	user.Session.Body = category
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to update user data: %w", err)
+	}
+
+	// Ask for search query
+	categoryText := "all categories"
+	if category != "all" {
+		emoji := utils.GetCategoryEmoji(model.TransactionCategory(category))
+		categoryText = fmt.Sprintf("%s %s", emoji, category)
+	}
+
+	_, _, err = ctx.CallbackQuery.Message.EditText(
+		b,
+		fmt.Sprintf("✏️ Searching in <b>%s</b>\n\nEnter your search text:", categoryText),
+		&gotgbot.EditMessageTextOpts{
+			ParseMode: "HTML",
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+					{
+						{
+							Text:         "❌ Cancel",
+							CallbackData: "edit.search.cancel",
+						},
+					},
+				},
+			},
+		},
+	)
+
+	return err
+}
+
+// EditSearchQueryEntered handles the search query input for edit
+func (c *Client) EditSearchQueryEntered(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	// Get search query
+	searchQuery := strings.TrimSpace(ctx.Message.Text)
+	if searchQuery == "" {
+		_, err = b.SendMessage(ctx.EffectiveSender.ChatId, "Search query cannot be empty. Please try again.", nil)
+		return err
+	}
+
+	// Get category from session
+	category := user.Session.Body
+
+	// Reset user state
+	user.Session.State = model.StateNormal
+	user.Session.Body = ""
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to update user data: %w", err)
+	}
+
+	// Perform search and show results for editing
+	return c.showEditSearchResults(b, ctx, user, category, searchQuery, 0)
+}
+
+// showEditSearchResults displays paginated search results for editing
+func (c *Client) showEditSearchResults(b *gotgbot.Bot, ctx *ext.Context, user model.User, category, searchQuery string, offset int) error {
+	limit := 5 // Same as original edit page limit
+
+	// Perform search
+	var transactions []model.Transaction
+	var total int64
+	var err error
+
+	if category == "all" {
+		transactions, total, err = c.Repositories.Transactions.SearchUserTransactions(
+			user.TgID,
+			searchQuery,
+			"",
+			offset,
+			limit,
+		)
+	} else {
+		transactions, total, err = c.Repositories.Transactions.SearchUserTransactions(
+			user.TgID,
+			searchQuery,
+			category,
+			offset,
+			limit,
+		)
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to search transactions: %w", err)
+	}
+
+	if total == 0 {
+		message := fmt.Sprintf("🔍 No transactions found matching \"%s\"", searchQuery)
+		if category != "all" {
+			emoji := utils.GetCategoryEmoji(model.TransactionCategory(category))
+			message = fmt.Sprintf("🔍 No transactions found matching \"%s\" in %s %s", searchQuery, emoji, category)
+		}
+
+		if ctx.CallbackQuery != nil {
+			_, _, err = ctx.CallbackQuery.Message.EditText(b, message, &gotgbot.EditMessageTextOpts{
+				ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+					InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+						{
+							{
+								Text:         "🔍 New Search",
+								CallbackData: "edit.search.new",
+							},
+							{
+								Text:         "🏠 Home",
+								CallbackData: "edit.search.home",
+							},
+						},
+					},
+				},
+			})
+		} else {
+			_, err = b.SendMessage(ctx.EffectiveSender.ChatId, message, &gotgbot.SendMessageOpts{
+				ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+					InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+						{
+							{
+								Text:         "🔍 New Search",
+								CallbackData: "edit.search.new",
+							},
+							{
+								Text:         "🏠 Home",
+								CallbackData: "edit.search.home",
+							},
+						},
+					},
+				},
+			})
+		}
+		return err
+	}
+
+	// Format edit search results (similar to original edit page format)
+	message := formatEditSearchResults(transactions, searchQuery, category, offset, int(total))
+
+	// Create pagination keyboard with numbered buttons for editing
+	keyboard := createEditSearchPaginationKeyboard(transactions, category, searchQuery, offset, limit, int(total))
+
+	// Send or update message
+	if ctx.CallbackQuery != nil {
+		_, _, err = ctx.CallbackQuery.Message.EditText(b, message, &gotgbot.EditMessageTextOpts{
+			ParseMode: "HTML",
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: keyboard,
+			},
+		})
+		return err
+	} else {
+		_, err = b.SendMessage(ctx.EffectiveSender.ChatId, message, &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+				InlineKeyboard: keyboard,
+			},
+		})
+		return err
+	}
+}
+
+// formatEditSearchResults formats the search results for editing display
+func formatEditSearchResults(transactions []model.Transaction, searchQuery, category string, offset, total int) string {
+	var msg strings.Builder
+
+	msg.WriteString("✏️ <b>Edit Transaction - Search Results</b>\n")
+	msg.WriteString(fmt.Sprintf("Query: \"%s\"", searchQuery))
+
+	if category != "all" {
+		emoji := utils.GetCategoryEmoji(model.TransactionCategory(category))
+		msg.WriteString(fmt.Sprintf(" in %s %s", emoji, category))
+	}
+
+	msg.WriteString(fmt.Sprintf("\n\nShowing %d-%d of %d results\n", offset+1, offset+len(transactions), total))
+	msg.WriteString("Select a transaction to edit:\n\n")
+
+	for i, t := range transactions {
+		emoji := utils.GetCategoryEmoji(t.Category)
+
+		// Highlight the search term in description
+		highlightedDesc := t.Description
+		if idx := strings.Index(strings.ToLower(t.Description), strings.ToLower(searchQuery)); idx != -1 {
+			// Simple highlighting with bold
+			highlightedDesc = t.Description[:idx] + "<b>" +
+				t.Description[idx:idx+len(searchQuery)] + "</b>" +
+				t.Description[idx+len(searchQuery):]
+		}
+
+		msg.WriteString(fmt.Sprintf("<b>%d.</b> %s - %.2f€\n",
+			i+1,
+			highlightedDesc,
+			t.Amount,
+		))
+
+		msg.WriteString(fmt.Sprintf("   %s %s | 📅 %s\n",
+			emoji, t.Category, t.Date.Format("02-01-2006")))
+
+		if t.Type == model.TypeIncome {
+			msg.WriteString("   💰 Income\n")
+		} else {
+			msg.WriteString("   💸 Expense\n")
+		}
+
+		msg.WriteString("\n")
+	}
+
+	return msg.String()
+}
+
+// createEditSearchPaginationKeyboard creates pagination buttons for edit search results
+func createEditSearchPaginationKeyboard(transactions []model.Transaction, category, searchQuery string, offset, limit, total int) [][]gotgbot.InlineKeyboardButton {
+	var keyboard [][]gotgbot.InlineKeyboardButton
+
+	// Add numbered buttons for transaction selection (1-5)
+	var selectionRow []gotgbot.InlineKeyboardButton
+	for i, t := range transactions {
+		selectionRow = append(selectionRow, gotgbot.InlineKeyboardButton{
+			Text:         fmt.Sprintf("%d", i+1),
+			CallbackData: fmt.Sprintf("edit.search.select.%d", t.ID),
+		})
+	}
+	if len(selectionRow) > 0 {
+		keyboard = append(keyboard, selectionRow)
+	}
+
+	// Navigation row
+	var navigationRow []gotgbot.InlineKeyboardButton
+
+	// Previous page button
+	if offset > 0 {
+		prevOffset := offset - limit
+		if prevOffset < 0 {
+			prevOffset = 0
+		}
+		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
+			Text:         "⬅️ Previous",
+			CallbackData: fmt.Sprintf("edit.search.page.%s.%d.%s", category, prevOffset, searchQuery),
+		})
+	}
+
+	// Page indicator
+	currentPage := (offset / limit) + 1
+	totalPages := (total + limit - 1) / limit
+	navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
+		Text:         fmt.Sprintf("%d/%d", currentPage, totalPages),
+		CallbackData: "edit.search.noop",
+	})
+
+	// Next page button
+	if offset+limit < total {
+		nextOffset := offset + limit
+		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
+			Text:         "Next ➡️",
+			CallbackData: fmt.Sprintf("edit.search.page.%s.%d.%s", category, nextOffset, searchQuery),
+		})
+	}
+
+	if len(navigationRow) > 0 {
+		keyboard = append(keyboard, navigationRow)
+	}
+
+	// Action buttons
+	keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
+		{
+			Text:         "🔍 New Search",
+			CallbackData: "edit.search.new",
+		},
+		{
+			Text:         "🏠 Home",
+			CallbackData: "edit.search.home",
+		},
+	})
+
+	return keyboard
+}
+
+// EditSearchResultsPage handles pagination for edit search results
+func (c *Client) EditSearchResultsPage(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	query := ctx.CallbackQuery
+
+	// Parse callback data (format: edit.search.page.CATEGORY.OFFSET.QUERY)
+	parts := strings.Split(query.Data, ".")
+	if len(parts) != 6 {
+		return fmt.Errorf("invalid callback data format")
+	}
+
+	category := parts[3]
+	offset, err := strconv.Atoi(parts[4])
+	if err != nil {
+		return fmt.Errorf("invalid offset: %v", err)
+	}
+	searchQuery := parts[5]
+
+	return c.showEditSearchResults(b, ctx, user, category, searchQuery, offset)
+}
+
+// EditSearchTransactionSelected handles transaction selection from search results
+func (c *Client) EditSearchTransactionSelected(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	query := ctx.CallbackQuery
+
+	// Parse callback data (format: edit.search.select.TRANSACTION_ID)
+	parts := strings.Split(query.Data, ".")
+	if len(parts) != 4 {
+		return fmt.Errorf("invalid callback data format")
+	}
+
+	transactionID, err := strconv.ParseInt(parts[3], 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid transaction ID: %v", err)
+	}
+
+	// Get the transaction
+	transaction, err := c.Repositories.Transactions.GetByID(transactionID)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction: %w", err)
+	}
+
+	// Verify the transaction belongs to the user
+	if transaction.TgID != user.TgID {
+		_, _, err = ctx.CallbackQuery.Message.EditText(
+			b,
+			"⚠️ This transaction doesn't belong to you.",
+			&gotgbot.EditMessageTextOpts{},
+		)
+		return err
+	}
+
+	// Store transaction ID in session for editing (same as existing edit flow)
+	user.Session.State = model.StateNormal
+	user.Session.Body = fmt.Sprintf("%d", transactionID)
+
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to set user data: %w", err)
+	}
+
+	// Show edit options for the selected transaction
+	return c.showEditOptions(b, ctx, transaction)
+}
+
+// EditSearchCancel handles edit search cancellation
+func (c *Client) EditSearchCancel(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	// Reset user state
+	user.Session.State = model.StateNormal
+	user.Session.Body = ""
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to update user data: %w", err)
+	}
+
+	return c.Cancel(b, ctx)
+}
+
+// EditSearchHome returns to home screen
+func (c *Client) EditSearchHome(b *gotgbot.Bot, ctx *ext.Context) error {
+	return c.SendHomeKeyboard(b, ctx, "What can I do for you?")
+}
+
+// EditSearchNew starts a new edit search
+func (c *Client) EditSearchNew(b *gotgbot.Bot, ctx *ext.Context) error {
+	return c.EditTransactions(b, ctx)
+}
+
+// EditSearchNoop handles no-op callbacks (like page indicators)
+func (c *Client) EditSearchNoop(b *gotgbot.Bot, ctx *ext.Context) error {
+	return nil
 }

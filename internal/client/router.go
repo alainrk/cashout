@@ -71,6 +71,11 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 		return c.SearchQueryEntered(b, ctx)
 	}
 
+	// Edit search-related states
+	if user.Session.State == model.StateEnteringEditSearchQuery {
+		return c.EditSearchQueryEntered(b, ctx)
+	}
+
 	// End of top-level edit transaction
 
 	// Default behavior: start transaction flow for any unhandled text.

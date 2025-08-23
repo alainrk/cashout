@@ -33,6 +33,9 @@ const (
 	// Search-related states
 	StateSelectingSearchCategory StateType = "selecting_search_category"
 	StateEnteringSearchQuery     StateType = "entering_search_query"
+	// Edit search-related states
+	StateSelectingEditSearchCategory StateType = "selecting_edit_search_category"
+	StateEnteringEditSearchQuery     StateType = "entering_edit_search_query"
 	// The user has to confirm an action.
 	StateWaitingConfirm StateType = "waiting_confirm"
 )

@@ -40,6 +40,15 @@ func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("edit.select."), c.EditTransactionSelect))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("edit.field."), c.EditTransactionField))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("edit.done"), c.EditDone))
+	
+	// Edit search handlers
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("edit.search.category."), c.EditSearchCategorySelected))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("edit.search.page."), c.EditSearchResultsPage))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("edit.search.select."), c.EditSearchTransactionSelected))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("edit.search.cancel"), c.EditSearchCancel))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("edit.search.home"), c.EditSearchHome))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("edit.search.new"), c.EditSearchNew))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("edit.search.noop"), c.EditSearchNoop))
 
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.page."), c.DeleteTransactionPage))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.showconfirm."), c.ShowDeleteConfirmation))
