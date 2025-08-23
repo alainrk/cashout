@@ -13,3 +13,5 @@ bin
 cert
 *.env
 deploy.sh
+.serena
+.claude
