@@ -40,7 +40,7 @@ func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("edit.select."), c.EditTransactionSelect))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("edit.field."), c.EditTransactionField))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("edit.done"), c.EditDone))
-	
+
 	// Edit search handlers
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("edit.search.category."), c.EditSearchCategorySelected))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("edit.search.page."), c.EditSearchResultsPage))
@@ -53,6 +53,15 @@ func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.page."), c.DeleteTransactionPage))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.showconfirm."), c.ShowDeleteConfirmation))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.confirm."), c.DeleteTransactionConfirm))
+
+	// Delete search handlers
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.search.category."), c.DeleteSearchCategorySelected))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.search.page."), c.DeleteSearchResultsPage))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.search.select."), c.DeleteSearchTransactionSelected))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("delete.search.cancel"), c.DeleteSearchCancel))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("delete.search.home"), c.DeleteSearchHome))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("delete.search.new"), c.DeleteSearchNew))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("delete.search.noop"), c.DeleteSearchNoop))
 
 	dispatcher.AddHandler(handlers.NewCommand("cancel", c.Cancel))
 	dispatcher.AddHandler(handlers.NewCommand("delete", c.DeleteTransactions))

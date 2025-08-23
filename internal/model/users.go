@@ -36,6 +36,9 @@ const (
 	// Edit search-related states
 	StateSelectingEditSearchCategory StateType = "selecting_edit_search_category"
 	StateEnteringEditSearchQuery     StateType = "entering_edit_search_query"
+	// Delete search-related states
+	StateSelectingDeleteSearchCategory StateType = "selecting_delete_search_category"
+	StateEnteringDeleteSearchQuery     StateType = "entering_delete_search_query"
 	// The user has to confirm an action.
 	StateWaitingConfirm StateType = "waiting_confirm"
 )
@@ -66,7 +69,7 @@ func (s UserSession) Value() (driver.Value, error) {
 }
 
 // Scan makes the UserSession struct implement the sql.Scanner interface
-func (s *UserSession) Scan(value interface{}) error {
+func (s *UserSession) Scan(value any) error {
 	if value == nil {
 		*s = UserSession{State: ""}
 		return nil
@@ -92,7 +95,7 @@ func (j JSONData) Value() (driver.Value, error) {
 }
 
 // Scan makes the JSONData struct implement the sql.Scanner interface
-func (j *JSONData) Scan(value interface{}) error {
+func (j *JSONData) Scan(value any) error {
 	if value == nil {
 		*j = make(JSONData)
 		return nil
