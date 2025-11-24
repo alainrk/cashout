@@ -224,12 +224,41 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
             padding: 1rem;
             background: #f8f9fa;
             border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            user-select: none;
+        }
+        .cluster-header:hover {
+            background: #e9ecef;
         }
         .cluster-title {
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .cluster-icon {
+            display: inline-block;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 6px solid #666;
+            transition: transform 0.2s ease;
+        }
+        .cluster-icon.expanded {
+            transform: rotate(180deg);
         }
         .cluster-total {
             font-weight: 500;
+        }
+        .cluster-content {
+            display: none;
+        }
+        .cluster-content.expanded {
+            display: block;
+        }
+        .cluster-transactions {
+            padding: 0;
         }
         .amount {
             font-weight: 500;
@@ -448,14 +477,50 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 
             const sortedClusters = Object.values(clusteredData).sort((a, b) => b.total - a.total);
 
-            container.innerHTML = sortedClusters.map(cluster =>` + "`" + ` 
+            container.innerHTML = sortedClusters.map((cluster, index) =>` + "`" + `
                 <div class="cluster">
-                    <div class="cluster-header">
-                        <span class="cluster-title">${cluster.category} (${cluster.type})</span>
+                    <div class="cluster-header" data-cluster-index="${index}">
+                        <span class="cluster-title">
+                            <span class="cluster-icon" id="icon-${index}"></span>
+                            ${cluster.category} (${cluster.type})
+                        </span>
                         <span class="cluster-total ${cluster.type.toLowerCase()}">${cluster.type.toLowerCase() === 'income' ? '+' : '-'}${formatCurrency(Math.abs(cluster.total))}</span>
+                    </div>
+                    <div class="cluster-content" id="cluster-${index}">
+                        <table class="transactions-table cluster-transactions">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${cluster.transactions.map(tx => ` + "`" + `
+                                    <tr>
+                                        <td>${formatDate(tx.date)}</td>
+                                        <td>${tx.category}</td>
+                                        <td>${tx.description || '-'}</td>
+                                        <td class="amount ${tx.type.toLowerCase()}">${tx.type.toLowerCase() === 'income' ? '+' : '-'}${formatCurrency(Math.abs(tx.amount))}</td>
+                                    </tr>
+                                ` + "`" + `).join('')}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             ` + "`" + `).join('');
+
+            // Add click handlers to cluster headers
+            document.querySelectorAll('.cluster-header').forEach(header => {
+                header.addEventListener('click', (e) => {
+                    const clusterIndex = e.currentTarget.getAttribute('data-cluster-index');
+                    const content = document.getElementById(` + "`" + `cluster-${clusterIndex}` + "`" + `);
+                    const icon = document.getElementById(` + "`" + `icon-${clusterIndex}` + "`" + `);
+                    content.classList.toggle('expanded');
+                    icon.classList.toggle('expanded');
+                });
+            });
         }
 
 
