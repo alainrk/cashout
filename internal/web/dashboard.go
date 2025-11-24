@@ -39,6 +39,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Cashout Dashboard - {{.User.Name}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
@@ -203,6 +204,25 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
             border-bottom: 2px solid #e0e0e0;
             color: #666;
             font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+        .transactions-table th:hover {
+            background: #f8f9fa;
+        }
+        .transactions-table th.sortable::after {
+            content: ' ↕';
+            opacity: 0.3;
+            font-size: 0.8em;
+        }
+        .transactions-table th.sorted-asc::after {
+            content: ' ▲';
+            opacity: 1;
+        }
+        .transactions-table th.sorted-desc::after {
+            content: ' ▼';
+            opacity: 1;
         }
         .transactions-table td {
             padding: 0.75rem;
@@ -389,6 +409,8 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 
         let transactionsData = [];
         let currentView = localStorage.getItem('dashboardView') || 'list';
+        let sortColumn = 'date';
+        let sortDirection = 'desc';
 
         // Load transactions
         async function loadTransactions(month) {
@@ -405,6 +427,49 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
                 document.getElementById('transactionsContainer').innerHTML =
                     '<div class="error">Failed to load transactions: ' + error.message + '</div>';
             }
+        }
+
+        // Sort transactions data
+        function sortTransactions(data, column, direction) {
+            return [...data].sort((a, b) => {
+                let aVal, bVal;
+
+                switch(column) {
+                    case 'date':
+                        aVal = new Date(a.date);
+                        bVal = new Date(b.date);
+                        break;
+                    case 'category':
+                        aVal = a.category.toLowerCase();
+                        bVal = b.category.toLowerCase();
+                        break;
+                    case 'description':
+                        aVal = (a.description || '').toLowerCase();
+                        bVal = (b.description || '').toLowerCase();
+                        break;
+                    case 'amount':
+                        aVal = Math.abs(a.amount);
+                        bVal = Math.abs(b.amount);
+                        break;
+                    default:
+                        return 0;
+                }
+
+                if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        // Handle column header click
+        function handleSort(column) {
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+            renderTransactions();
         }
 
         // Render transactions based on the current view
@@ -425,7 +490,8 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
                 return;
             }
 
-            const tableRows = transactionsData.map(tx =>` + "`" + ` 
+            const sortedData = sortTransactions(transactionsData, sortColumn, sortDirection);
+            const tableRows = sortedData.map(tx =>` + "`" + `
                 <tr>
                     <td>${formatDate(tx.date)}</td>
                     <td>${tx.category}</td>
@@ -434,14 +500,21 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
                 </tr>
             ` + "`" + `).join('');
 
-            container.innerHTML =` + "`" + ` 
+            const getSortClass = (column) => {
+                if (sortColumn === column) {
+                    return sortDirection === 'asc' ? 'sorted-asc' : 'sorted-desc';
+                }
+                return 'sortable';
+            };
+
+            container.innerHTML =` + "`" + `
                 <table class="transactions-table">
                     <thead>
                         <tr>
-                            <th>Date</th>
-                            <th>Category</th>
-                            <th>Description</th>
-                            <th>Amount</th>
+                            <th class="${getSortClass('date')}" data-column="date">Date</th>
+                            <th class="${getSortClass('category')}" data-column="category">Category</th>
+                            <th class="${getSortClass('description')}" data-column="description">Description</th>
+                            <th class="${getSortClass('amount')}" data-column="amount">Amount</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -449,6 +522,13 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
                     </tbody>
                 </table>
             ` + "`" + `;
+
+            // Add click handlers to headers
+            document.querySelectorAll('.transactions-table th[data-column]').forEach(th => {
+                th.addEventListener('click', () => {
+                    handleSort(th.getAttribute('data-column'));
+                });
+            });
         }
 
         // Render clustered view
