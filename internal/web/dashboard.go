@@ -359,7 +359,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
         }
 
         let transactionsData = [];
-        let currentView = 'list';
+        let currentView = localStorage.getItem('dashboardView') || 'list';
 
         // Load transactions
         async function loadTransactions(month) {
@@ -462,6 +462,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 		// Event Listeners for view toggle
 		document.getElementById('listViewBtn').addEventListener('click', () => {
 			currentView = 'list';
+			localStorage.setItem('dashboardView', 'list');
 			document.getElementById('listViewBtn').classList.add('active');
 			document.getElementById('clusteredViewBtn').classList.remove('active');
 			renderTransactions();
@@ -469,10 +470,17 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 
 		document.getElementById('clusteredViewBtn').addEventListener('click', () => {
 			currentView = 'clustered';
+			localStorage.setItem('dashboardView', 'clustered');
 			document.getElementById('clusteredViewBtn').classList.add('active');
 			document.getElementById('listViewBtn').classList.remove('active');
 			renderTransactions();
 		});
+
+        // Initialize button states based on saved preference
+		if (currentView === 'clustered') {
+			document.getElementById('clusteredViewBtn').classList.add('active');
+			document.getElementById('listViewBtn').classList.remove('active');
+		}
 
         // Load data on page load
 		const currentMonth = document.getElementById('currentMonth').value;
