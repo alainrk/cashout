@@ -32,7 +32,7 @@ func main() {
 
 	fmt.Println("GetAccount Object:", result, " GetAccount Response: ", resp)
 
-	br.TransactionalEmailsApi.SendTransacEmail(context.TODO(), brevo.SendSmtpEmail{
+	_, _, err = br.TransactionalEmailsApi.SendTransacEmail(context.TODO(), brevo.SendSmtpEmail{
 		Sender: &brevo.SendSmtpEmailSender{
 			Name:  os.Getenv("EMAIL_FROM_NAME"),
 			Email: os.Getenv("EMAIL_FROM_ADDRESS"),
@@ -46,4 +46,8 @@ func main() {
 		Subject:     "Test Email from Brevo API",
 		TextContent: "This is a test email sent using the Brevo API.",
 	})
+	if err != nil {
+		fmt.Println("Error when calling TransactionalEmailsApi->sendTransacEmail: ", err.Error())
+		return
+	}
 }
