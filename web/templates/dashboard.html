@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Cashout Dashboard - {{.User.Name}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/web/static/css/dashboard.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">Cashout</div>
+            <div class="user-info">
+                <span>Welcome, <strong>{{.User.Name}}</strong></span>
+                <a href="/web/logout" class="logout-btn">Logout</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="month-navigation">
+            <a href="/web/dashboard?month={{.PrevMonth}}">Previous</a>
+            <h2>{{.CurrentMonthTitle}}</h2>
+            <a href="/web/dashboard?month={{.NextMonth}}" {{if .IsCurrentMonth}}class="disabled"{{end}}>Next</a>
+        </div>
+
+        <input type="hidden" id="currentMonth" value="{{.CurrentMonth}}">
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="loading">Loading statistics...</div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Transactions</h2>
+                <div class="view-toggle">
+                    <button id="listViewBtn" class="active">List</button>
+                    <button id="clusteredViewBtn">Clustered</button>
+                </div>
+            </div>
+            <div id="transactionsContainer">
+                <div class="loading">Loading transactions...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/web/static/js/dashboard.js"></script>
+</body>
+</html>

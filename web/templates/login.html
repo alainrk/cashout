@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cashout - Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/web/static/css/login.css">
+</head>
+<body>
+    <div class="login-container">
+        <h1>Cashout Login</h1>
+
+        <div id="loginSection">
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Telegram Username</label>
+                    <input type="text" id="username" name="username" placeholder="@username" required>
+                    <div class="telegram-hint">Enter your Telegram username (without @)</div>
+                </div>
+                <button type="submit" id="submitBtn">Send Login Code</button>
+            </form>
+        </div>
+
+        <div id="verifySection">
+            <form id="verifyForm">
+                <div class="form-group">
+                    <label for="code">Verification Code</label>
+                    <input type="text" id="code" name="code" placeholder="Enter 6-digit code" maxlength="6" required>
+                    <div class="telegram-hint">Check your Telegram for the verification code</div>
+                </div>
+                <button type="submit" id="verifyBtn">Verify</button>
+            </form>
+        </div>
+
+        <div id="message"></div>
+    </div>
+
+    <script src="/web/static/js/login.js"></script>
+</body>
+</html>

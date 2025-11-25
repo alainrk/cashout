@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html/template"
 	"net/http"
 	"strings"
 
@@ -29,221 +30,19 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl := `
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Cashout - Login</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .login-container {
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 400px;
-        }
-        h1 {
-            margin: 0 0 2rem 0;
-            text-align: center;
-            color: #333;
-        }
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #555;
-            font-weight: 500;
-        }
-        input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        input:focus {
-            outline: none;
-            border-color: #0088cc;
-        }
-        button {
-            width: 100%;
-            padding: 0.75rem;
-            background: #0088cc;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        button:hover {
-            background: #006ba1;
-        }
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        .message {
-            margin-top: 1rem;
-            padding: 0.75rem;
-            border-radius: 4px;
-            text-align: center;
-        }
-        .error {
-            background: #fee;
-            color: #c33;
-            border: 1px solid #fcc;
-        }
-        .success {
-            background: #efe;
-            color: #3c3;
-            border: 1px solid #cfc;
-        }
-        .info {
-            background: #e6f2ff;
-            color: #0066cc;
-            border: 1px solid #b3d9ff;
-        }
-        #verifySection {
-            display: none;
-        }
-        .telegram-hint {
-            font-size: 0.875rem;
-            color: #666;
-            margin-top: 0.5rem;
-        }
-    </style>
-</head>
-<body>
-    <div class="login-container">
-        <h1>Cashout Login</h1>
-        
-        <div id="loginSection">
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="username">Telegram Username</label>
-                    <input type="text" id="username" name="username" placeholder="@username" required>
-                    <div class="telegram-hint">Enter your Telegram username (without @)</div>
-                </div>
-                <button type="submit" id="submitBtn">Send Login Code</button>
-            </form>
-        </div>
-
-        <div id="verifySection">
-            <form id="verifyForm">
-                <div class="form-group">
-                    <label for="code">Verification Code</label>
-                    <input type="text" id="code" name="code" placeholder="Enter 6-digit code" maxlength="6" required>
-                    <div class="telegram-hint">Check your Telegram for the verification code</div>
-                </div>
-                <button type="submit" id="verifyBtn">Verify</button>
-            </form>
-        </div>
-
-        <div id="message"></div>
-    </div>
-
-    <script>
-        const basePath = '/web';
-        const loginForm = document.getElementById('loginForm');
-        const verifyForm = document.getElementById('verifyForm');
-        const loginSection = document.getElementById('loginSection');
-        const verifySection = document.getElementById('verifySection');
-        const messageDiv = document.getElementById('message');
-
-        function showMessage(text, type) {
-            messageDiv.className = 'message ' + type;
-            messageDiv.textContent = text;
-        }
-
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value.replace('@', '');
-            const submitBtn = document.getElementById('submitBtn');
-            
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Sending...';
-            
-            try {
-                const response = await fetch(basePath+'/auth/request', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({username})
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    loginSection.style.display = 'none';
-                    verifySection.style.display = 'block';
-                    showMessage('Verification code sent to your Telegram!', 'success');
-                } else {
-                    showMessage(data.error || 'Failed to send code', 'error');
-                }
-            } catch (error) {
-                showMessage('Network error. Please try again.', 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Send Login Code';
-            }
-        });
-
-        verifyForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const code = document.getElementById('code').value;
-            const verifyBtn = document.getElementById('verifyBtn');
-            
-            verifyBtn.disabled = true;
-            verifyBtn.textContent = 'Verifying...';
-            
-            try {
-                const response = await fetch(basePath+'/auth/verify', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({code})
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showMessage('Login successful! Redirecting...', 'success');
-                    setTimeout(() => {
-                        window.location.href = basePath+'/dashboard';
-                    }, 1000);
-                } else {
-                    showMessage(data.error || 'Invalid code', 'error');
-                }
-            } catch (error) {
-                showMessage('Network error. Please try again.', 'error');
-            } finally {
-                verifyBtn.disabled = false;
-                verifyBtn.textContent = 'Verify';
-            }
-        });
-    </script>
-</body>
-</html>
-`
-	w.Header().Set("Content-Type", "text/html")
-	_, err := fmt.Fprint(w, tmpl)
+	t, err := template.ParseFiles("web/templates/login.html")
 	if err != nil {
-		s.logger.Errorf("Failed to send login page: %v", err)
+		s.logger.Errorf("Failed to parse template: %v", err)
+		http.Error(w, "Template error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	err = t.Execute(w, nil)
+	if err != nil {
+		s.logger.Errorf("Failed to execute template: %v", err)
+		http.Error(w, "Template error", http.StatusInternalServerError)
+		return
 	}
 }
 

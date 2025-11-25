@@ -1,3 +1,4 @@
+// Package web implements the web server functionalities for the "static" dashboard.
 package web
 
 import "net/http"
