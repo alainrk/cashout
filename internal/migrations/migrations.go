@@ -1,3 +1,4 @@
+// Package migrations provides a simple database migration system using GORM.
 package migrations
 
 import (

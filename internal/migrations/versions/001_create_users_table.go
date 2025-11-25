@@ -1,3 +1,4 @@
+// Package versions provides database migration versions.
 package versions
 
 import (
