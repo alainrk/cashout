@@ -270,6 +270,131 @@ if (currentView === 'clustered') {
     document.getElementById('listViewBtn').classList.remove('active');
 }
 
+// Transaction Form Handling
+
+// Set today's date as default
+document.getElementById('txDate').valueAsDate = new Date();
+
+// Function to load categories for a given type
+async function loadCategories(type) {
+    const categorySelect = document.getElementById('txCategory');
+
+    if (!type) {
+        categorySelect.innerHTML = '<option value="">Select type first</option>';
+        return;
+    }
+
+    try {
+        categorySelect.innerHTML = '<option value="">Loading...</option>';
+        const response = await fetch(`/web/api/categories?type=${type}`);
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || 'Failed to load categories');
+
+        categorySelect.innerHTML = '';
+
+        data.categories.forEach((category, index) => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            if (index === 0) {
+                option.selected = true; // Auto-select first category
+            }
+            categorySelect.appendChild(option);
+        });
+    } catch (error) {
+        categorySelect.innerHTML = '<option value="">Error loading categories</option>';
+        showTxMessage('Failed to load categories: ' + error.message, 'error');
+    }
+}
+
+// Load categories for default Expense type on page load
+loadCategories('Expense');
+
+// Load categories when type changes
+document.getElementById('txType').addEventListener('change', function() {
+    loadCategories(this.value);
+});
+
+// Handle form submission
+document.getElementById('addTransactionForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const submitBtn = document.getElementById('submitTxBtn');
+    const messageDiv = document.getElementById('txMessage');
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Adding...';
+    messageDiv.textContent = '';
+    messageDiv.className = 'message';
+
+    // Normalize amount: replace comma with dot and parse
+    const amountValue = document.getElementById('txAmount').value.replace(',', '.');
+    const amount = parseFloat(amountValue);
+
+    // Validate amount
+    if (isNaN(amount) || amount <= 0) {
+        showTxMessage('Please enter a valid amount', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Add Transaction';
+        return;
+    }
+
+    const formData = {
+        type: document.getElementById('txType').value,
+        category: document.getElementById('txCategory').value,
+        amount: amount,
+        date: document.getElementById('txDate').value,
+        description: document.getElementById('txDescription').value
+    };
+
+    try {
+        const response = await fetch('/web/api/transactions/create', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || 'Failed to create transaction');
+
+        showTxMessage('Transaction added successfully!', 'success');
+
+        // Reset form
+        document.getElementById('addTransactionForm').reset();
+        document.getElementById('txDate').valueAsDate = new Date();
+
+        // Reset to default Expense type and reload categories
+        document.getElementById('txType').value = 'Expense';
+        loadCategories('Expense');
+
+        // Reload transactions and stats
+        loadStats(currentMonth);
+        loadTransactions(currentMonth);
+
+    } catch (error) {
+        showTxMessage('Error: ' + error.message, 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Add Transaction';
+    }
+});
+
+function showTxMessage(text, type) {
+    const messageDiv = document.getElementById('txMessage');
+    messageDiv.textContent = text;
+    messageDiv.className = 'message ' + type;
+
+    // Auto-hide success messages after 3 seconds
+    if (type === 'success') {
+        setTimeout(() => {
+            messageDiv.textContent = '';
+            messageDiv.className = 'message';
+        }, 3000);
+    }
+}
+
 // Load data on page load
 const currentMonth = document.getElementById('currentMonth').value;
 loadStats(currentMonth);

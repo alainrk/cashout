@@ -1,6 +1,7 @@
 package web
 
 import (
+	"encoding/json"
 	"html/template"
 	"net/http"
 	"time"
@@ -167,4 +168,104 @@ func (s *Server) handleAPITransactions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.sendJSONSuccess(w, response)
+}
+
+// handleAPICategories returns available categories based on transaction type
+func (s *Server) handleAPICategories(w http.ResponseWriter, r *http.Request) {
+	user := client.GetUserFromContext(r.Context())
+	if user == nil {
+		s.sendJSONError(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	txType := r.URL.Query().Get("type")
+
+	var categories []string
+	switch txType {
+	case string(model.TypeIncome):
+		categories = model.GetIncomeCategories()
+	case string(model.TypeExpense):
+		categories = model.GetExpenseCategories()
+	default:
+		s.sendJSONError(w, "Invalid transaction type", http.StatusBadRequest)
+		return
+	}
+
+	s.sendJSONSuccess(w, map[string]any{
+		"categories": categories,
+	})
+}
+
+// handleAPICreateTransaction creates a new transaction
+func (s *Server) handleAPICreateTransaction(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	user := client.GetUserFromContext(r.Context())
+	if user == nil {
+		s.sendJSONError(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var req struct {
+		Type        string  `json:"type"`
+		Category    string  `json:"category"`
+		Amount      float64 `json:"amount"`
+		Description string  `json:"description"`
+		Date        string  `json:"date"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		s.sendJSONError(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	// Validate type
+	if req.Type != string(model.TypeIncome) && req.Type != string(model.TypeExpense) {
+		s.sendJSONError(w, "Invalid transaction type", http.StatusBadRequest)
+		return
+	}
+
+	// Validate category
+	if !model.IsValidTransactionCategory(req.Category) {
+		s.sendJSONError(w, "Invalid category", http.StatusBadRequest)
+		return
+	}
+
+	// Validate amount
+	if req.Amount <= 0 {
+		s.sendJSONError(w, "Amount must be greater than 0", http.StatusBadRequest)
+		return
+	}
+
+	// Parse date
+	date, err := time.Parse("2006-01-02", req.Date)
+	if err != nil {
+		s.sendJSONError(w, "Invalid date format", http.StatusBadRequest)
+		return
+	}
+
+	// Create transaction
+	transaction := model.Transaction{
+		TgID:        user.TgID,
+		Type:        model.TransactionType(req.Type),
+		Category:    model.TransactionCategory(req.Category),
+		Amount:      req.Amount,
+		Description: req.Description,
+		Date:        date,
+		Currency:    model.CurrencyEUR, // Default to EUR
+	}
+
+	err = s.repositories.Transactions.Add(transaction)
+	if err != nil {
+		s.logger.Errorf("Failed to create transaction: %v", err)
+		s.sendJSONError(w, "Failed to create transaction", http.StatusInternalServerError)
+		return
+	}
+
+	s.sendJSONSuccess(w, map[string]any{
+		"message": "Transaction created successfully",
+	})
 }

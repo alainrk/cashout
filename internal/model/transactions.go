@@ -144,7 +144,7 @@ func (Transaction) TableName() string {
 	return "transactions"
 }
 
-// Get category enum values as a slice of strings
+// GetTransactionCategories returns all categories
 func GetTransactionCategories() []string {
 	return []string{
 		string(CategorySalary),
@@ -169,7 +169,7 @@ func GetTransactionCategories() []string {
 	}
 }
 
-// Get transaction type enum values as a slice of strings
+// GetTransactionTypes returns all transaction types
 func GetTransactionTypes() []string {
 	return []string{
 		string(TypeIncome),
@@ -177,7 +177,7 @@ func GetTransactionTypes() []string {
 	}
 }
 
-// Get currency type enum values as a slice of strings
+// GetCurrencyTypes returns all currency types
 func GetCurrencyTypes() []string {
 	return []string{
 		string(CurrencyEUR),
@@ -185,5 +185,36 @@ func GetCurrencyTypes() []string {
 		string(CurrencyGBP),
 		string(CurrencyJPY),
 		string(CurrencyCHF),
+	}
+}
+
+// GetIncomeCategories returns only income categories
+func GetIncomeCategories() []string {
+	return []string{
+		string(CategorySalary),
+		string(CategoryOtherIncomes),
+	}
+}
+
+// GetExpenseCategories returns only expense categories
+func GetExpenseCategories() []string {
+	return []string{
+		string(CategoryCar),
+		string(CategoryClothes),
+		string(CategoryGrocery),
+		string(CategoryHouse),
+		string(CategoryBills),
+		string(CategoryEntertainment),
+		string(CategorySport),
+		string(CategoryEatingOut),
+		string(CategoryTransport),
+		string(CategoryLearning),
+		string(CategoryToiletry),
+		string(CategoryHealth),
+		string(CategoryTech),
+		string(CategoryGifts),
+		string(CategoryTravel),
+		string(CategoryPets),
+		string(CategoryOtherExpenses),
 	}
 }

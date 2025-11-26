@@ -23,6 +23,8 @@ func Router(s *Server) http.Handler {
 	// Dashboard routes (protected)
 	mux.HandleFunc(basePath+"/dashboard", s.requireAuth(s.handleDashboard))
 	mux.HandleFunc(basePath+"/api/transactions", s.requireAuth(s.handleAPITransactions))
+	mux.HandleFunc(basePath+"/api/transactions/create", s.requireAuth(s.handleAPICreateTransaction))
+	mux.HandleFunc(basePath+"/api/categories", s.requireAuth(s.handleAPICategories))
 	mux.HandleFunc(basePath+"/api/stats", s.requireAuth(s.handleAPIStats))
 
 	return s.loggingMiddleware(mux)
