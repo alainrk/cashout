@@ -1,13 +1,15 @@
 package web
 
 import (
-	"cashout/internal/ai"
-	"cashout/internal/client"
-	"cashout/internal/model"
-	"cashout/internal/repository"
 	"net/http"
 	"sync"
 	"time"
+
+	"cashout/internal/ai"
+	"cashout/internal/client"
+	"cashout/internal/email"
+	"cashout/internal/model"
+	"cashout/internal/repository"
 
 	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/sirupsen/logrus"
@@ -27,9 +29,10 @@ type Server struct {
 	llm            ai.LLM
 	loginLimiter   map[string]*rate.Limiter
 	loginLimiterMu sync.Mutex
+	emailService   *email.EmailService
 }
 
-func NewServer(logger *logrus.Logger, repos Repositories, bot *gotgbot.Bot, llm ai.LLM) *Server {
+func NewServer(logger *logrus.Logger, repos Repositories, bot *gotgbot.Bot, llm ai.LLM, emailService *email.EmailService) *Server {
 	return &Server{
 		logger:         logger,
 		repositories:   repos,
@@ -37,6 +40,7 @@ func NewServer(logger *logrus.Logger, repos Repositories, bot *gotgbot.Bot, llm 
 		llm:            llm,
 		loginLimiter:   make(map[string]*rate.Limiter),
 		loginLimiterMu: sync.Mutex{},
+		emailService:   emailService,
 	}
 }
 

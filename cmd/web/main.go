@@ -1,16 +1,18 @@
 package main
 
 import (
-	"cashout/internal/ai"
-	"cashout/internal/db"
-	"cashout/internal/logging"
-	"cashout/internal/repository"
-	"cashout/internal/web"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+
+	"cashout/internal/ai"
+	"cashout/internal/db"
+	"cashout/internal/email"
+	"cashout/internal/logging"
+	"cashout/internal/repository"
+	"cashout/internal/web"
 
 	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/joho/godotenv"
@@ -23,6 +25,12 @@ func main() {
 	}
 
 	logger := logging.GetLogger(os.Getenv("LOG_LEVEL"))
+
+	// Initialize email service
+	emailService, err := email.NewEmailService(os.Getenv("BREVO_API_KEY"), os.Getenv("EMAIL_FROM_NAME"), os.Getenv("EMAIL_FROM_ADDRESS"))
+	if err != nil {
+		logger.Fatalf("Failed to initialize email service: %s\n", err.Error())
+	}
 
 	// Get token from the environment variable
 	token := os.Getenv("TELEGRAM_BOT_API_TOKEN")
@@ -72,7 +80,7 @@ func main() {
 	}
 
 	// Initialize web server
-	webServer := web.NewServer(logger, repositories, bot, llm)
+	webServer := web.NewServer(logger, repositories, bot, llm, emailService)
 
 	// Get web server configuration
 	webHost := os.Getenv("WEB_HOST")
