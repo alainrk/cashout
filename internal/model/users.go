@@ -54,7 +54,7 @@ type User struct {
 	TgFirstname string      `gorm:"column:tg_firstname"`
 	TgLastname  string      `gorm:"column:tg_lastname"`
 	Name        string      `gorm:"column:name"`
-	Email       string      `gorm:"column:email"`
+	Email       *string     `gorm:"column:email;uniqueIndex:idx_users_email,where:email IS NOT NULL"`
 	Session     UserSession `gorm:"column:session;type:jsonb"`
 	CreatedAt   time.Time   `gorm:"column:created_at;autoCreateTime"`
 	UpdatedAt   time.Time   `gorm:"column:updated_at;autoUpdateTime"`
