@@ -105,7 +105,7 @@ func (s *Server) handleAPIStats(w http.ResponseWriter, r *http.Request) {
 
 	balance := totalIncome - totalExpenses
 
-	stats := map[string]interface{}{
+	stats := map[string]any{
 		"balance":           balance,
 		"totalIncome":       totalIncome,
 		"totalExpenses":     totalExpenses,
@@ -161,7 +161,7 @@ func (s *Server) handleAPITransactions(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	response := map[string]interface{}{
+	response := map[string]any{
 		"transactions": transactionResponses,
 		"count":        len(transactionResponses),
 	}

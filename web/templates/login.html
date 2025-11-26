@@ -10,12 +10,28 @@
         <h1>Cashout Login</h1>
 
         <div id="loginSection">
+            <div class="login-tabs">
+                <button class="tab-button active" data-tab="telegram">Telegram</button>
+                <button class="tab-button" data-tab="email">Email</button>
+            </div>
+
             <form id="loginForm">
-                <div class="form-group">
-                    <label for="username">Telegram Username</label>
-                    <input type="text" id="username" name="username" placeholder="@username" required>
-                    <div class="telegram-hint">Enter your Telegram username (without @)</div>
+                <div id="telegramTab" class="tab-content active">
+                    <div class="form-group">
+                        <label for="username">Telegram Username</label>
+                        <input type="text" id="username" name="username" placeholder="@username">
+                        <div class="telegram-hint">Enter your Telegram username (without @)</div>
+                    </div>
                 </div>
+
+                <div id="emailTab" class="tab-content">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="your@email.com">
+                        <div class="telegram-hint">Enter your registered email address</div>
+                    </div>
+                </div>
+
                 <button type="submit" id="submitBtn">Send Login Code</button>
             </form>
         </div>
@@ -25,7 +41,7 @@
                 <div class="form-group">
                     <label for="code">Verification Code</label>
                     <input type="text" id="code" name="code" placeholder="Enter 6-digit code" maxlength="6" required>
-                    <div class="telegram-hint">Check your Telegram for the verification code</div>
+                    <div class="telegram-hint" id="verifyHint">Check your Telegram for the verification code</div>
                 </div>
                 <button type="submit" id="verifyBtn">Verify</button>
             </form>

@@ -4,25 +4,67 @@ const verifyForm = document.getElementById('verifyForm');
 const loginSection = document.getElementById('loginSection');
 const verifySection = document.getElementById('verifySection');
 const messageDiv = document.getElementById('message');
+const verifyHint = document.getElementById('verifyHint');
+
+let activeLoginMethod = 'telegram'; // Track which login method is active
 
 function showMessage(text, type) {
     messageDiv.className = 'message ' + type;
     messageDiv.textContent = text;
 }
 
+// Tab switching functionality
+document.querySelectorAll('.tab-button').forEach(button => {
+    button.addEventListener('click', () => {
+        const tabName = button.getAttribute('data-tab');
+
+        // Update active tab button
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+
+        // Update active tab content
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        document.getElementById(tabName + 'Tab').classList.add('active');
+
+        // Track active method
+        activeLoginMethod = tabName;
+
+        // Clear any previous messages
+        messageDiv.textContent = '';
+        messageDiv.className = 'message';
+    });
+});
+
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const username = document.getElementById('username').value.replace('@', '');
     const submitBtn = document.getElementById('submitBtn');
 
     submitBtn.disabled = true;
     submitBtn.textContent = 'Sending...';
 
     try {
+        let requestBody = {};
+
+        if (activeLoginMethod === 'telegram') {
+            const username = document.getElementById('username').value.replace('@', '');
+            if (!username) {
+                showMessage('Please enter your Telegram username', 'error');
+                return;
+            }
+            requestBody = {username};
+        } else {
+            const email = document.getElementById('email').value;
+            if (!email) {
+                showMessage('Please enter your email address', 'error');
+                return;
+            }
+            requestBody = {email};
+        }
+
         const response = await fetch(basePath+'/auth/request', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({username})
+            body: JSON.stringify(requestBody)
         });
 
         const data = await response.json();
@@ -30,7 +72,15 @@ loginForm.addEventListener('submit', async (e) => {
         if (response.ok) {
             loginSection.style.display = 'none';
             verifySection.style.display = 'block';
-            showMessage('Verification code sent to your Telegram!', 'success');
+
+            // Update verification hint based on login method
+            if (activeLoginMethod === 'email') {
+                verifyHint.textContent = 'Check your email for the verification code';
+            } else {
+                verifyHint.textContent = 'Check your Telegram for the verification code';
+            }
+
+            showMessage(data.message || 'Verification code sent!', 'success');
         } else {
             showMessage(data.error || 'Failed to send code', 'error');
         }

@@ -22,7 +22,7 @@ func (r ReminderType) Value() (driver.Value, error) {
 }
 
 // Scan implements the sql.Scanner interface for ReminderType
-func (r *ReminderType) Scan(value interface{}) error {
+func (r *ReminderType) Scan(value any) error {
 	if value == nil {
 		return errors.New("reminder type cannot be null")
 	}
@@ -53,7 +53,7 @@ func (s ReminderStatus) Value() (driver.Value, error) {
 }
 
 // Scan implements the sql.Scanner interface for ReminderStatus
-func (s *ReminderStatus) Scan(value interface{}) error {
+func (s *ReminderStatus) Scan(value any) error {
 	if value == nil {
 		return errors.New("reminder status cannot be null")
 	}

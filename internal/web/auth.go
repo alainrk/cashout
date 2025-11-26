@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 
+	"cashout/internal/model"
+
 	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 )
 
@@ -55,6 +57,7 @@ func (s *Server) handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 
 	var req struct {
 		Username string `json:"username"`
+		Email    string `json:"email"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -62,18 +65,37 @@ func (s *Server) handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Clean username
+	// Determine which login method to use
 	username := strings.TrimSpace(strings.TrimPrefix(req.Username, "@"))
-	if username == "" {
-		s.sendJSONError(w, "Username is required", http.StatusBadRequest)
+	email := strings.TrimSpace(strings.ToLower(req.Email))
+
+	if username == "" && email == "" {
+		s.sendJSONError(w, "Username or email is required", http.StatusBadRequest)
 		return
 	}
 
-	// Get user by username
-	user, exists, err := s.repositories.Users.GetByUsername(username)
-	if err != nil || !exists {
-		s.sendJSONError(w, "Invalid username or credentials", http.StatusNotFound)
+	if username != "" && email != "" {
+		s.sendJSONError(w, "Please provide either username or email, not both", http.StatusBadRequest)
 		return
+	}
+
+	var user model.User
+	var exists bool
+	var err error
+
+	// Get user by username or email
+	if email != "" {
+		user, exists, err = s.repositories.Users.GetByEmail(email)
+		if err != nil || !exists {
+			s.sendJSONError(w, "Invalid email or user not found", http.StatusNotFound)
+			return
+		}
+	} else {
+		user, exists, err = s.repositories.Users.GetByUsername(username)
+		if err != nil || !exists {
+			s.sendJSONError(w, "Invalid username or credentials", http.StatusNotFound)
+			return
+		}
 	}
 
 	// Create auth token
@@ -84,20 +106,37 @@ func (s *Server) handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send code via Telegram
-	message := fmt.Sprintf("🔐 Your Cashout login code is:\n\n<code>%s</code>\n\nThis code will expire in 5 minutes.", authToken.Token)
-	_, err = s.bot.SendMessage(user.TgID, message, &gotgbot.SendMessageOpts{
-		ParseMode: "HTML",
-	})
-	if err != nil {
-		s.logger.Errorf("Failed to send auth code: %v", err)
-		s.sendJSONError(w, "Failed to send code. Please make sure the bot is not blocked.", http.StatusInternalServerError)
-		return
-	}
+	// Send code via email or Telegram based on login method
+	if email != "" {
+		// Send code via email
+		subject := "Your Cashout Login Code"
+		textContent := fmt.Sprintf("🔐 Your Cashout login code is:\n\n%s\n\nThis code will expire in 5 minutes.", authToken.Token)
+		err = s.emailService.SendTransacEmail(email, subject, textContent)
+		if err != nil {
+			s.logger.Errorf("Failed to send auth code via email: %v", err)
+			s.sendJSONError(w, "Failed to send code via email", http.StatusInternalServerError)
+			return
+		}
 
-	s.sendJSONSuccess(w, map[string]interface{}{
-		"message": "Code sent successfully",
-	})
+		s.sendJSONSuccess(w, map[string]any{
+			"message": "Code sent successfully to your email",
+		})
+	} else {
+		// Send code via Telegram
+		message := fmt.Sprintf("🔐 Your Cashout login code is:\n\n<code>%s</code>\n\nThis code will expire in 5 minutes.", authToken.Token)
+		_, err = s.bot.SendMessage(user.TgID, message, &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+		})
+		if err != nil {
+			s.logger.Errorf("Failed to send auth code: %v", err)
+			s.sendJSONError(w, "Failed to send code. Please make sure the bot is not blocked.", http.StatusInternalServerError)
+			return
+		}
+
+		s.sendJSONSuccess(w, map[string]any{
+			"message": "Code sent successfully to Telegram",
+		})
+	}
 }
 
 // handleAuthVerify verifies the auth code
@@ -148,7 +187,7 @@ func (s *Server) handleAuthVerify(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   86400, // 24 hours
 	})
 
-	s.sendJSONSuccess(w, map[string]interface{}{
+	s.sendJSONSuccess(w, map[string]any{
 		"message":  "Login successful",
 		"redirect": basePath + "/dashboard",
 	})
@@ -187,7 +226,7 @@ func (s *Server) sendJSONError(w http.ResponseWriter, message string, status int
 	}
 }
 
-func (s *Server) sendJSONSuccess(w http.ResponseWriter, data interface{}) {
+func (s *Server) sendJSONSuccess(w http.ResponseWriter, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	err := json.NewEncoder(w).Encode(data)

@@ -47,7 +47,7 @@ func (t TransactionCategory) Value() (driver.Value, error) {
 }
 
 // Scan implements the sql.Scanner interface for TransactionCategory
-func (t *TransactionCategory) Scan(value interface{}) error {
+func (t *TransactionCategory) Scan(value any) error {
 	if value == nil {
 		return errors.New("transaction category cannot be null")
 	}
@@ -76,7 +76,7 @@ func (t TransactionType) Value() (driver.Value, error) {
 }
 
 // Scan implements the sql.Scanner interface for TransactionType
-func (t *TransactionType) Scan(value interface{}) error {
+func (t *TransactionType) Scan(value any) error {
 	if value == nil {
 		return errors.New("transaction type cannot be null")
 	}
@@ -108,7 +108,7 @@ func (t CurrencyType) Value() (driver.Value, error) {
 }
 
 // Scan implements the sql.Scanner interface for CurrencyType
-func (t *CurrencyType) Scan(value interface{}) error {
+func (t *CurrencyType) Scan(value any) error {
 	if value == nil {
 		return errors.New("currency type cannot be null")
 	}

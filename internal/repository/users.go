@@ -1,9 +1,10 @@
 package repository
 
 import (
-	"cashout/internal/model"
 	"errors"
 	"strings"
+
+	"cashout/internal/model"
 
 	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 	"gorm.io/gorm"
@@ -30,13 +31,25 @@ func (r *Users) UpsertWithContext(user gotgbot.User, session model.UserSession) 
 	})
 }
 
-func (u *Users) Update(user *model.User) error {
-	return u.DB.SetUser(user)
+func (r *Users) Update(user *model.User) error {
+	return r.DB.SetUser(user)
 }
 
 // GetByUsername retrieves a user by their Telegram username
 func (r *Users) GetByUsername(username string) (model.User, bool, error) {
 	user, err := r.DB.GetUserByUsername(username)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.User{}, false, nil
+		}
+		return model.User{}, false, err
+	}
+	return *user, true, nil
+}
+
+// GetByEmail retrieves a user by their email
+func (r *Users) GetByEmail(email string) (model.User, bool, error) {
+	user, err := r.DB.GetUserByEmail(email)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return model.User{}, false, nil

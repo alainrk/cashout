@@ -2,14 +2,15 @@ package ai
 
 import (
 	"bytes"
-	"cashout/internal/model"
-	"cashout/internal/utils"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"time"
+
+	"cashout/internal/model"
+	"cashout/internal/utils"
 
 	"github.com/sirupsen/logrus"
 )
@@ -47,7 +48,7 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 	}
 
 	// Request payload
-	requestBody, err := json.Marshal(map[string]interface{}{
+	requestBody, err := json.Marshal(map[string]any{
 		"model": llm.Model,
 		"messages": []map[string]string{
 			{
@@ -92,7 +93,7 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 	}
 
 	// Parse response
-	var result map[string]interface{}
+	var result map[string]any
 	if err := json.Unmarshal(body, &result); err != nil {
 		llm.Logger.Errorf("Error parsing response: %v\n", err)
 		llm.Logger.Errorln("Raw response", body)
@@ -101,9 +102,9 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 
 	// Extract and print the message content
 	var content string
-	if choices, ok := result["choices"].([]interface{}); ok && len(choices) > 0 {
-		if choice, ok := choices[0].(map[string]interface{}); ok {
-			if message, ok := choice["message"].(map[string]interface{}); ok {
+	if choices, ok := result["choices"].([]any); ok && len(choices) > 0 {
+		if choice, ok := choices[0].(map[string]any); ok {
+			if message, ok := choice["message"].(map[string]any); ok {
 				llm.Logger.Debugln("LLM Message", message)
 				content = fmt.Sprintf("%v", message["content"])
 			}
@@ -135,7 +136,7 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 
 	// ExtractExpense from the LLM Response text
 	// Parse the LLM JSON response
-	var transactionData map[string]interface{}
+	var transactionData map[string]any
 	if err := json.Unmarshal([]byte(content), &transactionData); err != nil {
 		llm.Logger.Errorln("Error parsing LLM response as JSON", err)
 		return transaction, err
