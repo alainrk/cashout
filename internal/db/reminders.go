@@ -1,8 +1,9 @@
 package db
 
 import (
-	"cashout/internal/model"
 	"time"
+
+	"cashout/internal/model"
 
 	"gorm.io/gorm"
 )
@@ -44,7 +45,7 @@ func (db *DB) UpdateReminderStatusTransaction(reminderID int64, status model.Rem
 		}
 
 		// Update the reminder
-		updates := map[string]interface{}{
+		updates := map[string]any{
 			"status": status,
 		}
 
@@ -109,7 +110,7 @@ func (db *DB) CreateOrUpdateMonthlyReminder(tgID int64, scheduledFor time.Time) 
 	return result.Error
 }
 
-// GetAllActiveUsers
+// GetAllActiveUsers retrieves all active users
 func (db *DB) GetAllActiveUsers() ([]model.User, error) {
 	var users []model.User
 	result := db.conn.Distinct("users.*").

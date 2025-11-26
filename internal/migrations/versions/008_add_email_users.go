@@ -12,7 +12,7 @@ func init() {
 
 func addEmailUsers(tx *gorm.DB) error {
 	return tx.Exec(`
-		ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT UNIQUE NULL;
+		ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT NULL;
 	`).Error
 }
 

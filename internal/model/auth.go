@@ -21,7 +21,7 @@ func (s AuthStatus) Value() (driver.Value, error) {
 }
 
 // Scan implements the sql.Scanner interface for AuthStatus
-func (s *AuthStatus) Scan(value interface{}) error {
+func (s *AuthStatus) Scan(value any) error {
 	if value == nil {
 		return errors.New("auth status cannot be null")
 	}

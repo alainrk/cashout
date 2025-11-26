@@ -2,7 +2,7 @@ package db
 
 import "cashout/internal/model"
 
-// GetUsermodel. retrieves a user by Telegram ID
+// GetUser retrieves a user by their Telegram ID
 func (db *DB) GetUser(tgID int64) (*model.User, error) {
 	var user model.User
 	result := db.conn.Where("tg_id = ?", tgID).First(&user)
@@ -16,6 +16,16 @@ func (db *DB) GetUser(tgID int64) (*model.User, error) {
 func (db *DB) GetUserByUsername(username string) (*model.User, error) {
 	var user model.User
 	result := db.conn.Where("tg_username = ?", username).First(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &user, nil
+}
+
+// GetUserByEmail retrieves a user by their email
+func (db *DB) GetUserByEmail(email string) (*model.User, error) {
+	var user model.User
+	result := db.conn.Where("email = ?", email).First(&user)
 	if result.Error != nil {
 		return nil, result.Error
 	}

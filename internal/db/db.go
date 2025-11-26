@@ -1,8 +1,10 @@
+// Package db provides a wrapper around the database
 package db
 
 import (
-	"cashout/internal/model"
 	"fmt"
+
+	"cashout/internal/model"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

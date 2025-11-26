@@ -1,3 +1,4 @@
+// Package model provides the data models for the application
 package model
 
 import (
@@ -52,7 +53,8 @@ type User struct {
 	TgUsername  string      `gorm:"column:tg_username;unique"`
 	TgFirstname string      `gorm:"column:tg_firstname"`
 	TgLastname  string      `gorm:"column:tg_lastname"`
-	Name        string      `gorm:"column:name;name"`
+	Name        string      `gorm:"column:name"`
+	Email       string      `gorm:"column:email"`
 	Session     UserSession `gorm:"column:session;type:jsonb"`
 	CreatedAt   time.Time   `gorm:"column:created_at;autoCreateTime"`
 	UpdatedAt   time.Time   `gorm:"column:updated_at;autoUpdateTime"`
@@ -84,7 +86,7 @@ func (s *UserSession) Scan(value any) error {
 }
 
 // JSONData is a custom type for handling JSON in the database
-type JSONData map[string]interface{}
+type JSONData map[string]any
 
 // Value makes the JSONData struct implement the driver.Valuer interface
 func (j JSONData) Value() (driver.Value, error) {
