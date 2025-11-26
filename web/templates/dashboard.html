@@ -4,12 +4,20 @@
     <meta charset="UTF-8">
     <title>Cashout Dashboard - {{.User.Name}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="/web/static/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/web/static/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/web/static/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/web/static/apple-touch-icon.png">
+    <link rel="manifest" href="/web/static/site.webmanifest">
     <link rel="stylesheet" href="/web/static/css/dashboard.css">
 </head>
 <body>
     <div class="header">
         <div class="header-content">
-            <div class="logo">Cashout</div>
+            <div class="logo">
+                <img src="/web/static/icon.png" alt="Cashout Logo" class="logo-icon">
+                <span>Cashout</span>
+            </div>
             <div class="user-info">
                 <span>Welcome, <strong>{{.User.Name}}</strong></span>
                 <a href="/web/logout" class="logout-btn">Logout</a>
