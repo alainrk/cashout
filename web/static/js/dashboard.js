@@ -275,6 +275,32 @@ if (currentView === 'clustered') {
 // Set today's date as default
 document.getElementById('txDate').valueAsDate = new Date();
 
+// Collapse/Expand functionality
+const addTransactionSection = document.getElementById('addTransactionSection');
+const collapseBtn = document.getElementById('collapseFormBtn');
+
+// Check localStorage for saved state
+const isCollapsed = localStorage.getItem('transactionFormCollapsed') === 'true';
+if (isCollapsed) {
+    addTransactionSection.classList.add('collapsed');
+    collapseBtn.textContent = '+';
+    collapseBtn.title = 'Expand form';
+}
+
+collapseBtn.addEventListener('click', function() {
+    const collapsed = addTransactionSection.classList.toggle('collapsed');
+
+    if (collapsed) {
+        collapseBtn.textContent = '+';
+        collapseBtn.title = 'Expand form';
+        localStorage.setItem('transactionFormCollapsed', 'true');
+    } else {
+        collapseBtn.textContent = '−';
+        collapseBtn.title = 'Collapse form';
+        localStorage.setItem('transactionFormCollapsed', 'false');
+    }
+});
+
 // Function to load categories for a given type
 async function loadCategories(type) {
     const categorySelect = document.getElementById('txCategory');

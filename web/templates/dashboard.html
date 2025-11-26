@@ -18,20 +18,13 @@
     </div>
 
     <div class="container">
-        <div class="month-navigation">
-            <a href="/web/dashboard?month={{.PrevMonth}}">Previous</a>
-            <h2>{{.CurrentMonthTitle}}</h2>
-            <a href="/web/dashboard?month={{.NextMonth}}" {{if .IsCurrentMonth}}class="disabled"{{end}}>Next</a>
-        </div>
-
         <input type="hidden" id="currentMonth" value="{{.CurrentMonth}}">
 
-        <div class="stats-grid" id="statsGrid">
-            <div class="loading">Loading statistics...</div>
-        </div>
-
-        <div class="section">
-            <h2 class="section-title">Add Transaction</h2>
+        <div class="section" id="addTransactionSection">
+            <div class="section-header-collapsible">
+                <h2 class="section-title">Add Transaction</h2>
+                <button type="button" id="collapseFormBtn" class="collapse-btn" title="Collapse form">−</button>
+            </div>
             <form id="addTransactionForm" class="transaction-form">
                 <div class="form-row">
                     <div class="form-group">
@@ -68,6 +61,16 @@
                 <button type="submit" id="submitTxBtn" class="submit-btn">Add Transaction</button>
             </form>
             <div id="txMessage" class="message"></div>
+        </div>
+
+        <div class="month-navigation">
+            <a href="/web/dashboard?month={{.PrevMonth}}">Previous</a>
+            <h2>{{.CurrentMonthTitle}}</h2>
+            <a href="/web/dashboard?month={{.NextMonth}}" {{if .IsCurrentMonth}}class="disabled"{{end}}>Next</a>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="loading">Loading statistics...</div>
         </div>
 
         <div class="section">
