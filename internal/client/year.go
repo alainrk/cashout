@@ -1,13 +1,14 @@
 package client
 
 import (
-	"cashout/internal/model"
-	"cashout/internal/utils"
 	"fmt"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"cashout/internal/model"
+	"cashout/internal/utils"
 
 	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -65,7 +66,7 @@ func (c *Client) sendYearRecapSelectionKeyboard(b *gotgbot.Bot, ctx *ext.Context
 	var row []gotgbot.InlineKeyboardButton
 
 	// Show years from current year down to MIN_YEAR_ALLOWED
-	for year := MIN_YEAR_ALLOWED; year <= currentYear; year++ {
+	for year := MinYearAllowed; year <= currentYear; year++ {
 		button := gotgbot.InlineKeyboardButton{
 			Text:         fmt.Sprintf("%d", year),
 			CallbackData: fmt.Sprintf("yearrecap.year.%d", year),
@@ -218,12 +219,9 @@ func (c *Client) showYearRecap(b *gotgbot.Bot, ctx *ext.Context, user model.User
 			})
 
 			// Display top categories (limit to top 5 for readability)
-			maxCategories := 5
-			if len(categories) < maxCategories {
-				maxCategories = len(categories)
-			}
+			maxCategories := min(len(categories), 5)
 
-			for i := 0; i < maxCategories; i++ {
+			for i := range maxCategories {
 				entry := categories[i]
 				emoji := utils.GetCategoryEmoji(entry.Category)
 				percentage := (entry.Amount / yearExpense) * 100

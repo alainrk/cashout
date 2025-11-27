@@ -1,13 +1,14 @@
 package client
 
 import (
-	"cashout/internal/model"
-	"cashout/internal/utils"
 	"fmt"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"cashout/internal/model"
+	"cashout/internal/utils"
 
 	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -121,7 +122,7 @@ func (c *Client) sendMonthRecapSelectionKeyboard(b *gotgbot.Bot, ctx *ext.Contex
 
 	// Add navigation buttons
 	navigationRow := []gotgbot.InlineKeyboardButton{}
-	if year > MIN_YEAR_ALLOWED {
+	if year > MinYearAllowed {
 		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
 			Text:         "⬅️ Previous Year",
 			CallbackData: fmt.Sprintf("monthrecap.year.%d", year-1),

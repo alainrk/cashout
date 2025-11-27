@@ -41,7 +41,7 @@ func (c *Client) SendHomeKeyboard(b *gotgbot.Bot, ctx *ext.Context, text string)
 			{Text: "Month Recap", CallbackData: "home.month"},
 		},
 		{
-			{Text: "🌐 Web Dashboard", Url: c.Config.WebDashboardUrl},
+			{Text: "🌐 Web Dashboard", Url: c.Config.WebDashboardURL},
 		},
 	}
 
@@ -133,7 +133,7 @@ func (c *Client) sendRecapWithNavigation(b *gotgbot.Bot, ctx *ext.Context, text 
 		}
 
 		// Add Previous button if not too far in the past
-		if prevYear >= MIN_YEAR_ALLOWED {
+		if prevYear >= MinYearAllowed {
 			navRow = append(navRow, gotgbot.InlineKeyboardButton{
 				Text:         "⬅️ Previous Month",
 				CallbackData: fmt.Sprintf("monthrecap.month.%d.%02d", prevYear, prevMonth),
@@ -150,7 +150,7 @@ func (c *Client) sendRecapWithNavigation(b *gotgbot.Bot, ctx *ext.Context, text 
 		}
 	case "year":
 		// Add Previous button if not too far in the past
-		if year > MIN_YEAR_ALLOWED {
+		if year > MinYearAllowed {
 			navRow = append(navRow, gotgbot.InlineKeyboardButton{
 				Text:         "⬅️ Previous Year",
 				CallbackData: fmt.Sprintf("yearrecap.year.%d", year-1),
@@ -193,7 +193,7 @@ func (c *Client) sendRecapWithNavigation(b *gotgbot.Bot, ctx *ext.Context, text 
 			{Text: "Month Recap", CallbackData: "home.month"},
 		},
 		{
-			{Text: "🌐 Web Dashboard", Url: c.Config.WebDashboardUrl},
+			{Text: "🌐 Web Dashboard", Url: c.Config.WebDashboardURL},
 		},
 	}...)
 

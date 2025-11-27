@@ -1,3 +1,4 @@
+// Package ai contains the AI prompts for the web dashboard
 package ai
 
 import (
@@ -5,7 +6,7 @@ import (
 	"text/template"
 )
 
-// LLM Template for Expenses
+// LLMExpensePromptTemplate is the LLM prompt template for expense transactions
 const LLMExpensePromptTemplate = `You are a financial transaction parser. Your task is to analyze the input text and extract the following information:
 - The category of the transaction
 - The amount spent or received
@@ -44,7 +45,7 @@ User input:
 {{.UserText}}
 `
 
-// LLM Template for Incomes
+// LLMIncomePromptTemplate is the LLM prompt template for income transactions
 const LLMIncomePromptTemplate = `You are a financial transaction parser. Your task is to analyze the input text and extract the following information:
 - The category of the transaction
 - The amount spent or received

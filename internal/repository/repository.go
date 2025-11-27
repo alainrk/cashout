@@ -1,3 +1,4 @@
+// Package repository provides a generic repository for the application
 package repository
 
 import (

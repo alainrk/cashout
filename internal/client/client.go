@@ -1,22 +1,23 @@
 package client
 
 import (
+	"os"
+	"strings"
+
 	"cashout/internal/ai"
 	"cashout/internal/db"
 	"cashout/internal/repository"
-	"os"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 )
 
-const MIN_YEAR_ALLOWED = 2015
+const MinYearAllowed = 2015
 
 type Config struct {
 	// Dev Purpose, telegram usernames
 	AuthEnabled     bool
 	AllowedUsers    map[string]struct{}
-	WebDashboardUrl string
+	WebDashboardURL string
 }
 
 type Client struct {
@@ -40,12 +41,12 @@ func NewClient(logger *logrus.Logger, db *db.DB, llm ai.LLM) *Client {
 	usernames := os.Getenv("ALLOWED_USERS")
 	if usernames != "" {
 		config.AuthEnabled = true
-		for _, u := range strings.Split(usernames, ",") {
+		for u := range strings.SplitSeq(usernames, ",") {
 			config.AllowedUsers[u] = struct{}{}
 		}
 	}
 
-	config.WebDashboardUrl = os.Getenv("WEB_DASHBOARD_URL")
+	config.WebDashboardURL = os.Getenv("WEB_DASHBOARD_URL")
 
 	// For repositories structs embedding common fields
 	repo := repository.Repository{

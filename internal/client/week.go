@@ -1,13 +1,14 @@
-// internal/client/week.go
+// Package client contains the main client logic for the web dashboard
 package client
 
 import (
-	"cashout/internal/model"
-	"cashout/internal/utils"
 	"fmt"
 	"sort"
 	"strings"
 	"time"
+
+	"cashout/internal/model"
+	"cashout/internal/utils"
 
 	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"

@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql/driver"
 	"errors"
+	"slices"
 	"time"
 )
 
@@ -33,12 +34,7 @@ const (
 )
 
 func IsValidTransactionCategory(category string) bool {
-	for _, c := range GetTransactionCategories() {
-		if c == category {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(GetTransactionCategories(), category)
 }
 
 // Value implements the driver.Valuer interface for TransactionCategory

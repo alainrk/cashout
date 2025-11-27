@@ -3,6 +3,7 @@
 * maybe it's because of the presence of low numbers (meant to be the amount of the transaction instead).
 * More testing is required otherwise the user risks to accept dates that are not today (at usually is).
 * */
+
 package ai
 
 import (
@@ -10,7 +11,7 @@ import (
 	"text/template"
 )
 
-// LLM Template for Expenses
+// LLMExpensePromptTemplateDate is the LLM prompt template for expense transactions with date
 const LLMExpensePromptTemplateDate = `You are a financial transaction parser. Your task is to analyze the input text and extract the following information:
 - The category of the transaction
 - The amount spent or received
@@ -54,7 +55,7 @@ User input:
 {{.UserText}}
 `
 
-// LLM Template for Incomes
+// LLMIncomePromptTemplateDate is the LLM prompt template for income transactions with date
 const LLMIncomePromptTemplateDate = `You are a financial transaction parser. Your task is to analyze the input text and extract the following information:
 - The category of the transaction
 - The amount spent or received
@@ -97,7 +98,7 @@ User input:
 {{.UserText}}
 `
 
-// GeneratePrompt creates the complete prompt by filling in the template with user input
+// GeneratePromptWithDate creates the complete prompt by filling in the template with user input
 func GeneratePromptWithDate(userText string, promptTemplate string) (string, error) {
 	tmpl, err := template.New("prompt").Parse(promptTemplate)
 	if err != nil {

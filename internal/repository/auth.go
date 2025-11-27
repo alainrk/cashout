@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"cashout/internal/model"
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
@@ -9,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"cashout/internal/model"
 )
 
 var ErrInvalidToken = errors.New("invalid or expired token")
