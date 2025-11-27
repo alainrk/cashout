@@ -17,6 +17,15 @@ function formatDate(dateString) {
     });
 }
 
+// Format date for mobile (shorter format)
+function formatDateShort(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+    });
+}
+
 // Load statistics
 async function loadStats(month) {
     try {
@@ -134,6 +143,8 @@ function renderListView() {
     }
 
     const sortedData = sortTransactions(transactionsData, sortColumn, sortDirection);
+
+    // Render table rows for desktop
     const tableRows = sortedData.map(tx =>`
         <tr>
             <td>${formatDate(tx.date)}</td>
@@ -141,6 +152,22 @@ function renderListView() {
             <td>${tx.description || '-'}</td>
             <td class="amount ${tx.type.toLowerCase()}">${tx.type.toLowerCase() === 'income' ? '+' : '-'}${formatCurrency(Math.abs(tx.amount))}</td>
         </tr>
+    `).join('');
+
+    // Render cards for mobile
+    const cards = sortedData.map(tx =>`
+        <div class="transaction-card">
+            <div class="transaction-card-header">
+                <span class="transaction-card-date">${formatDateShort(tx.date)}</span>
+                <span class="transaction-card-amount amount ${tx.type.toLowerCase()}">${tx.type.toLowerCase() === 'income' ? '+' : '-'}${formatCurrency(Math.abs(tx.amount))}</span>
+            </div>
+            <div class="transaction-card-body">
+                <div class="transaction-card-info">
+                    <div class="transaction-card-category">${tx.category}</div>
+                    <div class="transaction-card-description">${tx.description || '-'}</div>
+                </div>
+            </div>
+        </div>
     `).join('');
 
     const getSortClass = (column) => {
@@ -164,6 +191,9 @@ function renderListView() {
                 ${tableRows}
             </tbody>
         </table>
+        <div class="transaction-cards">
+            ${cards}
+        </div>
     `;
 
     // Add click handlers to headers
@@ -200,39 +230,63 @@ function renderClusteredView() {
 
     const sortedClusters = Object.values(clusteredData).sort((a, b) => b.total - a.total);
 
-    container.innerHTML = sortedClusters.map((cluster, index) =>`
-        <div class="cluster">
-            <div class="cluster-header" data-cluster-index="${index}">
-                <span class="cluster-title">
-                    <span class="cluster-icon" id="icon-${index}"></span>
-                    ${cluster.category} (${cluster.type})
-                </span>
-                <span class="cluster-total ${cluster.type.toLowerCase()}">${cluster.type.toLowerCase() === 'income' ? '+' : '-'}${formatCurrency(Math.abs(cluster.total))}</span>
+    container.innerHTML = sortedClusters.map((cluster, index) => {
+        // Render table rows for desktop
+        const tableRows = cluster.transactions.map(tx => `
+            <tr>
+                <td>${formatDate(tx.date)}</td>
+                <td>${tx.category}</td>
+                <td>${tx.description || '-'}</td>
+                <td class="amount ${tx.type.toLowerCase()}">${tx.type.toLowerCase() === 'income' ? '+' : '-'}${formatCurrency(Math.abs(tx.amount))}</td>
+            </tr>
+        `).join('');
+
+        // Render cards for mobile
+        const cards = cluster.transactions.map(tx => `
+            <div class="transaction-card">
+                <div class="transaction-card-header">
+                    <span class="transaction-card-date">${formatDateShort(tx.date)}</span>
+                    <span class="transaction-card-amount amount ${tx.type.toLowerCase()}">${tx.type.toLowerCase() === 'income' ? '+' : '-'}${formatCurrency(Math.abs(tx.amount))}</span>
+                </div>
+                <div class="transaction-card-body">
+                    <div class="transaction-card-info">
+                        <div class="transaction-card-category">${tx.category}</div>
+                        <div class="transaction-card-description">${tx.description || '-'}</div>
+                    </div>
+                </div>
             </div>
-            <div class="cluster-content" id="cluster-${index}">
-                <table class="transactions-table cluster-transactions">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Category</th>
-                            <th>Description</th>
-                            <th>Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${cluster.transactions.map(tx => `
+        `).join('');
+
+        return `
+            <div class="cluster">
+                <div class="cluster-header" data-cluster-index="${index}">
+                    <span class="cluster-title">
+                        <span class="cluster-icon" id="icon-${index}"></span>
+                        ${cluster.category} (${cluster.type})
+                    </span>
+                    <span class="cluster-total ${cluster.type.toLowerCase()}">${cluster.type.toLowerCase() === 'income' ? '+' : '-'}${formatCurrency(Math.abs(cluster.total))}</span>
+                </div>
+                <div class="cluster-content" id="cluster-${index}">
+                    <table class="transactions-table cluster-transactions">
+                        <thead>
                             <tr>
-                                <td>${formatDate(tx.date)}</td>
-                                <td>${tx.category}</td>
-                                <td>${tx.description || '-'}</td>
-                                <td class="amount ${tx.type.toLowerCase()}">${tx.type.toLowerCase() === 'income' ? '+' : '-'}${formatCurrency(Math.abs(tx.amount))}</td>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Amount</th>
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                    <div class="transaction-cards">
+                        ${cards}
+                    </div>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 
     // Add click handlers to cluster headers
     document.querySelectorAll('.cluster-header').forEach(header => {

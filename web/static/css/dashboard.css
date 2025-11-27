@@ -453,6 +453,72 @@ body {
     border: 1px solid #f5c6cb;
 }
 
+/* Mobile Transaction Cards */
+.transaction-cards {
+    display: none;
+}
+
+.transaction-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    transition: box-shadow 0.2s;
+    min-height: 44px;
+}
+
+.transaction-card:active {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.transaction-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+}
+
+.transaction-card-date {
+    font-size: 0.875rem;
+    color: #666;
+    font-weight: 500;
+}
+
+.transaction-card-amount {
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.transaction-card-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.transaction-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.transaction-card-category {
+    font-size: 0.75rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.transaction-card-description {
+    font-size: 1rem;
+    color: #333;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 @media (max-width: 768px) {
     .header-content {
         flex-direction: column;
@@ -467,5 +533,49 @@ body {
     }
     .form-row {
         grid-template-columns: 1fr;
+    }
+
+    /* Hide table on mobile */
+    .transactions-table {
+        display: none;
+    }
+
+    /* Show cards on mobile */
+    .transaction-cards {
+        display: block;
+    }
+
+    /* Make section padding smaller on mobile */
+    .section {
+        padding: 1rem;
+    }
+
+    /* Cluster mobile improvements */
+    .cluster {
+        border: none;
+        border-radius: 12px;
+        background: #f8f9fa;
+        margin-bottom: 1rem;
+    }
+
+    .cluster-header {
+        background: transparent;
+        border-bottom: none;
+        padding: 1rem;
+    }
+
+    .cluster-content.expanded {
+        padding: 0 0.5rem 0.5rem 0.5rem;
+    }
+
+    /* Remove borders from cards inside clusters */
+    .cluster-content .transaction-card {
+        border: none;
+        background: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .cluster-content .transaction-card:active {
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
 }
