@@ -1,100 +1,171 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Cashout Dashboard - {{.User.Name}}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/x-icon" href="/web/static/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="/web/static/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/web/static/favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/web/static/apple-touch-icon.png">
-    <link rel="manifest" href="/web/static/site.webmanifest">
-    <link rel="stylesheet" href="/web/static/css/dashboard.css">
-</head>
-<body>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="/web/static/favicon.ico" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/web/static/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/web/static/favicon-16x16.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/web/static/apple-touch-icon.png"
+    />
+    <link rel="manifest" href="/web/static/site.webmanifest" />
+    <link rel="stylesheet" href="/web/static/css/dashboard.css" />
+  </head>
+  <body>
     <div class="header">
-        <div class="header-content">
-            <div class="logo">
-                <img src="/web/static/icon.png" alt="Cashout Logo" class="logo-icon">
-                <span>Cashout</span>
-            </div>
-            <div class="user-info">
-                <span>Welcome, <strong>{{.User.Name}}</strong></span>
-                <a href="/web/logout" class="logout-btn">Logout</a>
-            </div>
+      <div class="header-content">
+        <div class="logo">
+          <img
+            src="/web/static/icon.png"
+            alt="Cashout Logo"
+            class="logo-icon"
+          />
+          <span>Cashout [DEV]</span>
         </div>
+        <div class="user-info">
+          <span>Welcome, <strong>{{.User.Name}}</strong></span>
+          <a href="/web/logout" class="logout-btn">Logout</a>
+        </div>
+      </div>
     </div>
 
     <div class="container">
-        <input type="hidden" id="currentMonth" value="{{.CurrentMonth}}">
+      <input type="hidden" id="currentMonth" value="{{.CurrentMonth}}" />
 
-        <div class="section" id="addTransactionSection">
-            <div class="section-header-collapsible">
-                <h2 class="section-title">Add Transaction</h2>
-                <button type="button" id="collapseFormBtn" class="collapse-btn" title="Collapse form">−</button>
+      <div class="section" id="addTransactionSection">
+        <div class="section-header-collapsible">
+          <h2 class="section-title">Add Transaction</h2>
+          <button
+            type="button"
+            id="collapseFormBtn"
+            class="collapse-btn"
+            title="Collapse form"
+          >
+            −
+          </button>
+        </div>
+        <form id="addTransactionForm" class="transaction-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="txType">Type</label>
+              <select id="txType" name="type" required>
+                <option value="Expense" selected>Expense</option>
+                <option value="Income">Income</option>
+              </select>
             </div>
-            <form id="addTransactionForm" class="transaction-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="txType">Type</label>
-                        <select id="txType" name="type" required>
-                            <option value="Expense" selected>Expense</option>
-                            <option value="Income">Income</option>
-                        </select>
-                    </div>
 
-                    <div class="form-group">
-                        <label for="txCategory">Category</label>
-                        <select id="txCategory" name="category" required>
-                            <option value="">Loading...</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="txAmount">Amount (€)</label>
-                        <input type="text" id="txAmount" name="amount" placeholder="0.00" required pattern="[0-9]+([.,][0-9]{1,2})?" title="Enter a valid amount (e.g., 10.50 or 10,50)">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="txDate">Date</label>
-                        <input type="date" id="txDate" name="date" required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="txDescription">Description</label>
-                    <input type="text" id="txDescription" name="description" placeholder="Enter description" required>
-                </div>
-
-                <button type="submit" id="submitTxBtn" class="submit-btn">Add Transaction</button>
-            </form>
-            <div id="txMessage" class="message"></div>
-        </div>
-
-        <div class="month-navigation">
-            <a href="/web/dashboard?month={{.PrevMonth}}">Previous</a>
-            <h2>{{.CurrentMonthTitle}}</h2>
-            <a href="/web/dashboard?month={{.NextMonth}}" {{if .IsCurrentMonth}}class="disabled"{{end}}>Next</a>
-        </div>
-
-        <div class="stats-grid" id="statsGrid">
-            <div class="loading">Loading statistics...</div>
-        </div>
-
-        <div class="section">
-            <div class="section-header">
-                <h2 class="section-title">Transactions</h2>
-                <div class="view-toggle">
-                    <button id="listViewBtn" class="active">List</button>
-                    <button id="clusteredViewBtn">Clustered</button>
-                </div>
+            <div class="form-group">
+              <label for="txCategory">Category</label>
+              <select id="txCategory" name="category" required>
+                <option value="">Loading...</option>
+              </select>
             </div>
-            <div id="transactionsContainer">
-                <div class="loading">Loading transactions...</div>
+
+            <div class="form-group">
+              <label for="txAmount">Amount (€)</label>
+              <input
+                type="text"
+                id="txAmount"
+                name="amount"
+                placeholder="0.00"
+                required
+                pattern="[0-9]+([.,][0-9]{1,2})?"
+                title="Enter a valid amount (e.g., 10.50 or 10,50)"
+              />
             </div>
+
+            <div class="form-group">
+              <label for="txDate">Date</label>
+              <input type="date" id="txDate" name="date" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="txDescription">Description</label>
+            <input
+              type="text"
+              id="txDescription"
+              name="description"
+              placeholder="Enter description"
+              required
+            />
+          </div>
+
+          <button type="submit" id="submitTxBtn" class="submit-btn">
+            Add Transaction
+          </button>
+        </form>
+        <div id="txMessage" class="message"></div>
+      </div>
+
+      <div class="month-navigation">
+        <a href="/web/dashboard?month={{.PrevMonth}}">Previous</a>
+        <h2>{{.CurrentMonthTitle}}</h2>
+        <a
+          href="/web/dashboard?month={{.NextMonth}}"
+          {{if
+          .IsCurrentMonth}}class="disabled"
+          {{end}}
+          >Next</a
+        >
+      </div>
+
+      <div class="stats-grid" id="statsGrid">
+        <div class="loading">Loading statistics...</div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title">Transactions</h2>
+          <div class="view-toggle">
+            <button id="listViewBtn" class="active">List</button>
+            <button id="clusteredViewBtn">Clustered</button>
+          </div>
         </div>
+        <div id="transactionsContainer">
+          <div class="loading">Loading transactions...</div>
+        </div>
+      </div>
+
+      <!-- Passkey Management Section -->
+      <div class="section" id="passkeySection" style="display: none">
+        <div class="section-header">
+          <h2 class="section-title">🔐 Security - Passkeys</h2>
+        </div>
+        <div class="passkey-container">
+          <p class="passkey-description">
+            Passkeys provide secure, passwordless login using your device's
+            biometrics or PIN. Register a passkey to enable fast login with Face
+            ID, Touch ID, or Windows Hello.
+          </p>
+
+          <button id="registerPasskeyBtn" class="submit-btn">
+            <span>🔐</span> Register New Passkey
+          </button>
+
+          <div id="passkeyList" class="passkey-list">
+            <div class="loading">Loading passkeys...</div>
+          </div>
+        </div>
+      </div>
     </div>
 
+    <script src="/web/static/js/webauthn.js"></script>
     <script src="/web/static/js/dashboard.js"></script>
-</body>
+    <script src="/web/static/js/passkey-manager.js"></script>
+  </body>
 </html>

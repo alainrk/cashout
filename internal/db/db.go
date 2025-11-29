@@ -17,7 +17,11 @@ type DB struct {
 
 // NewDB initializes a new database connection
 func NewDB(postgresURL string) (*DB, error) {
-	conn, err := gorm.Open(postgres.Open(postgresURL), &gorm.Config{})
+	conn, err := gorm.Open(postgres.Open(postgresURL), &gorm.Config{
+		// Disable foreign key constraints during AutoMigrate
+		// We handle foreign keys explicitly in our migration files
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
