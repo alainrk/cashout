@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"cashout/internal/ai"
 	"cashout/internal/db"
@@ -73,11 +74,31 @@ func main() {
 		Logger: logger,
 	}
 
+	// Initialize WebAuthn repository
+	webAuthnRepo, err := repository.NewWebAuthn(repo)
+	if err != nil {
+		logger.Fatalf("Failed to initialize WebAuthn repository: %s\n", err.Error())
+	}
+
 	repositories := web.Repositories{
 		Users:        repository.Users{Repository: repo},
 		Transactions: repository.Transactions{Repository: repo},
 		Auth:         repository.Auth{Repository: repo},
+		WebAuthn:     webAuthnRepo,
 	}
+
+	// Start periodic WebAuthn session cleanup (every hour)
+	go func() {
+		ticker := time.NewTicker(1 * time.Hour)
+		defer ticker.Stop()
+		for range ticker.C {
+			if err := webAuthnRepo.CleanupExpiredSessions(); err != nil {
+				logger.Errorf("Failed to cleanup expired WebAuthn sessions: %v", err)
+			} else {
+				logger.Debugf("Successfully cleaned up expired WebAuthn sessions")
+			}
+		}
+	}()
 
 	// Initialize web server
 	webServer := web.NewServer(logger, repositories, bot, llm, emailService)

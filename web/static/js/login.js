@@ -5,12 +5,38 @@ const loginSection = document.getElementById('loginSection');
 const verifySection = document.getElementById('verifySection');
 const messageDiv = document.getElementById('message');
 const verifyHint = document.getElementById('verifyHint');
+const passkeyTabButton = document.getElementById('passkeyTabButton');
+const passkeyEmailInput = document.getElementById('passkeyEmail');
+const emailInput = document.getElementById('email');
+const submitBtn = document.getElementById('submitBtn');
 
 let activeLoginMethod = 'telegram'; // Track which login method is active
+let passkeySupported = false;
 
 function showMessage(text, type) {
     messageDiv.className = 'message ' + type;
     messageDiv.textContent = text;
+}
+
+// Check WebAuthn support on load
+window.addEventListener('DOMContentLoaded', async () => {
+    passkeySupported = WebAuthnClient.isSupported();
+
+    if (passkeySupported) {
+        const platformAvailable = await WebAuthnClient.isPlatformAuthenticatorAvailable();
+        if (platformAvailable) {
+            passkeyTabButton.style.display = 'block';
+        }
+    }
+});
+
+// Update submit button text based on active tab
+function updateSubmitButtonText() {
+    if (activeLoginMethod === 'passkey') {
+        submitBtn.textContent = 'Sign in with Passkey';
+    } else {
+        submitBtn.textContent = 'Send Login Code';
+    }
 }
 
 // Tab switching functionality
@@ -29,6 +55,9 @@ document.querySelectorAll('.tab-button').forEach(button => {
         // Track active method
         activeLoginMethod = tabName;
 
+        // Update submit button text
+        updateSubmitButtonText();
+
         // Clear any previous messages
         messageDiv.textContent = '';
         messageDiv.className = 'message';
@@ -37,12 +66,32 @@ document.querySelectorAll('.tab-button').forEach(button => {
 
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const submitBtn = document.getElementById('submitBtn');
 
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending...';
 
     try {
+        // Handle passkey authentication separately
+        if (activeLoginMethod === 'passkey') {
+            submitBtn.textContent = 'Authenticating...';
+
+            const email = passkeyEmailInput.value.trim();
+            if (!email) {
+                showMessage('Please enter your email address', 'error');
+                return;
+            }
+
+            const result = await WebAuthnClient.authenticate(email);
+
+            showMessage('Login successful! Redirecting...', 'success');
+            setTimeout(() => {
+                window.location.href = result.redirect || basePath + '/dashboard';
+            }, 1000);
+            return;
+        }
+
+        // Handle email/telegram login
+        submitBtn.textContent = 'Sending...';
+
         let requestBody = {};
 
         if (activeLoginMethod === 'telegram') {
@@ -85,10 +134,14 @@ loginForm.addEventListener('submit', async (e) => {
             showMessage(data.error || 'Failed to send code', 'error');
         }
     } catch (error) {
-        showMessage('Network error. Please try again.', 'error');
+        if (activeLoginMethod === 'passkey') {
+            showMessage(error.message || 'Passkey authentication failed', 'error');
+        } else {
+            showMessage('Network error. Please try again.', 'error');
+        }
     } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Send Login Code';
+        updateSubmitButtonText();
     }
 });
 

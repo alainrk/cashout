@@ -579,3 +579,111 @@ body {
         box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
 }
+
+/* Passkey Management Styles */
+.passkey-container {
+    max-width: 800px;
+}
+
+.passkey-description {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-left: 3px solid #667eea;
+    border-radius: 4px;
+}
+
+.passkey-list {
+    margin-top: 2rem;
+}
+
+.passkey-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.passkey-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+}
+
+.passkey-info {
+    flex: 1;
+}
+
+.passkey-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.passkey-meta {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.delete-passkey-btn {
+    padding: 0.5rem 1rem;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.delete-passkey-btn:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+}
+
+.delete-passkey-btn:active {
+    transform: translateY(0);
+}
+
+.no-passkeys {
+    text-align: center;
+    color: #666;
+    font-size: 0.95rem;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px dashed #ddd;
+}
+
+.error-text {
+    color: #dc3545;
+    text-align: center;
+    padding: 1rem;
+}
+
+@media (max-width: 768px) {
+    .passkey-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .passkey-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .delete-passkey-btn {
+        width: 100%;
+    }
+}
