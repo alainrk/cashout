@@ -1,6 +1,6 @@
 # Cashout AI
 
-Telegram **AI Agent** for Income and Expense Management with **Web Dashboard**.
+Telegram **AI Agent** for Income and Expense Management with a comprehensive **Web Dashboard** featuring **Passkey/WebAuthn** support for secure, passwordless authentication.
 
 You can self-host it following the Developer section down below.
 
@@ -38,9 +38,23 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
 
 ### 🌐 Web Dashboard
 
-- **Secure Authentication**: Telegram-based login with verification codes
-- **Monthly Views**: Navigate through different months with intuitive controls
-- **Visual Insights**: Clear categorization and trend analysis
+- **Multiple Authentication Methods**:
+  - Telegram-based login with verification codes
+  - Email-based passwordless authentication
+  - Passkey/WebAuthn support for passwordless biometric login
+- **Transaction Management**:
+  - Add new transactions directly from the web interface
+  - View detailed transaction history with search and filtering
+  - Monthly navigation with intuitive controls
+- **Visual Analytics**:
+  - Real-time balance, income, and expense statistics
+  - Category breakdowns and trends
+  - Transaction counts and summaries
+- **Security Features**:
+  - Rate-limited authentication endpoints
+  - Secure session management with configurable duration
+  - Support for multiple passkeys per user
+  - Passkey management (register, list, delete)
 
 ### 🔔 Smart Reminders
 
@@ -130,6 +144,16 @@ WEB_PORT=8081
 # Session Configuration (optional)
 SESSION_SECRET=your-random-session-secret-here
 SESSION_DURATION=24h
+# Email Service Configuration (for passwordless email login)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+EMAIL_FROM=your-email@gmail.com
+# WebAuthn Configuration (for passkey support)
+WEBAUTHN_RP_NAME=Cashout
+WEBAUTHN_RP_ID=localhost
+WEBAUTHN_ORIGIN=http://localhost:8081
 ```
 
 Spin up local infrastructure:
@@ -310,19 +334,44 @@ LLM_MODEL='gpt-4'
 
 ## Web Dashboard Usage
 
+### Authentication Options
+
+The web dashboard supports three authentication methods:
+
+1. **Telegram Login** (code-based):
+   - Enter your Telegram username
+   - Check Telegram for a 6-digit verification code
+   - Enter the code to access your dashboard
+
+2. **Email Login** (passwordless):
+   - Enter your registered email address
+   - Check your email for a 6-digit verification code
+   - Enter the code to access your dashboard
+
+3. **Passkey Login** (WebAuthn):
+   - Register a passkey from your dashboard settings after initial login
+   - Use biometric authentication (fingerprint, face recognition) on subsequent logins
+   - No codes needed - instant secure access
+
+### Dashboard Features
+
 1. **Access**: Navigate to `http://localhost:8081` (or your configured domain)
-2. **Login**: Enter your Telegram username
-3. **Verification**: Check Telegram for a 6-digit verification code
-4. **Dashboard**: View your financial data with month navigation
-5. **Statistics**: See real-time balance, income, expenses, and transaction counts
-6. **History**: Browse detailed transaction history with search and filtering
+2. **Login**: Choose your preferred authentication method
+3. **Dashboard**: View your financial data with month navigation
+4. **Statistics**: See real-time balance, income, expenses, and transaction counts
+5. **Transactions**:
+   - Add new transactions directly from the web interface
+   - Browse detailed transaction history with search and filtering
+   - View transactions by category
+6. **Passkey Management**: Register, view, and delete passkeys for your account
 
 The web dashboard provides a complementary interface to the Telegram bot, offering:
 
 - Better visualization for large datasets
 - Month-by-month navigation
-- Desktop-friendly transaction management
-- Exportable financial reports
+- Desktop and mobile-friendly transaction management
+- Multiple secure authentication options
+- Direct transaction creation without needing Telegram
 
 ## Testing
 
