@@ -20,6 +20,7 @@ type Repositories struct {
 	Users        repository.Users
 	Transactions repository.Transactions
 	Auth         repository.Auth
+	WebAuthn     *repository.WebAuthn
 }
 
 type Server struct {

@@ -184,7 +184,7 @@ func (s *Server) handleAuthVerify(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		Secure:   r.TLS != nil, // Set to true in production with HTTPS
 		SameSite: http.SameSiteLaxMode,
-		MaxAge:   86400, // 24 hours
+		MaxAge:   2592000, // 1 month
 	})
 
 	s.sendJSONSuccess(w, map[string]any{

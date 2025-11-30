@@ -58,6 +58,10 @@ type User struct {
 	Session     UserSession `gorm:"column:session;type:jsonb"`
 	CreatedAt   time.Time   `gorm:"column:created_at;autoCreateTime"`
 	UpdatedAt   time.Time   `gorm:"column:updated_at;autoUpdateTime"`
+
+	// WebAuthn credentials (loaded via preload)
+	// Note: Foreign key constraints are handled in migration files
+	Credentials []WebAuthnCredential `gorm:"foreignKey:TgID;references:TgID"`
 }
 
 type UserSession struct {
