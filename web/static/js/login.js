@@ -18,6 +18,36 @@ function showMessage(text, type) {
     messageDiv.textContent = text;
 }
 
+// Save credentials to localStorage
+function saveCredentials(username, email, passkeyEmail) {
+    if (username) {
+        localStorage.setItem('cashout_telegram_username', username);
+    }
+    if (email) {
+        localStorage.setItem('cashout_email', email);
+    }
+    if (passkeyEmail) {
+        localStorage.setItem('cashout_passkey_email', passkeyEmail);
+    }
+}
+
+// Load persisted credentials from localStorage
+function loadPersistedCredentials() {
+    const savedUsername = localStorage.getItem('cashout_telegram_username');
+    const savedEmail = localStorage.getItem('cashout_email');
+    const savedPasskeyEmail = localStorage.getItem('cashout_passkey_email');
+
+    if (savedUsername) {
+        document.getElementById('username').value = savedUsername;
+    }
+    if (savedEmail) {
+        emailInput.value = savedEmail;
+    }
+    if (savedPasskeyEmail) {
+        passkeyEmailInput.value = savedPasskeyEmail;
+    }
+}
+
 // Check WebAuthn support on load
 window.addEventListener('DOMContentLoaded', async () => {
     passkeySupported = WebAuthnClient.isSupported();
@@ -28,6 +58,9 @@ window.addEventListener('DOMContentLoaded', async () => {
             passkeyTabButton.style.display = 'block';
         }
     }
+
+    // Load persisted credentials
+    loadPersistedCredentials();
 });
 
 // Update submit button text based on active tab
@@ -82,6 +115,9 @@ loginForm.addEventListener('submit', async (e) => {
 
             const result = await WebAuthnClient.authenticate(email);
 
+            // Save passkey email
+            saveCredentials(null, null, email);
+
             showMessage('Login successful! Redirecting...', 'success');
             setTimeout(() => {
                 window.location.href = result.redirect || basePath + '/dashboard';
@@ -119,6 +155,13 @@ loginForm.addEventListener('submit', async (e) => {
         const data = await response.json();
 
         if (response.ok) {
+            // Save credentials on successful code send
+            if (activeLoginMethod === 'telegram') {
+                saveCredentials(requestBody.username, null, null);
+            } else {
+                saveCredentials(null, requestBody.email, null);
+            }
+
             loginSection.style.display = 'none';
             verifySection.style.display = 'block';
 
