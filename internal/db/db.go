@@ -35,6 +35,11 @@ func NewDB(postgresURL string) (*DB, error) {
 	return &DB{conn: conn}, nil
 }
 
+// Transaction wraps a database transaction (exposes GORM's transaction method)
+func (db *DB) Transaction(fn func(tx *gorm.DB) error) error {
+	return db.conn.Transaction(fn)
+}
+
 // Close closes the database connection
 func (db *DB) Close() error {
 	sqlDB, err := db.conn.DB()

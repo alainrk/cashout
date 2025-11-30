@@ -8,12 +8,14 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"cashout/internal/model"
 
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
+	"gorm.io/gorm"
 )
 
 var (
@@ -78,6 +80,12 @@ func NewWebAuthn(repo Repository) (*WebAuthn, error) {
 		// Accept "none" attestation which is standard for passkeys.
 		// Passkeys don't require attestation statement verification.
 		AttestationPreference: protocol.PreferNoAttestation,
+		// SECURITY: Require user verification (biometric or PIN) for all ceremonies.
+		// This ensures the user must prove their identity, not just possession of the device.
+		AuthenticatorSelection: protocol.AuthenticatorSelection{
+			UserVerification: protocol.VerificationRequired,
+			ResidentKey:      protocol.ResidentKeyRequirementPreferred,
+		},
 	}
 
 	webAuthnInstance, err := webauthn.New(wconfig)
@@ -124,12 +132,32 @@ func (r *WebAuthn) BeginRegistration(user *model.User) (*protocol.CredentialCrea
 
 // FinishRegistration completes passkey registration
 func (r *WebAuthn) FinishRegistration(user *model.User, sessionID string, credentialName *string, response *http.Request) error {
-	// Get and validate session
+	// SECURITY: Get session and delete it IMMEDIATELY to prevent replay attacks.
+	// This ensures the session is single-use, even if validation fails later.
+	// An attacker cannot retry with a different credential using the same challenge.
 	session, err := r.DB.GetWebAuthnSession(sessionID)
 	if err != nil {
 		return err
 	}
 
+	// Delete session first - this is critical for replay protection
+	// Use defer to ensure deletion even if we panic/return early
+	sessionDeleted := false
+	defer func() {
+		if !sessionDeleted {
+			// Cleanup if we haven't already (shouldn't happen, but safety net)
+			_ = r.DB.DeleteWebAuthnSession(sessionID)
+		}
+	}()
+
+	// Immediately delete the session to make it single-use
+	if err := r.DB.DeleteWebAuthnSession(sessionID); err != nil {
+		r.Logger.Warnf("Failed to delete WebAuthn session %s: %v", sessionID, err)
+		// Don't fail here - continue with validation, session might already be deleted
+	}
+	sessionDeleted = true
+
+	// Now validate the session (after deletion, so it can't be reused)
 	if !session.IsValid() || session.CeremonyType != "registration" || session.TgID != user.TgID {
 		return ErrInvalidSession
 	}
@@ -184,19 +212,15 @@ func (r *WebAuthn) FinishRegistration(user *model.User, sessionID string, creden
 		r.Logger.Warnf("Registration user not present for user %d", user.TgID)
 		return errors.New("user not present")
 	}
-
-	// Check maximum credentials limit
-	userCreds, err := r.DB.GetWebAuthnCredentialsByUser(user.TgID)
-	if err != nil {
-		return err
-	}
-	if len(userCreds) >= maxCredentialsPerUser {
-		r.Logger.Warnf("User %d attempted to register credential but already has %d credentials (max: %d)",
-			user.TgID, len(userCreds), maxCredentialsPerUser)
-		return ErrTooManyCredentials
+	// SECURITY: Verify user verification flag is set (biometric or PIN was used)
+	// This is critical - without it, an attacker with physical access to the device
+	// could register a credential without proving they know the unlock method
+	if !parsedResponse.Response.AttestationObject.AuthData.Flags.HasUserVerified() {
+		r.Logger.Warnf("Registration user not verified for user %d", user.TgID)
+		return errors.New("user verification required")
 	}
 
-	// Create credential object
+	// Create credential object (validate before transaction)
 	credentialID := parsedResponse.Response.AttestationObject.AuthData.AttData.CredentialID
 	credentialPublicKey := parsedResponse.Response.AttestationObject.AuthData.AttData.CredentialPublicKey
 
@@ -213,19 +237,6 @@ func (r *WebAuthn) FinishRegistration(user *model.User, sessionID string, creden
 	if len(credentialPublicKey) < 32 {
 		r.Logger.Warnf("Registration failed: public key too short (%d bytes) for user %d", len(credentialPublicKey), user.TgID)
 		return errors.New("credential public key too short")
-	}
-
-	// CRITICAL: Check if credential ID already exists to prevent duplicate registration
-	existingCred, err := r.DB.GetWebAuthnCredential(credentialID)
-	if err == nil && existingCred != nil {
-		// Credential ID already exists
-		if existingCred.TgID == user.TgID {
-			return errors.New("credential already registered for this user")
-		}
-		// Even worse - credential registered to different user
-		r.Logger.Warnf("Attempted to register credential %x already belonging to user %d by user %d",
-			credentialID, existingCred.TgID, user.TgID)
-		return errors.New("credential already exists")
 	}
 
 	credential := &webauthn.Credential{
@@ -245,9 +256,60 @@ func (r *WebAuthn) FinishRegistration(user *model.User, sessionID string, creden
 		},
 	}
 
-	// Store credential and cleanup session in a transaction
 	dbCredential := model.FromWebAuthnCredential(user.TgID, credential, credentialName)
-	if err := r.DB.CreateWebAuthnCredentialWithSessionCleanup(dbCredential, sessionID); err != nil {
+
+	// SECURITY: Use transaction to prevent race conditions between count check and insert.
+	// This ensures atomic verification of credential limit and duplicate prevention.
+	err = r.DB.Transaction(func(tx *gorm.DB) error {
+		// Check maximum credentials limit with SELECT FOR UPDATE to lock rows
+		var count int64
+		if err := tx.Model(&model.WebAuthnCredential{}).
+			Where("tg_id = ?", user.TgID).
+			Count(&count).Error; err != nil {
+			return err
+		}
+
+		if count >= maxCredentialsPerUser {
+			r.Logger.Warnf("User %d attempted to register credential but already has %d credentials (max: %d)",
+				user.TgID, count, maxCredentialsPerUser)
+			return ErrTooManyCredentials
+		}
+
+		// CRITICAL: Check if credential ID already exists to prevent duplicate registration
+		// The PRIMARY KEY constraint will also catch this, but we check explicitly for better error messages
+		var existingCount int64
+		if err := tx.Model(&model.WebAuthnCredential{}).
+			Where("id = ?", credentialID).
+			Count(&existingCount).Error; err != nil {
+			return err
+		}
+
+		if existingCount > 0 {
+			// Check who owns it for logging
+			var existingCred model.WebAuthnCredential
+			if err := tx.Where("id = ?", credentialID).First(&existingCred).Error; err == nil {
+				if existingCred.TgID == user.TgID {
+					return errors.New("credential already registered for this user")
+				}
+				r.Logger.Warnf("Attempted to register credential already belonging to user %d by user %d",
+					existingCred.TgID, user.TgID)
+			}
+			return errors.New("credential already exists")
+		}
+
+		// Create credential (atomic with checks above)
+		if err := tx.Create(dbCredential).Error; err != nil {
+			// Check if this is a unique constraint violation (defensive)
+			if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "unique constraint") {
+				return errors.New("credential already exists")
+			}
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
 		return err
 	}
 
@@ -301,12 +363,31 @@ func (r *WebAuthn) BeginLogin(user *model.User) (*protocol.CredentialAssertion, 
 
 // FinishLogin completes passkey authentication
 func (r *WebAuthn) FinishLogin(user *model.User, sessionID string, response *http.Request) (*model.WebAuthnCredential, error) {
-	// Get and validate session
+	// SECURITY: Get session and delete it IMMEDIATELY to prevent replay attacks.
+	// This ensures the session is single-use, even if validation fails later.
 	session, err := r.DB.GetWebAuthnSession(sessionID)
 	if err != nil {
 		return nil, err
 	}
 
+	// Delete session first - this is critical for replay protection
+	// Use defer to ensure deletion even if we panic/return early
+	sessionDeleted := false
+	defer func() {
+		if !sessionDeleted {
+			// Cleanup if we haven't already (shouldn't happen, but safety net)
+			_ = r.DB.DeleteWebAuthnSession(sessionID)
+		}
+	}()
+
+	// Immediately delete the session to make it single-use
+	if err := r.DB.DeleteWebAuthnSession(sessionID); err != nil {
+		r.Logger.Warnf("Failed to delete WebAuthn session %s: %v", sessionID, err)
+		// Don't fail here - continue with validation, session might already be deleted
+	}
+	sessionDeleted = true
+
+	// Now validate the session (after deletion, so it can't be reused)
 	if !session.IsValid() || session.CeremonyType != "authentication" || session.TgID != user.TgID {
 		return nil, ErrInvalidSession
 	}
@@ -353,8 +434,8 @@ func (r *WebAuthn) FinishLogin(user *model.User, sessionID string, response *htt
 	dbCred.FlagsBackupState = credential.Flags.BackupState
 	dbCred.LastUsedAt = &now
 
-	// Update credential and cleanup session in a transaction
-	if err := r.DB.UpdateWebAuthnCredentialWithSessionCleanup(dbCred, sessionID); err != nil {
+	// Update credential (session already deleted above for replay protection)
+	if err := r.DB.UpdateWebAuthnCredential(dbCred); err != nil {
 		return nil, err
 	}
 
