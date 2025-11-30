@@ -329,32 +329,6 @@ if (currentView === 'clustered') {
 // Set today's date as default
 document.getElementById('txDate').valueAsDate = new Date();
 
-// Collapse/Expand functionality
-const addTransactionSection = document.getElementById('addTransactionSection');
-const collapseBtn = document.getElementById('collapseFormBtn');
-
-// Check localStorage for saved state
-const isCollapsed = localStorage.getItem('transactionFormCollapsed') === 'true';
-if (isCollapsed) {
-    addTransactionSection.classList.add('collapsed');
-    collapseBtn.textContent = '+';
-    collapseBtn.title = 'Expand form';
-}
-
-collapseBtn.addEventListener('click', function() {
-    const collapsed = addTransactionSection.classList.toggle('collapsed');
-
-    if (collapsed) {
-        collapseBtn.textContent = '+';
-        collapseBtn.title = 'Expand form';
-        localStorage.setItem('transactionFormCollapsed', 'true');
-    } else {
-        collapseBtn.textContent = '−';
-        collapseBtn.title = 'Collapse form';
-        localStorage.setItem('transactionFormCollapsed', 'false');
-    }
-});
-
 // Function to load categories for a given type
 async function loadCategories(type) {
     const categorySelect = document.getElementById('txCategory');
@@ -453,6 +427,11 @@ document.getElementById('addTransactionForm').addEventListener('submit', async f
         loadStats(currentMonth);
         loadTransactions(currentMonth);
 
+        // Navigate to transactions page after a short delay
+        setTimeout(() => {
+            showPage('transactions');
+        }, 1500);
+
     } catch (error) {
         showTxMessage('Error: ' + error.message, 'error');
     } finally {
@@ -474,6 +453,47 @@ function showTxMessage(text, type) {
         }, 3000);
     }
 }
+
+// Page Navigation
+let currentPage = localStorage.getItem('currentPage') || 'transactions';
+
+function showPage(pageName) {
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+
+    // Remove active class from all tabs
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Show selected page
+    const pageMap = {
+        'transactions': 'transactionsPage',
+        'add-transaction': 'addTransactionPage',
+        'security': 'securityPage'
+    };
+
+    const pageId = pageMap[pageName];
+    if (pageId) {
+        document.getElementById(pageId).classList.add('active');
+        document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
+        currentPage = pageName;
+        localStorage.setItem('currentPage', pageName);
+    }
+}
+
+// Add click handlers to navigation tabs
+document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        const pageName = tab.getAttribute('data-page');
+        showPage(pageName);
+    });
+});
+
+// Initialize page on load
+showPage(currentPage);
 
 // Load data on page load
 const currentMonth = document.getElementById('currentMonth').value;

@@ -16,6 +16,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .header-content {
@@ -60,6 +61,52 @@ body {
 
 .logout-btn:hover {
     background: #c82333;
+}
+
+/* Navigation Tabs */
+.nav-tabs {
+    background: white;
+    border-bottom: 2px solid #e0e0e0;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    position: sticky;
+    top: 65px;
+    z-index: 99;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.nav-tab {
+    background: transparent;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
+    position: relative;
+}
+
+.nav-tab:hover {
+    background: #f8f9fa;
+    color: #333;
+}
+
+.nav-tab.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+    background: #f8f9fa;
+}
+
+/* Pages */
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
 }
 
 .container {
@@ -151,48 +198,6 @@ body {
     font-weight: 600;
     margin: 0;
     color: #333;
-}
-
-.section-header-collapsible {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid #f0f0f0;
-}
-
-.collapse-btn {
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    width: 32px;
-    height: 32px;
-    font-size: 20px;
-    line-height: 1;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.2s;
-    color: #666;
-}
-
-.collapse-btn:hover {
-    background: #e9ecef;
-    color: #333;
-}
-
-.collapse-btn:active {
-    transform: scale(0.95);
-}
-
-#addTransactionSection.collapsed .transaction-form,
-#addTransactionSection.collapsed #txMessage {
-    display: none;
-}
-
-#addTransactionSection.collapsed .section-header-collapsible {
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: none;
 }
 
 .section-header {
@@ -524,6 +529,23 @@ body {
         flex-direction: column;
         gap: 1rem;
     }
+
+    /* Mobile navigation tabs */
+    .nav-tabs {
+        top: auto;
+        position: relative;
+        overflow-x: auto;
+        justify-content: flex-start;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .nav-tab {
+        padding: 0.875rem 1.25rem;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
     .stat-value {
         font-size: 1.5rem;
     }
@@ -581,19 +603,71 @@ body {
 }
 
 /* Passkey Management Styles */
-.passkey-container {
-    max-width: 800px;
+.security-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f0f0f0;
 }
 
-.passkey-description {
+.security-subtitle {
     color: #666;
     font-size: 0.95rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+
+.passkey-info-card {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    color: white;
+    align-items: flex-start;
+}
+
+.passkey-info-icon {
+    font-size: 3rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.passkey-info-content h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.passkey-info-content p {
+    margin: 0;
+    font-size: 0.95rem;
     line-height: 1.6;
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: #f8f9fa;
-    border-left: 3px solid #667eea;
-    border-radius: 4px;
+    opacity: 0.95;
+}
+
+.passkey-actions {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.passkey-register-btn {
+    max-width: 400px;
+    font-size: 1.05rem;
+}
+
+.passkey-list-section {
+    margin-top: 2rem;
+}
+
+.passkey-list-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f0f0f0;
 }
 
 .passkey-list {
@@ -604,16 +678,19 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    padding: 1.25rem;
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
     margin-bottom: 1rem;
-    transition: box-shadow 0.2s, border-color 0.2s;
+    transition: all 0.2s;
 }
 
 .passkey-item:hover {
+    background: white;
     border-color: #667eea;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    transform: translateY(-2px);
 }
 
 .passkey-info {
@@ -659,10 +736,10 @@ body {
     text-align: center;
     color: #666;
     font-size: 0.95rem;
-    padding: 2rem;
+    padding: 3rem 2rem;
     background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px dashed #ddd;
+    border-radius: 12px;
+    border: 2px dashed #ddd;
 }
 
 .error-text {
@@ -672,10 +749,34 @@ body {
 }
 
 @media (max-width: 768px) {
+    .passkey-info-card {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        align-items: center;
+    }
+
+    .passkey-info-icon {
+        font-size: 2.5rem;
+    }
+
+    .passkey-info-content h3 {
+        font-size: 1.1rem;
+    }
+
+    .passkey-info-content p {
+        font-size: 0.9rem;
+    }
+
+    .passkey-register-btn {
+        font-size: 1rem;
+    }
+
     .passkey-item {
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
+        padding: 1rem;
     }
 
     .passkey-meta {

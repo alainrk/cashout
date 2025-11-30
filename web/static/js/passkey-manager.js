@@ -1,5 +1,5 @@
 // Passkey Management for Dashboard
-const passkeySection = document.getElementById('passkeySection');
+const securityTab = document.getElementById('securityTab');
 const registerPasskeyBtn = document.getElementById('registerPasskeyBtn');
 const passkeyList = document.getElementById('passkeyList');
 
@@ -21,8 +21,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Show the passkey section
-    passkeySection.style.display = 'block';
+    // Show the security tab
+    if (securityTab) {
+        securityTab.style.display = 'block';
+    }
 
     // Load existing passkeys
     await loadPasskeys();
@@ -211,16 +213,15 @@ async function deletePasskey(credentialId) {
     }
 }
 
-// Show message (reuse from dashboard.js if available, otherwise create simple version)
+// Show message in the passkey section
 function showMessage(text, type) {
-    // Try to use the existing message div from the transaction form
-    const existingMessageDiv = document.getElementById('txMessage');
-    if (existingMessageDiv) {
-        existingMessageDiv.className = 'message ' + type;
-        existingMessageDiv.textContent = text;
+    const messageDiv = document.getElementById('passkeyMessage');
+    if (messageDiv) {
+        messageDiv.className = 'message ' + type;
+        messageDiv.textContent = text;
         setTimeout(() => {
-            existingMessageDiv.textContent = '';
-            existingMessageDiv.className = 'message';
+            messageDiv.textContent = '';
+            messageDiv.className = 'message';
         }, 5000);
     } else {
         // Fallback: show alert
