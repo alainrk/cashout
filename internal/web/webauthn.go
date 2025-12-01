@@ -211,7 +211,7 @@ func (s *Server) handlePasskeyFinishLogin(w http.ResponseWriter, r *http.Request
 		HttpOnly: true,
 		Secure:   isSecureRequest(r),
 		SameSite: http.SameSiteLaxMode,
-		MaxAge:   86400, // 24 hours
+		MaxAge:   2592000, // 30 days
 	})
 
 	s.sendJSONSuccess(w, map[string]any{

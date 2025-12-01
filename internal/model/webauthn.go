@@ -32,6 +32,20 @@ type WebAuthnCredential struct {
 	User *User `gorm:"foreignKey:TgID;references:TgID"`
 }
 
+// WebAuthnSession stores challenge data during ceremonies
+type WebAuthnSession struct {
+	ID               string    `gorm:"column:id;primaryKey"`
+	TgID             int64     `gorm:"column:tg_id;not null;index"`
+	Challenge        string    `gorm:"column:challenge;not null"`
+	UserVerification string    `gorm:"column:user_verification;not null"`
+	CeremonyType     string    `gorm:"column:ceremony_type;not null"` // "registration" or "authentication"
+	ExpiresAt        time.Time `gorm:"column:expires_at;not null;index"`
+	CreatedAt        time.Time `gorm:"column:created_at;autoCreateTime"`
+
+	// Association
+	User *User `gorm:"foreignKey:TgID;references:TgID"`
+}
+
 // TableName overrides the table name
 func (WebAuthnCredential) TableName() string {
 	return "webauthn_credentials"
@@ -90,20 +104,6 @@ func FromWebAuthnCredential(tgID int64, cred *webauthn.Credential, name *string)
 		Transport:           transports,
 		CredentialName:      name,
 	}
-}
-
-// WebAuthnSession stores challenge data during ceremonies
-type WebAuthnSession struct {
-	ID               string    `gorm:"column:id;primaryKey"`
-	TgID             int64     `gorm:"column:tg_id;not null;index"`
-	Challenge        string    `gorm:"column:challenge;not null"`
-	UserVerification string    `gorm:"column:user_verification;not null"`
-	CeremonyType     string    `gorm:"column:ceremony_type;not null"` // "registration" or "authentication"
-	ExpiresAt        time.Time `gorm:"column:expires_at;not null;index"`
-	CreatedAt        time.Time `gorm:"column:created_at;autoCreateTime"`
-
-	// Association
-	User *User `gorm:"foreignKey:TgID;references:TgID"`
 }
 
 // TableName overrides the table name
