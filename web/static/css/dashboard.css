@@ -788,3 +788,167 @@ body {
         width: 100%;
     }
 }
+
+/* Delete button styles */
+.delete-btn {
+    background: transparent;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-btn:hover {
+    background: #fff5f5;
+    color: #c82333;
+}
+
+.delete-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.transactions-table .actions,
+.transactions-table .actions-header {
+    text-align: center;
+    width: 80px;
+}
+
+.transaction-card .delete-btn {
+    margin-left: 0.5rem;
+}
+
+/* Delete confirmation modal */
+.delete-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.delete-modal {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    max-width: 500px;
+    width: 90%;
+    animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.delete-modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.delete-modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #333;
+}
+
+.delete-modal-body {
+    padding: 1.5rem;
+}
+
+.delete-modal-body p {
+    margin: 0 0 1rem 0;
+    color: #666;
+    line-height: 1.5;
+}
+
+.delete-modal-body p:last-child {
+    margin-bottom: 0;
+}
+
+.delete-transaction-info {
+    font-weight: 600;
+    color: #333;
+    background: #f8f9fa;
+    padding: 0.75rem;
+    border-radius: 4px;
+    border-left: 3px solid #dc3545;
+}
+
+.delete-modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.cancel-btn {
+    padding: 0.5rem 1.5rem;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.cancel-btn:hover {
+    background: #5a6268;
+}
+
+.confirm-delete-btn {
+    padding: 0.5rem 1.5rem;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.confirm-delete-btn:hover {
+    background: #c82333;
+}
+
+@media (max-width: 768px) {
+    .delete-modal {
+        width: 95%;
+    }
+
+    .delete-modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .delete-modal-footer button {
+        width: 100%;
+    }
+}

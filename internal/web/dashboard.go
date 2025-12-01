@@ -269,3 +269,44 @@ func (s *Server) handleAPICreateTransaction(w http.ResponseWriter, r *http.Reque
 		"message": "Transaction created successfully",
 	})
 }
+
+// handleAPIDeleteTransaction deletes a transaction by ID
+func (s *Server) handleAPIDeleteTransaction(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	user := client.GetUserFromContext(r.Context())
+	if user == nil {
+		s.sendJSONError(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var req struct {
+		ID int64 `json:"id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		s.sendJSONError(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	// Validate ID
+	if req.ID <= 0 {
+		s.sendJSONError(w, "Invalid transaction ID", http.StatusBadRequest)
+		return
+	}
+
+	// Delete transaction
+	err := s.repositories.Transactions.Delete(req.ID, user.TgID)
+	if err != nil {
+		s.logger.Errorf("Failed to delete transaction: %v", err)
+		s.sendJSONError(w, "Failed to delete transaction", http.StatusInternalServerError)
+		return
+	}
+
+	s.sendJSONSuccess(w, map[string]any{
+		"message": "Transaction deleted successfully",
+	})
+}

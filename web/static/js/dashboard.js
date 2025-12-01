@@ -151,6 +151,14 @@ function renderListView() {
             <td>${tx.category}</td>
             <td>${tx.description || '-'}</td>
             <td class="amount ${tx.type.toLowerCase()}">${tx.type.toLowerCase() === 'income' ? '+' : '-'}${formatCurrency(Math.abs(tx.amount))}</td>
+            <td class="actions">
+                <button class="delete-btn" data-id="${tx.id}" data-description="${tx.description || tx.category}" title="Delete transaction">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>
+            </td>
         </tr>
     `).join('');
 
@@ -166,6 +174,12 @@ function renderListView() {
                     <div class="transaction-card-category">${tx.category}</div>
                     <div class="transaction-card-description">${tx.description || '-'}</div>
                 </div>
+                <button class="delete-btn" data-id="${tx.id}" data-description="${tx.description || tx.category}" title="Delete transaction">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>
             </div>
         </div>
     `).join('');
@@ -185,6 +199,7 @@ function renderListView() {
                     <th class="${getSortClass('category')}" data-column="category">Category</th>
                     <th class="${getSortClass('description')}" data-column="description">Description</th>
                     <th class="${getSortClass('amount')}" data-column="amount">Amount</th>
+                    <th class="actions-header">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -200,6 +215,16 @@ function renderListView() {
     document.querySelectorAll('.transactions-table th[data-column]').forEach(th => {
         th.addEventListener('click', () => {
             handleSort(th.getAttribute('data-column'));
+        });
+    });
+
+    // Add click handlers to delete buttons
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = parseInt(btn.getAttribute('data-id'));
+            const description = btn.getAttribute('data-description');
+            showDeleteConfirmation(id, description);
         });
     });
 }
@@ -238,6 +263,14 @@ function renderClusteredView() {
                 <td>${tx.category}</td>
                 <td>${tx.description || '-'}</td>
                 <td class="amount ${tx.type.toLowerCase()}">${tx.type.toLowerCase() === 'income' ? '+' : '-'}${formatCurrency(Math.abs(tx.amount))}</td>
+                <td class="actions">
+                    <button class="delete-btn" data-id="${tx.id}" data-description="${tx.description || tx.category}" title="Delete transaction">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                </td>
             </tr>
         `).join('');
 
@@ -253,6 +286,12 @@ function renderClusteredView() {
                         <div class="transaction-card-category">${tx.category}</div>
                         <div class="transaction-card-description">${tx.description || '-'}</div>
                     </div>
+                    <button class="delete-btn" data-id="${tx.id}" data-description="${tx.description || tx.category}" title="Delete transaction">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
                 </div>
             </div>
         `).join('');
@@ -274,6 +313,7 @@ function renderClusteredView() {
                                 <th>Category</th>
                                 <th>Description</th>
                                 <th>Amount</th>
+                                <th class="actions-header">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -296,6 +336,16 @@ function renderClusteredView() {
             const icon = document.getElementById(`icon-${clusterIndex}`);
             content.classList.toggle('expanded');
             icon.classList.toggle('expanded');
+        });
+    });
+
+    // Add click handlers to delete buttons
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = parseInt(btn.getAttribute('data-id'));
+            const description = btn.getAttribute('data-description');
+            showDeleteConfirmation(id, description);
         });
     });
 }
@@ -499,3 +549,66 @@ showPage(currentPage);
 const currentMonth = document.getElementById('currentMonth').value;
 loadStats(currentMonth);
 loadTransactions(currentMonth);
+
+// Delete transaction functionality
+function showDeleteConfirmation(id, description) {
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.className = 'delete-modal-overlay';
+    modal.innerHTML = `
+        <div class="delete-modal">
+            <div class="delete-modal-header">
+                <h3>Delete Transaction</h3>
+            </div>
+            <div class="delete-modal-body">
+                <p>Are you sure you want to delete this transaction?</p>
+                <p class="delete-transaction-info">${description}</p>
+            </div>
+            <div class="delete-modal-footer">
+                <button class="cancel-btn" id="cancelDelete">Cancel</button>
+                <button class="confirm-delete-btn" id="confirmDelete">Delete</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Handle cancel
+    document.getElementById('cancelDelete').addEventListener('click', () => {
+        document.body.removeChild(modal);
+    });
+
+    // Handle confirm
+    document.getElementById('confirmDelete').addEventListener('click', async () => {
+        await deleteTransaction(id);
+        document.body.removeChild(modal);
+    });
+
+    // Handle click outside modal
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            document.body.removeChild(modal);
+        }
+    });
+}
+
+async function deleteTransaction(id) {
+    try {
+        const response = await fetch('/web/api/transactions/delete', {
+            method: 'DELETE',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ id: id })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || 'Failed to delete transaction');
+
+        // Reload transactions and stats
+        await loadStats(currentMonth);
+        await loadTransactions(currentMonth);
+
+    } catch (error) {
+        alert('Error deleting transaction: ' + error.message);
+    }
+}
