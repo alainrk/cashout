@@ -62,14 +62,12 @@
       <!-- Transactions Page -->
       <div class="page active" id="transactionsPage">
         <div class="month-navigation">
-          <a href="/web/dashboard?month={{.PrevMonth}}">Previous</a>
+          <a href="/web/dashboard?month={{.PrevMonth}}" class="nav-prev">← Previous</a>
           <h2>{{.CurrentMonthTitle}}</h2>
           <a
             href="/web/dashboard?month={{.NextMonth}}"
-            {{if
-            .IsCurrentMonth}}class="disabled"
-            {{end}}
-            >Next</a
+            class="nav-next{{if .IsCurrentMonth}} disabled{{end}}"
+            >Next →</a
           >
         </div>
 
@@ -94,7 +92,6 @@
       <!-- Add Transaction Page -->
       <div class="page" id="addTransactionPage">
         <div class="section">
-          <h2 class="section-title">Add Transaction</h2>
           <form id="addTransactionForm" class="transaction-form">
             <div class="form-row">
               <div class="form-group">

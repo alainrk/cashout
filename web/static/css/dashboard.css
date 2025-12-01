@@ -12,40 +12,47 @@ body {
 .header {
     background: white;
     border-bottom: 1px solid #e0e0e0;
-    padding: 1rem 0;
+    padding: 1rem 0 0 0;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .header-content {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: 0 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 1rem;
 }
 
 .logo {
     font-size: 1.5rem;
-    font-weight: bold;
+    font-weight: 600;
     color: #333;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.625rem;
 }
 
 .logo-icon {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
 }
 
 .user-info {
     display: flex;
     align-items: center;
     gap: 1rem;
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.user-info strong {
+    color: #333;
 }
 
 .logout-btn {
@@ -53,51 +60,54 @@ body {
     background: #dc3545;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     text-decoration: none;
-    font-size: 0.9rem;
-    transition: background 0.2s;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.15s ease;
 }
 
 .logout-btn:hover {
     background: #c82333;
+    transform: translateY(-1px);
 }
 
 /* Navigation Tabs */
 .nav-tabs {
-    background: white;
-    border-bottom: 2px solid #e0e0e0;
+    background: transparent;
+    border-bottom: 2px solid #f0f0f0;
     display: flex;
     justify-content: center;
-    gap: 0;
-    position: sticky;
-    top: 65px;
-    z-index: 99;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    gap: 0.25rem;
+    padding: 0 1.5rem 0 1.5rem;
+    position: relative;
 }
 
 .nav-tab {
     background: transparent;
     border: none;
-    padding: 1rem 2rem;
-    font-size: 1rem;
+    border-bottom: 3px solid transparent;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
     font-weight: 500;
     color: #666;
     cursor: pointer;
-    transition: all 0.2s;
-    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    border-radius: 6px 6px 0 0;
     position: relative;
+    margin-bottom: -2px;
 }
 
 .nav-tab:hover {
+    color: #007bff;
     background: #f8f9fa;
-    color: #333;
 }
 
 .nav-tab.active {
     color: #007bff;
+    background: white;
     border-bottom-color: #007bff;
-    background: #f8f9fa;
+    font-weight: 600;
 }
 
 /* Pages */
@@ -111,32 +121,41 @@ body {
 
 .container {
     max-width: 1200px;
-    margin: 2rem auto;
+    margin: 1.5rem auto;
     padding: 0 1rem;
 }
 
 .month-navigation {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+    gap: 2rem;
 }
 
 .month-navigation a {
     padding: 0.5rem 1rem;
-    background: #007bff;
-    color: white;
+    background: transparent;
+    color: #007bff;
     text-decoration: none;
-    border-radius: 4px;
-    transition: background 0.2s;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+    font-weight: 500;
+    font-size: 0.875rem;
+    border: 1px solid #007bff;
+    min-width: 90px;
+    text-align: center;
 }
 
 .month-navigation a:hover {
-    background: #0056b3;
+    background: #007bff;
+    color: white;
 }
 
 .month-navigation a.disabled {
-    background: #6c757d;
+    background: transparent;
+    border-color: #ddd;
+    color: #999;
     pointer-events: none;
 }
 
@@ -144,6 +163,9 @@ body {
     margin: 0;
     font-size: 1.5rem;
     font-weight: 600;
+    color: #333;
+    min-width: 180px;
+    text-align: center;
 }
 
 .stats-grid {
@@ -364,18 +386,18 @@ body {
 
 /* Transaction Form */
 .transaction-form {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    margin-bottom: 0;
+    box-shadow: none;
 }
 
 .form-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .form-group {
@@ -393,9 +415,9 @@ body {
 .form-group input,
 .form-group select {
     padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
+    border: 1.5px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -403,6 +425,7 @@ body {
 .form-group select:focus {
     outline: none;
     border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
 .form-group select:disabled {
@@ -412,16 +435,16 @@ body {
 
 .submit-btn {
     width: 100%;
-    padding: 1rem;
+    padding: 0.875rem;
     background: #28a745;
     color: white;
     border: none;
-    border-radius: 4px;
-    font-size: 16px;
+    border-radius: 6px;
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-    margin-top: 1.5rem;
+    transition: all 0.2s ease;
+    margin-top: 1rem;
 }
 
 .submit-btn:hover {
@@ -440,10 +463,17 @@ body {
 }
 
 .message {
-    margin-top: 1rem;
-    padding: 0.75rem;
-    border-radius: 4px;
+    margin-top: 0;
+    margin-bottom: 1.25rem;
+    padding: 0.875rem;
+    border-radius: 6px;
     text-align: center;
+    font-size: 0.9rem;
+    display: none;
+}
+
+.message:not(:empty) {
+    display: block;
 }
 
 .message.success {
@@ -525,23 +555,38 @@ body {
 }
 
 @media (max-width: 768px) {
+    .header {
+        padding: 0.75rem 0 0 0;
+    }
+
     .header-content {
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.75rem;
+        padding: 0 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .logo {
+        font-size: 1.25rem;
+    }
+
+    .logo-icon {
+        width: 24px;
+        height: 24px;
     }
 
     /* Mobile navigation tabs */
     .nav-tabs {
-        top: auto;
-        position: relative;
         overflow-x: auto;
         justify-content: flex-start;
         -webkit-overflow-scrolling: touch;
+        padding: 0 1rem 0 1rem;
+        gap: 0.25rem;
     }
 
     .nav-tab {
-        padding: 0.875rem 1.25rem;
-        font-size: 0.9rem;
+        padding: 0.625rem 1rem;
+        font-size: 0.85rem;
         white-space: nowrap;
         flex-shrink: 0;
     }
@@ -549,9 +594,22 @@ body {
     .stat-value {
         font-size: 1.5rem;
     }
+
     .month-navigation {
-        flex-direction: column;
         gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .month-navigation h2 {
+        font-size: 1.25rem;
+        min-width: auto;
+        flex: 1;
+    }
+
+    .month-navigation a {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+        min-width: 70px;
     }
     .form-row {
         grid-template-columns: 1fr;
@@ -604,93 +662,93 @@ body {
 
 /* Passkey Management Styles */
 .security-header {
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 .security-subtitle {
     color: #666;
-    font-size: 0.95rem;
-    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
     margin-bottom: 0;
 }
 
 .passkey-info-card {
     display: flex;
-    gap: 1.5rem;
-    padding: 1.5rem;
+    gap: 1rem;
+    padding: 1.25rem;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 12px;
-    margin-bottom: 2rem;
+    border-radius: 8px;
+    margin-bottom: 1.25rem;
     color: white;
-    align-items: flex-start;
+    align-items: center;
 }
 
 .passkey-info-icon {
-    font-size: 3rem;
+    font-size: 2rem;
     line-height: 1;
     flex-shrink: 0;
 }
 
 .passkey-info-content h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.25rem;
+    margin: 0 0 0.375rem 0;
+    font-size: 1rem;
     font-weight: 600;
 }
 
 .passkey-info-content p {
     margin: 0;
-    font-size: 0.95rem;
-    line-height: 1.6;
+    font-size: 0.875rem;
+    line-height: 1.5;
     opacity: 0.95;
 }
 
 .passkey-actions {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     display: flex;
     justify-content: center;
 }
 
 .passkey-register-btn {
     max-width: 400px;
-    font-size: 1.05rem;
+    font-size: 1rem;
 }
 
 .passkey-list-section {
-    margin-top: 2rem;
+    margin-top: 1.5rem;
 }
 
 .passkey-list-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #333;
     margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 .passkey-list {
-    margin-top: 2rem;
+    margin-top: 0;
 }
 
 .passkey-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.25rem;
+    padding: 1rem;
     background: #f8f9fa;
-    border: 2px solid #e9ecef;
-    border-radius: 12px;
-    margin-bottom: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
     transition: all 0.2s;
 }
 
 .passkey-item:hover {
     background: white;
-    border-color: #667eea;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-    transform: translateY(-2px);
+    border-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+    transform: translateY(-1px);
 }
 
 .passkey-info {
@@ -698,16 +756,16 @@ body {
 }
 
 .passkey-name {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: #333;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.375rem;
 }
 
 .passkey-meta {
     display: flex;
-    gap: 1.5rem;
-    font-size: 0.875rem;
+    gap: 1.25rem;
+    font-size: 0.8rem;
     color: #666;
 }
 
@@ -716,11 +774,11 @@ body {
     background: #dc3545;
     color: white;
     border: none;
-    border-radius: 4px;
-    font-size: 0.875rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
+    transition: all 0.15s ease;
 }
 
 .delete-passkey-btn:hover {
@@ -735,11 +793,11 @@ body {
 .no-passkeys {
     text-align: center;
     color: #666;
-    font-size: 0.95rem;
-    padding: 3rem 2rem;
+    font-size: 0.9rem;
+    padding: 2rem 1.5rem;
     background: #f8f9fa;
-    border-radius: 12px;
-    border: 2px dashed #ddd;
+    border-radius: 8px;
+    border: 1px dashed #ddd;
 }
 
 .error-text {
@@ -750,42 +808,41 @@ body {
 
 @media (max-width: 768px) {
     .passkey-info-card {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-        align-items: center;
+        gap: 0.875rem;
+        padding: 1rem;
     }
 
     .passkey-info-icon {
-        font-size: 2.5rem;
+        font-size: 1.75rem;
     }
 
     .passkey-info-content h3 {
-        font-size: 1.1rem;
+        font-size: 0.95rem;
     }
 
     .passkey-info-content p {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
     }
 
     .passkey-register-btn {
-        font-size: 1rem;
+        font-size: 0.95rem;
     }
 
     .passkey-item {
         flex-direction: column;
         align-items: flex-start;
-        gap: 1rem;
-        padding: 1rem;
+        gap: 0.875rem;
+        padding: 0.875rem;
     }
 
     .passkey-meta {
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.375rem;
     }
 
     .delete-passkey-btn {
         width: 100%;
+        font-size: 0.85rem;
     }
 }
 
