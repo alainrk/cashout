@@ -662,7 +662,7 @@ func (c *Client) Cancel(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	err = c.CleanupKeyboard(b, ctx)
-	err = errors.Join(err, c.SendHomeKeyboard(b, ctx, "Your operation has been canceled!\nWhat else can I do for you?\n\n/edit - Edit a transaction\n/delete - Delete a transaction\n/search - Search transactions\n/list - List your transactions\n/week Week Recap\n/month Month Recap\n/year Year Recap\n/export - Export all transactions to CSV"))
+	err = errors.Join(err, c.SendHomeKeyboard(b, ctx, "Your operation has been canceled!\nWhat else can I do for you?\n\n/list - List your transactions\n/edit - Edit a transaction\n/delete - Delete a transaction\n/search - Search transactions\n/week - Week Recap\n/month - Month Recap\n/year - Year Recap\n/export - Export all transactions to CSV\n/cancel - Cancel current operation\n/start - Show this menu again\n/new - Show this menu again"))
 
 	return err
 }
