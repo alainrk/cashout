@@ -26,7 +26,10 @@ func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
 
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.new."), c.AddTransactionIntent))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.edit."), c.EditTransactionIntent))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.delete."), c.DeleteNewTransaction))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("transactions.cancel"), c.Cancel))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("transactions.editcancel"), c.EditCancel))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("transactions.home"), c.TransactionHome))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("transactions.confirm"), c.Confirm))
 
 	dispatcher.AddHandler(handlers.NewCommand("list", c.ListTransactions))

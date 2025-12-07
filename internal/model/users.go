@@ -42,6 +42,8 @@ const (
 	StateEnteringDeleteSearchQuery     StateType = "entering_delete_search_query"
 	// The user has to confirm an action.
 	StateWaitingConfirm StateType = "waiting_confirm"
+	// The user is editing a newly added transaction.
+	StateEditingNewTransaction StateType = "editing_new_transaction"
 )
 
 // CommandType represents the type of command sent by the user
