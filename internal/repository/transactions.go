@@ -9,8 +9,8 @@ type Transactions struct {
 	Repository
 }
 
-func (r *Transactions) Add(transaction model.Transaction) error {
-	return r.DB.CreateTransaction(&transaction)
+func (r *Transactions) Add(transaction *model.Transaction) error {
+	return r.DB.CreateTransaction(transaction)
 }
 
 func (r *Transactions) GetByID(id int64) (model.Transaction, error) {

@@ -75,7 +75,7 @@ func (c *Client) addTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 		return err
 	}
 
-	transaction, err := c.LLM.ExtractTransaction(ctx.Message.Text, transactionType)
+	extractedTransaction, err := c.LLM.ExtractTransaction(ctx.Message.Text, transactionType)
 	if err != nil {
 		msg := "I'm sorry, I couldn't understand your transaction!"
 		_, errm := ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
@@ -85,7 +85,7 @@ func (c *Client) addTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 		return err
 	}
 
-	if transaction.Amount == 0 {
+	if extractedTransaction.Amount == 0 {
 		msg := "I'm sorry, I couldn't understand your transaction!"
 		_, errm := ctx.EffectiveMessage.Reply(b, msg, &gotgbot.SendMessageOpts{
 			ParseMode: "HTML",
@@ -94,21 +94,41 @@ func (c *Client) addTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 		return err
 	}
 
-	// Store the transaction in the session
-	user.Session.State = model.StateWaitingConfirm
-	s, err := json.Marshal(transaction)
-	if err != nil {
-		return fmt.Errorf("failed to stringify the body: %w", err)
+	// Convert to model.Transaction and save immediately
+	transaction := model.Transaction{
+		TgID:        user.TgID,
+		Type:        extractedTransaction.Type,
+		Category:    model.TransactionCategory(extractedTransaction.Category),
+		Amount:      extractedTransaction.Amount,
+		Description: extractedTransaction.Description,
+		Date:        extractedTransaction.Date,
+		Currency:    model.CurrencyEUR,
 	}
-	user.Session.Body = string(s)
+
+	err = c.Repositories.Transactions.Add(&transaction)
+	if err != nil {
+		err = errors.Join(err, SendMessage(ctx, b, "There has been an error saving your transaction, please retry", nil))
+		c.Logger.Errorln("failed to add transaction", err)
+		return fmt.Errorf("failed to add transaction: %w", err)
+	}
+
+	// Store the transaction ID in session for potential edits
+	user.Session.State = model.StateEditingNewTransaction
+	user.Session.Body = strconv.FormatInt(transaction.ID, 10)
 
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	msg := fmt.Sprintf("%s (€ %.2f), %s on %s. Confirm?", transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
+	emoji := "💰"
+	if transaction.Type == model.TypeExpense {
+		emoji = "💸"
+	}
+
+	msg := fmt.Sprintf("%s <b>Transaction saved!</b>\n\n%s (€ %.2f), %s on %s", emoji, transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
 	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, msg, &gotgbot.SendMessageOpts{
+		ParseMode: "HTML",
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 				{
@@ -137,19 +157,19 @@ func (c *Client) addTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 				},
 				{
 					{
-						Text:         "Cancel",
-						CallbackData: "transactions.cancel",
+						Text:         "Delete",
+						CallbackData: fmt.Sprintf("transactions.delete.%d", transaction.ID),
 					},
 					{
-						Text:         "Confirm",
-						CallbackData: "transactions.confirm",
+						Text:         "Home",
+						CallbackData: "transactions.home",
 					},
 				},
 			},
 		},
 	})
 	if err != nil {
-		c.Logger.Errorln("failed to send confirm message", err)
+		c.Logger.Errorln("failed to send saved message", err)
 		return err
 	}
 
@@ -163,10 +183,15 @@ func (c *Client) EditTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 
-	var transaction model.Transaction
-	err = json.Unmarshal([]byte(user.Session.Body), &transaction)
+	// Load transaction from DB using the ID stored in session
+	transactionID, err := strconv.ParseInt(user.Session.Body, 10, 64)
 	if err != nil {
-		return fmt.Errorf("failed to extract transaction from the session: %w", err)
+		return fmt.Errorf("failed to parse transaction ID from session: %w", err)
+	}
+
+	transaction, err := c.Repositories.Transactions.GetByID(transactionID)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction from database: %w", err)
 	}
 
 	query := ctx.CallbackQuery
@@ -184,7 +209,7 @@ func (c *Client) EditTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 			{
 				{
 					Text:         "Cancel",
-					CallbackData: "transactions.cancel",
+					CallbackData: "transactions.editcancel",
 				},
 			},
 		}
@@ -197,7 +222,7 @@ func (c *Client) EditTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 			{
 				{
 					Text:         "Cancel",
-					CallbackData: "transactions.cancel",
+					CallbackData: "transactions.editcancel",
 				},
 			},
 		}
@@ -210,7 +235,7 @@ func (c *Client) EditTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 			{
 				{
 					Text:         "Cancel",
-					CallbackData: "transactions.cancel",
+					CallbackData: "transactions.editcancel",
 				},
 			},
 		}
@@ -276,10 +301,15 @@ func (c *Client) EditTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 }
 
 func (c *Client) editTransactionDate(b *gotgbot.Bot, ctx *ext.Context, user model.User) error {
-	var transaction model.Transaction
-	err := json.Unmarshal([]byte(user.Session.Body), &transaction)
+	// Load transaction from DB using the ID stored in session
+	transactionID, err := strconv.ParseInt(user.Session.Body, 10, 64)
 	if err != nil {
-		return fmt.Errorf("failed to extract transaction from the session: %w", err)
+		return fmt.Errorf("failed to parse transaction ID from session: %w", err)
+	}
+
+	transaction, err := c.Repositories.Transactions.GetByID(transactionID)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction from database: %w", err)
 	}
 
 	// Get date from DD-MM-YYYY to date
@@ -296,21 +326,28 @@ func (c *Client) editTransactionDate(b *gotgbot.Bot, ctx *ext.Context, user mode
 		return errors.Join(err, fmt.Errorf("invalid date: %s", ctx.Message.Text))
 	}
 
+	// Update the transaction in DB
 	transaction.Date = date
-
-	s, err := json.Marshal(transaction)
+	err = c.Repositories.Transactions.Update(&transaction)
 	if err != nil {
-		return fmt.Errorf("failed to stringify the body: %w", err)
+		return fmt.Errorf("failed to update transaction: %w", err)
 	}
-	user.Session.Body = string(s)
 
+	// Update session state
+	user.Session.State = model.StateEditingNewTransaction
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	m := fmt.Sprintf("%s (€ %.2f), %s on %s. Confirm?", transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
+	emoji := "💰"
+	if transaction.Type == model.TypeExpense {
+		emoji = "💸"
+	}
+
+	m := fmt.Sprintf("%s <b>Transaction updated!</b>\n\n%s (€ %.2f), %s on %s", emoji, transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
 	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
+		ParseMode: "HTML",
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 				{
@@ -339,12 +376,12 @@ func (c *Client) editTransactionDate(b *gotgbot.Bot, ctx *ext.Context, user mode
 				},
 				{
 					{
-						Text:         "Cancel",
-						CallbackData: "transactions.cancel",
+						Text:         "Delete",
+						CallbackData: fmt.Sprintf("transactions.delete.%d", transaction.ID),
 					},
 					{
-						Text:         "Confirm",
-						CallbackData: "transactions.confirm",
+						Text:         "Home",
+						CallbackData: "transactions.home",
 					},
 				},
 			},
@@ -355,10 +392,15 @@ func (c *Client) editTransactionDate(b *gotgbot.Bot, ctx *ext.Context, user mode
 }
 
 func (c *Client) editTransactionAmount(b *gotgbot.Bot, ctx *ext.Context, user model.User) error {
-	var transaction model.Transaction
-	err := json.Unmarshal([]byte(user.Session.Body), &transaction)
+	// Load transaction from DB using the ID stored in session
+	transactionID, err := strconv.ParseInt(user.Session.Body, 10, 64)
 	if err != nil {
-		return fmt.Errorf("failed to extract transaction from the session: %w", err)
+		return fmt.Errorf("failed to parse transaction ID from session: %w", err)
+	}
+
+	transaction, err := c.Repositories.Transactions.GetByID(transactionID)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction from database: %w", err)
 	}
 
 	// Parse new amount from message
@@ -383,22 +425,28 @@ func (c *Client) editTransactionAmount(b *gotgbot.Bot, ctx *ext.Context, user mo
 		return err
 	}
 
-	// Update the transaction
+	// Update the transaction in DB
 	transaction.Amount = newAmount
-
-	s, err := json.Marshal(transaction)
+	err = c.Repositories.Transactions.Update(&transaction)
 	if err != nil {
-		return fmt.Errorf("failed to stringify the body: %w", err)
+		return fmt.Errorf("failed to update transaction: %w", err)
 	}
-	user.Session.Body = string(s)
 
+	// Update session state
+	user.Session.State = model.StateEditingNewTransaction
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	m := fmt.Sprintf("%s (€ %.2f), %s on %s. Confirm?", transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
+	emoji := "💰"
+	if transaction.Type == model.TypeExpense {
+		emoji = "💸"
+	}
+
+	m := fmt.Sprintf("%s <b>Transaction updated!</b>\n\n%s (€ %.2f), %s on %s", emoji, transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
 	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
+		ParseMode: "HTML",
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 				{
@@ -427,12 +475,12 @@ func (c *Client) editTransactionAmount(b *gotgbot.Bot, ctx *ext.Context, user mo
 				},
 				{
 					{
-						Text:         "Cancel",
-						CallbackData: "transactions.cancel",
+						Text:         "Delete",
+						CallbackData: fmt.Sprintf("transactions.delete.%d", transaction.ID),
 					},
 					{
-						Text:         "Confirm",
-						CallbackData: "transactions.confirm",
+						Text:         "Home",
+						CallbackData: "transactions.home",
 					},
 				},
 			},
@@ -443,14 +491,19 @@ func (c *Client) editTransactionAmount(b *gotgbot.Bot, ctx *ext.Context, user mo
 }
 
 func (c *Client) editTransactionDescription(b *gotgbot.Bot, ctx *ext.Context, user model.User) error {
-	var transaction model.Transaction
-	err := json.Unmarshal([]byte(user.Session.Body), &transaction)
+	// Load transaction from DB using the ID stored in session
+	transactionID, err := strconv.ParseInt(user.Session.Body, 10, 64)
 	if err != nil {
-		return fmt.Errorf("failed to extract transaction from the session: %w", err)
+		return fmt.Errorf("failed to parse transaction ID from session: %w", err)
 	}
 
-	transaction.Description = strings.TrimSpace(ctx.Message.Text)
-	if transaction.Description == "" {
+	transaction, err := c.Repositories.Transactions.GetByID(transactionID)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction from database: %w", err)
+	}
+
+	newDescription := strings.TrimSpace(ctx.Message.Text)
+	if newDescription == "" {
 		_, err = b.SendMessage(
 			ctx.EffectiveSender.ChatId,
 			"Description cannot be empty.",
@@ -459,19 +512,28 @@ func (c *Client) editTransactionDescription(b *gotgbot.Bot, ctx *ext.Context, us
 		return err
 	}
 
-	s, err := json.Marshal(transaction)
+	// Update the transaction in DB
+	transaction.Description = newDescription
+	err = c.Repositories.Transactions.Update(&transaction)
 	if err != nil {
-		return fmt.Errorf("failed to stringify the body: %w", err)
+		return fmt.Errorf("failed to update transaction: %w", err)
 	}
-	user.Session.Body = string(s)
 
+	// Update session state
+	user.Session.State = model.StateEditingNewTransaction
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	m := fmt.Sprintf("%s (€ %.2f), %s on %s. Confirm?", transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
+	emoji := "💰"
+	if transaction.Type == model.TypeExpense {
+		emoji = "💸"
+	}
+
+	m := fmt.Sprintf("%s <b>Transaction updated!</b>\n\n%s (€ %.2f), %s on %s", emoji, transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
 	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
+		ParseMode: "HTML",
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 				{
@@ -500,12 +562,12 @@ func (c *Client) editTransactionDescription(b *gotgbot.Bot, ctx *ext.Context, us
 				},
 				{
 					{
-						Text:         "Cancel",
-						CallbackData: "transactions.cancel",
+						Text:         "Delete",
+						CallbackData: fmt.Sprintf("transactions.delete.%d", transaction.ID),
 					},
 					{
-						Text:         "Confirm",
-						CallbackData: "transactions.confirm",
+						Text:         "Home",
+						CallbackData: "transactions.home",
 					},
 				},
 			},
@@ -516,31 +578,44 @@ func (c *Client) editTransactionDescription(b *gotgbot.Bot, ctx *ext.Context, us
 }
 
 func (c *Client) editTransactionCategory(b *gotgbot.Bot, ctx *ext.Context, user model.User) error {
-	var transaction model.Transaction
-	err := json.Unmarshal([]byte(user.Session.Body), &transaction)
+	// Load transaction from DB using the ID stored in session
+	transactionID, err := strconv.ParseInt(user.Session.Body, 10, 64)
 	if err != nil {
-		return fmt.Errorf("failed to extract transaction from the session: %w", err)
+		return fmt.Errorf("failed to parse transaction ID from session: %w", err)
+	}
+
+	transaction, err := c.Repositories.Transactions.GetByID(transactionID)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction from database: %w", err)
 	}
 
 	if !model.IsValidTransactionCategory(ctx.Message.Text) {
 		_, err = b.SendMessage(ctx.EffectiveSender.ChatId, "Invalid category, please try again.", nil)
 		return errors.Join(err, fmt.Errorf("invalid category: %s", ctx.Message.Text))
 	}
+
+	// Update the transaction in DB
 	transaction.Category = model.TransactionCategory(ctx.Message.Text)
-
-	s, err := json.Marshal(transaction)
+	err = c.Repositories.Transactions.Update(&transaction)
 	if err != nil {
-		return fmt.Errorf("failed to stringify the body: %w", err)
+		return fmt.Errorf("failed to update transaction: %w", err)
 	}
-	user.Session.Body = string(s)
 
+	// Update session state
+	user.Session.State = model.StateEditingNewTransaction
 	err = c.Repositories.Users.Update(&user)
 	if err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
-	m := fmt.Sprintf("%s (€ %.2f), %s on %s. Confirm?", transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
+	emoji := "💰"
+	if transaction.Type == model.TypeExpense {
+		emoji = "💸"
+	}
+
+	m := fmt.Sprintf("%s <b>Transaction updated!</b>\n\n%s (€ %.2f), %s on %s", emoji, transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
 	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
+		ParseMode: "HTML",
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 				{
@@ -569,12 +644,12 @@ func (c *Client) editTransactionCategory(b *gotgbot.Bot, ctx *ext.Context, user 
 				},
 				{
 					{
-						Text:         "Cancel",
-						CallbackData: "transactions.cancel",
+						Text:         "Delete",
+						CallbackData: fmt.Sprintf("transactions.delete.%d", transaction.ID),
 					},
 					{
-						Text:         "Confirm",
-						CallbackData: "transactions.confirm",
+						Text:         "Home",
+						CallbackData: "transactions.home",
 					},
 				},
 			},
@@ -601,7 +676,7 @@ func (c *Client) Confirm(b *gotgbot.Bot, ctx *ext.Context) error {
 	transaction.TgID = user.TgID
 	transaction.Currency = model.CurrencyEUR
 
-	err = c.Repositories.Transactions.Add(transaction)
+	err = c.Repositories.Transactions.Add(&transaction)
 	if err != nil {
 		err = errors.Join(err, SendMessage(ctx, b, "There has been an error saving your transaction, please retry", nil))
 		c.Logger.Errorln("failed to add transaction", err)
@@ -663,6 +738,176 @@ func (c *Client) Cancel(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	err = c.CleanupKeyboard(b, ctx)
 	err = errors.Join(err, c.SendHomeKeyboard(b, ctx, "Your operation has been canceled!\nWhat else can I do for you?\n\n/edit - Edit a transaction\n/delete - Delete a transaction\n/search - Search transactions\n/list - List your transactions\n/week Week Recap\n/month Month Recap\n/year Year Recap\n/export - Export all transactions to CSV"))
+
+	return err
+}
+
+// DeleteNewTransaction deletes a newly created transaction and returns to home.
+func (c *Client) DeleteNewTransaction(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	query := ctx.CallbackQuery
+
+	// Parse callback data (format: transactions.delete.TRANSACTION_ID)
+	parts := strings.Split(query.Data, ".")
+	if len(parts) != 3 {
+		return fmt.Errorf("invalid callback data format")
+	}
+
+	transactionID, err := strconv.ParseInt(parts[2], 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid transaction ID: %v", err)
+	}
+
+	// Get the transaction before deleting it (for confirmation message)
+	transaction, err := c.Repositories.Transactions.GetByID(transactionID)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction: %w", err)
+	}
+
+	// Verify ownership
+	if transaction.TgID != user.TgID {
+		_, _, err = ctx.CallbackQuery.Message.EditText(
+			b,
+			"This transaction doesn't belong to you.",
+			&gotgbot.EditMessageTextOpts{},
+		)
+		return err
+	}
+
+	// Delete the transaction
+	err = c.Repositories.Transactions.Delete(transactionID, user.TgID)
+	if err != nil {
+		return fmt.Errorf("failed to delete transaction: %w", err)
+	}
+
+	// Reset user state
+	user.Session.State = model.StateNormal
+	user.Session.Body = ""
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to set user data: %w", err)
+	}
+
+	// Send success message and return to home
+	return c.SendHomeKeyboard(b, ctx, "Transaction deleted!")
+}
+
+// TransactionHome returns to home after adding/editing a transaction.
+func (c *Client) TransactionHome(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	// Reset user state
+	user.Session.State = model.StateNormal
+	user.Session.Body = ""
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to set user data: %w", err)
+	}
+
+	return c.SendHomeKeyboard(b, ctx, "What can I do for you?")
+}
+
+// EditCancel cancels the current edit and returns to the transaction view.
+func (c *Client) EditCancel(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	// Load transaction from DB using the ID stored in session
+	transactionID, err := strconv.ParseInt(user.Session.Body, 10, 64)
+	if err != nil {
+		// If we can't parse the ID, just go home
+		user.Session.State = model.StateNormal
+		user.Session.Body = ""
+		err = c.Repositories.Users.Update(&user)
+		if err != nil {
+			return fmt.Errorf("failed to set user data: %w", err)
+		}
+		return c.SendHomeKeyboard(b, ctx, "What can I do for you?")
+	}
+
+	transaction, err := c.Repositories.Transactions.GetByID(transactionID)
+	if err != nil {
+		// If we can't find the transaction, just go home
+		user.Session.State = model.StateNormal
+		user.Session.Body = ""
+		err = c.Repositories.Users.Update(&user)
+		if err != nil {
+			return fmt.Errorf("failed to set user data: %w", err)
+		}
+		return c.SendHomeKeyboard(b, ctx, "What can I do for you?")
+	}
+
+	// Update session state
+	user.Session.State = model.StateEditingNewTransaction
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to set user data: %w", err)
+	}
+
+	err = c.CleanupKeyboard(b, ctx)
+	if err != nil {
+		c.Logger.Warnln("failed to cleanup keyboard", err)
+	}
+
+	emoji := "💰"
+	if transaction.Type == model.TypeExpense {
+		emoji = "💸"
+	}
+
+	m := fmt.Sprintf("%s <b>Transaction saved!</b>\n\n%s (€ %.2f), %s on %s", emoji, transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
+	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
+		ParseMode: "HTML",
+		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+				{
+					{
+						Text:         "Edit description",
+						CallbackData: "transactions.edit.description",
+					},
+				},
+				{
+					{
+						Text:         "Edit category",
+						CallbackData: "transactions.edit.category",
+					},
+				},
+				{
+					{
+						Text:         "Edit date",
+						CallbackData: "transactions.edit.date",
+					},
+				},
+				{
+					{
+						Text:         "Edit amount",
+						CallbackData: "transactions.edit.amount",
+					},
+				},
+				{
+					{
+						Text:         "Delete",
+						CallbackData: fmt.Sprintf("transactions.delete.%d", transaction.ID),
+					},
+					{
+						Text:         "Home",
+						CallbackData: "transactions.home",
+					},
+				},
+			},
+		},
+	})
 
 	return err
 }

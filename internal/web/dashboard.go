@@ -258,7 +258,7 @@ func (s *Server) handleAPICreateTransaction(w http.ResponseWriter, r *http.Reque
 		Currency:    model.CurrencyEUR, // Default to EUR
 	}
 
-	err = s.repositories.Transactions.Add(transaction)
+	err = s.repositories.Transactions.Add(&transaction)
 	if err != nil {
 		s.logger.Errorf("Failed to create transaction: %v", err)
 		s.sendJSONError(w, "Failed to create transaction", http.StatusInternalServerError)
