@@ -70,6 +70,32 @@ func (s *Server) loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// securityHeadersMiddleware adds security headers to all responses
+func (s *Server) securityHeadersMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Prevent clickjacking
+		w.Header().Set("X-Frame-Options", "DENY")
+
+		// Prevent XSS and restrict resource loading
+		w.Header().Set("Content-Security-Policy",
+			"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'")
+
+		// Prevent MIME type sniffing
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+
+		// Control referrer information
+		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+
+		// Disable unnecessary browser features
+		w.Header().Set("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+
+		// Legacy XSS protection (for older browsers)
+		w.Header().Set("X-XSS-Protection", "1; mode=block")
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (s *Server) rateLimit(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		limiter := s.getLimiter(r.RemoteAddr)

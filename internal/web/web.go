@@ -1,7 +1,12 @@
 // Package web implements the web server functionalities for the "static" dashboard.
 package web
 
-import "net/http"
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+)
 
 const (
 	basePath = "/web"
@@ -10,8 +15,9 @@ const (
 func Router(s *Server) http.Handler {
 	mux := http.NewServeMux()
 
-	// Serve static files
-	mux.Handle(basePath+"/static/", http.StripPrefix(basePath+"/static/", http.FileServer(http.Dir("./web/static"))))
+	// Serve static files with directory listing disabled and null byte protection
+	staticFS := noDirFileSystem{http.Dir("./web/static")}
+	mux.Handle(basePath+"/static/", http.StripPrefix(basePath+"/static/", http.FileServer(staticFS)))
 
 	// Auth routes
 	mux.HandleFunc(basePath+"/", s.handleHome)
@@ -39,5 +45,40 @@ func Router(s *Server) http.Handler {
 	mux.HandleFunc(basePath+"/api/passkey/list", s.requireAuth(s.handlePasskeyList))
 	mux.HandleFunc(basePath+"/api/passkey/delete", s.requireAuth(s.handlePasskeyDelete))
 
-	return s.loggingMiddleware(mux)
+	return s.securityHeadersMiddleware(s.loggingMiddleware(mux))
+}
+
+// noDirFileSystem wraps http.FileSystem to disable directory listing
+// and protect against null byte injection
+type noDirFileSystem struct {
+	fs http.FileSystem
+}
+
+func (nfs noDirFileSystem) Open(path string) (http.File, error) {
+	// Protect against null byte injection
+	if strings.Contains(path, "\x00") {
+		return nil, os.ErrNotExist
+	}
+
+	f, err := nfs.fs.Open(path)
+	if err != nil {
+		return nil, err
+	}
+
+	s, err := f.Stat()
+	if err != nil {
+		_ = f.Close()
+		return nil, err
+	}
+
+	// Deny directory listing
+	if s.IsDir() {
+		index := filepath.Join(path, "index.html")
+		if _, err := nfs.fs.Open(index); err != nil {
+			_ = f.Close()
+			return nil, os.ErrNotExist
+		}
+	}
+
+	return f, nil
 }

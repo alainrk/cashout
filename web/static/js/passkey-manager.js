@@ -76,7 +76,7 @@ function renderPasskeys() {
                         <span>Last used: ${lastUsed}</span>
                     </div>
                 </div>
-                <button class="delete-passkey-btn" onclick="deletePasskey('${credId}')">
+                <button class="delete-passkey-btn" data-credential-id="${credId}">
                     Delete
                 </button>
             </div>
@@ -84,6 +84,14 @@ function renderPasskeys() {
     }).join('');
 
     passkeyList.innerHTML = html;
+
+    // Attach event listeners to delete buttons (CSP-compliant, no inline handlers)
+    passkeyList.querySelectorAll('.delete-passkey-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const credentialId = btn.getAttribute('data-credential-id');
+            deletePasskey(credentialId);
+        });
+    });
 }
 
 // Escape HTML to prevent XSS

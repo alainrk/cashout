@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"net/http"
 	"strings"
+	"time"
 
 	"cashout/internal/model"
 
@@ -79,6 +80,9 @@ func (s *Server) handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Generic success message to prevent user enumeration
+	const genericSuccessMsg = "If an account exists with these credentials, a verification code has been sent"
+
 	var user model.User
 	var exists bool
 	var err error
@@ -86,23 +90,29 @@ func (s *Server) handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 	// Get user by username or email
 	if email != "" {
 		user, exists, err = s.repositories.Users.GetByEmail(email)
-		if err != nil || !exists {
-			s.sendJSONError(w, "Invalid email or user not found", http.StatusNotFound)
-			return
-		}
 	} else {
 		user, exists, err = s.repositories.Users.GetByUsername(username)
-		if err != nil || !exists {
-			s.sendJSONError(w, "Invalid username or credentials", http.StatusNotFound)
-			return
-		}
+	}
+
+	// Add consistent delay to prevent timing attacks
+	defer time.Sleep(100 * time.Millisecond)
+
+	// If user doesn't exist, return generic success to prevent enumeration
+	if err != nil || !exists {
+		s.sendJSONSuccess(w, map[string]any{
+			"message": genericSuccessMsg,
+		})
+		return
 	}
 
 	// Create auth token
 	authToken, err := s.repositories.Auth.CreateAuthToken(user.TgID)
 	if err != nil {
 		s.logger.Errorf("Failed to create auth token: %v", err)
-		s.sendJSONError(w, "Failed to create auth token", http.StatusInternalServerError)
+		// Still return generic success to prevent enumeration
+		s.sendJSONSuccess(w, map[string]any{
+			"message": genericSuccessMsg,
+		})
 		return
 	}
 
@@ -114,13 +124,7 @@ func (s *Server) handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 		err = s.emailService.SendTransacEmail(email, subject, textContent)
 		if err != nil {
 			s.logger.Errorf("Failed to send auth code via email: %v", err)
-			s.sendJSONError(w, "Failed to send code via email", http.StatusInternalServerError)
-			return
 		}
-
-		s.sendJSONSuccess(w, map[string]any{
-			"message": "Code sent successfully to your email",
-		})
 	} else {
 		// Send code via Telegram
 		message := fmt.Sprintf("🔐 Your Cashout login code is:\n\n<code>%s</code>\n\nThis code will expire in 5 minutes.", authToken.Token)
@@ -129,14 +133,13 @@ func (s *Server) handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 		})
 		if err != nil {
 			s.logger.Errorf("Failed to send auth code: %v", err)
-			s.sendJSONError(w, "Failed to send code. Please make sure the bot is not blocked.", http.StatusInternalServerError)
-			return
 		}
-
-		s.sendJSONSuccess(w, map[string]any{
-			"message": "Code sent successfully to Telegram",
-		})
 	}
+
+	// Always return generic success message
+	s.sendJSONSuccess(w, map[string]any{
+		"message": genericSuccessMsg,
+	})
 }
 
 // handleAuthVerify verifies the auth code
