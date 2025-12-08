@@ -5,7 +5,8 @@ Telegram **AI Agent** for Income and Expense Management with a comprehensive **W
 You can self-host it following the Developer section down below.
 
 <p align="center">
-  <img src="/assets/demo.gif" alt="Demo" height="550px">
+  <img src="/assets/demo-tg.gif" alt="Demo" height="550px">
+  <img src="/assets/demo-web.gif" alt="Demo" height="550px">
 </p>
 
 ## Features
