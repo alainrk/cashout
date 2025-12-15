@@ -4,8 +4,6 @@ package db
 import (
 	"fmt"
 
-	"cashout/internal/model"
-
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -24,12 +22,6 @@ func NewDB(postgresURL string) (*DB, error) {
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
-	}
-
-	// Auto migrate the schema
-	err = conn.AutoMigrate(&model.User{})
-	if err != nil {
-		return nil, fmt.Errorf("failed to migrate database schema: %w", err)
 	}
 
 	return &DB{conn: conn}, nil
