@@ -30,7 +30,6 @@ type ExtractedTransaction struct {
 	Date        time.Time
 }
 
-
 // Intent represents the classified user intent
 type Intent string
 
@@ -190,7 +189,6 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 
 	return transaction, nil
 }
-
 
 // ClassifyIntent classifies the user's intent from their message
 func (llm *LLM) ClassifyIntent(userText string) (ClassifiedIntent, error) {
