@@ -83,6 +83,45 @@ User input:
 {{.UserText}}
 `
 
+// LLMIntentClassificationPromptTemplate is the LLM prompt template for classifying user intent
+const LLMIntentClassificationPromptTemplate = `You are an intent classifier for a financial tracking bot. Your task is to analyze the user's message and determine what action they want to perform.
+
+Available intents (use ONLY these exact strings):
+- "add_expense": User wants to add/record an expense (spending money)
+- "add_income": User wants to add/record income (receiving money)
+- "edit": User wants to edit/modify/change an existing transaction
+- "delete": User wants to delete/remove an existing transaction
+- "search": User wants to search/find transactions
+- "list": User wants to list/view/see all or recent transactions
+- "week_recap": User wants to see a weekly summary/recap
+- "month_recap": User wants to see a monthly summary/recap
+- "year_recap": User wants to see a yearly summary/recap
+- "export": User wants to export/download transactions (CSV, file)
+- "unknown": Cannot determine the intent or it doesn't match any of the above
+
+Classification rules:
+1. If the message contains an amount (numbers with currency context), classify as "add_expense" unless income-related words are present
+2. Income-related words: salary, wage, income, earned, received, got paid, paycheck, bonus, refund, reimbursement
+3. Expense-related context: bought, spent, paid, cost, purchase
+4. Edit-related words: edit, modify, change, update, fix, correct
+5. Delete-related words: delete, remove, cancel, undo
+6. Search-related words: search, find, look for, where is, show me
+7. List-related words: list, show all, view, display, transactions, history
+8. Recap-related words: recap, summary, overview, total, how much
+9. Export-related words: export, download, CSV, file, backup
+10. If the message is a greeting, question about the bot, or unrelated to finance, use "unknown"
+
+Format the result as a JSON object:
+{ "intent": "intent_name", "confidence": 0.95 }
+
+Where confidence is a value between 0 and 1 indicating how confident you are in the classification.
+
+IMPORTANT: Respond with ONLY the JSON object without markdown syntax. Your answer is plaintext JSON to be parsed directly.
+
+User input:
+{{.UserText}}
+`
+
 // GeneratePrompt creates the complete prompt by filling in the template with user input
 func GeneratePrompt(userText string, promptTemplate string) (string, error) {
 	tmpl, err := template.New("prompt").Parse(promptTemplate)

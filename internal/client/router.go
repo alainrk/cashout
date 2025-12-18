@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"cashout/internal/ai"
 	"cashout/internal/model"
 	"cashout/internal/utils"
 
@@ -84,22 +85,23 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 		return c.DeleteSearchQueryEntered(b, ctx)
 	}
 
-	// Heuristic phase: try to infer if the user is adding a transaction or any other action.
+	// Free text top level case: use LLM to classify user intent.
+	return c.classifyAndRouteIntent(b, ctx, user)
+}
 
-	// Default behavior: start transaction flow for any unhandled text.
-	// Heuristic 1: there must be at least a digit in text.
+// classifyAndRouteIntent uses the LLM to classify the user's intent and routes to the appropriate handler
+func (c *Client) classifyAndRouteIntent(b *gotgbot.Bot, ctx *ext.Context, user model.User) error {
+	// Quick heuristic: if text contains digits, it's likely a transaction
+	// Use fast local check before calling LLM.
 	if strings.ContainsAny(ctx.Message.Text, "0123456789") {
 
-		// Heuristic 1.a: it's more common to be an expense than an income, set it to default.
+		// Default to expense and check for income keywords.
 		user.Session.State = model.StateInsertingExpense
-
-		// Heuristic 1.b: try to extract if it could be an income by looking in the text.
 		if utils.IsAnIncomeTransactionPrompt(ctx.Message.Text) {
 			user.Session.State = model.StateInsertingIncome
 		}
 
-		// Update user data.
-		err = c.Repositories.Users.Update(&user)
+		err := c.Repositories.Users.Update(&user)
 		if err != nil {
 			return fmt.Errorf("failed to set user data: %w", err)
 		}
@@ -107,11 +109,54 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 		return c.addTransaction(b, ctx, user)
 	}
 
-	err = c.CleanupKeyboard(b, ctx)
-	err = errors.Join(err, c.SendHomeKeyboard(b, ctx, "Sorry I don't understand, what can I do for you?\n\n/edit - Edit a transaction\n/delete - Delete a transaction\n/search - Search transactions\n/list - List your transactions\n/week Week Recap\n/month Month Recap\n/year Year Recap\n/export - Export all transactions to CSV"))
+	// Call LLM to classify intent for any other case.
+	classifiedIntent, err := c.LLM.ClassifyIntent(ctx.Message.Text)
 	if err != nil {
-		return err
+		c.Logger.Warnf("Failed to classify intent: %v, falling back to unknown", err)
+		classifiedIntent = ai.ClassifiedIntent{Intent: ai.IntentUnknown, Confidence: 0}
 	}
 
-	return fmt.Errorf("invalid top-level state")
+	c.Logger.Debugf("Classified intent: %s (confidence: %.2f)", classifiedIntent.Intent, classifiedIntent.Confidence)
+
+	// Route based on classified intent
+	switch classifiedIntent.Intent {
+	case ai.IntentAddExpense:
+		return c.AddTransactionExpense(b, ctx)
+
+	case ai.IntentAddIncome:
+		return c.AddTransactionIncome(b, ctx)
+
+	case ai.IntentEdit:
+		return c.EditTransactions(b, ctx)
+
+	case ai.IntentDelete:
+		return c.DeleteTransactions(b, ctx)
+
+	case ai.IntentSearch:
+		return c.SearchTransactions(b, ctx)
+
+	case ai.IntentList:
+		return c.ListTransactions(b, ctx)
+
+	case ai.IntentWeekRecap:
+		return c.WeekRecap(b, ctx)
+
+	case ai.IntentMonthRecap:
+		return c.MonthRecap(b, ctx)
+
+	case ai.IntentYearRecap:
+		return c.YearRecap(b, ctx)
+
+	case ai.IntentExport:
+		return c.ExportTransactions(b, ctx)
+
+	default:
+		// Unknown intent - show help
+		err = c.CleanupKeyboard(b, ctx)
+		err = errors.Join(err, c.SendHomeKeyboard(b, ctx, "I'm not sure what you'd like to do. Here are the available options:\n\n/edit - Edit a transaction\n/delete - Delete a transaction\n/search - Search transactions\n/list - List your transactions\n/week - Week Recap\n/month - Month Recap\n/year - Year Recap\n/export - Export all transactions to CSV\n\nOr just type a transaction like \"coffee 5\" to add it!"))
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 }

@@ -30,6 +30,31 @@ type ExtractedTransaction struct {
 	Date        time.Time
 }
 
+
+// Intent represents the classified user intent
+type Intent string
+
+// Intent constants
+const (
+	IntentAddExpense Intent = "add_expense"
+	IntentAddIncome  Intent = "add_income"
+	IntentEdit       Intent = "edit"
+	IntentDelete     Intent = "delete"
+	IntentSearch     Intent = "search"
+	IntentList       Intent = "list"
+	IntentWeekRecap  Intent = "week_recap"
+	IntentMonthRecap Intent = "month_recap"
+	IntentYearRecap  Intent = "year_recap"
+	IntentExport     Intent = "export"
+	IntentUnknown    Intent = "unknown"
+)
+
+// ClassifiedIntent holds the result of intent classification
+type ClassifiedIntent struct {
+	Intent     Intent  `json:"intent"`
+	Confidence float64 `json:"confidence"`
+}
+
 func (llm *LLM) ExtractTransaction(userText string, transactionType model.TransactionType) (ExtractedTransaction, error) {
 	transaction := ExtractedTransaction{
 		Type: transactionType,
@@ -164,4 +189,121 @@ func (llm *LLM) ExtractTransaction(userText string, transactionType model.Transa
 	}
 
 	return transaction, nil
+}
+
+
+// ClassifyIntent classifies the user's intent from their message
+func (llm *LLM) ClassifyIntent(userText string) (ClassifiedIntent, error) {
+	result := ClassifiedIntent{
+		Intent:     IntentUnknown,
+		Confidence: 0,
+	}
+
+	// Generate prompt using the template
+	prompt, err := GeneratePrompt(userText, LLMIntentClassificationPromptTemplate)
+	if err != nil {
+		llm.Logger.Errorf("Error generating intent classification prompt: %v\n", err)
+		return result, err
+	}
+
+	// Request payload
+	requestBody, err := json.Marshal(map[string]any{
+		"model": llm.Model,
+		"messages": []map[string]string{
+			{
+				"role":    "user",
+				"content": prompt,
+			},
+		},
+		"max_tokens": 100,
+	})
+	if err != nil {
+		llm.Logger.Errorf("Error creating request: %v\n", err)
+		return result, err
+	}
+
+	// Create request
+	req, err := http.NewRequest("POST", llm.Endpoint, bytes.NewBuffer(requestBody))
+	if err != nil {
+		llm.Logger.Errorf("Error creating request: %v\n", err)
+		return result, err
+	}
+
+	// Set headers
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+llm.APIKey)
+
+	// Send request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		llm.Logger.Errorf("Error sending request: %v\n", err)
+		return result, err
+	}
+	defer func() {
+		err = errors.Join(err, resp.Body.Close())
+	}()
+
+	// Read response
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		llm.Logger.Errorf("Error reading response: %v\n", err)
+		return result, err
+	}
+
+	// Parse response
+	var apiResponse map[string]any
+	if err := json.Unmarshal(body, &apiResponse); err != nil {
+		llm.Logger.Errorf("Error parsing response: %v\n", err)
+		llm.Logger.Errorln("Raw response", body)
+		return result, err
+	}
+
+	// Extract the message content
+	var content string
+	if choices, ok := apiResponse["choices"].([]any); ok && len(choices) > 0 {
+		if choice, ok := choices[0].(map[string]any); ok {
+			if message, ok := choice["message"].(map[string]any); ok {
+				llm.Logger.Debugln("LLM Intent Classification Message", message)
+				content = fmt.Sprintf("%v", message["content"])
+			}
+		}
+	} else {
+		llm.Logger.Errorln("Raw response", body)
+		return result, fmt.Errorf("invalid response format")
+	}
+
+	// Clean up markdown if present
+	jsonStart := 0
+	jsonEnd := len(content)
+	for i, char := range content {
+		if char == '{' {
+			jsonStart = i
+			break
+		}
+	}
+	for i := len(content) - 1; i >= 0; i-- {
+		if content[i] == '}' {
+			jsonEnd = i + 1
+			break
+		}
+	}
+	content = content[jsonStart:jsonEnd]
+
+	// Parse the JSON response
+	if err := json.Unmarshal([]byte(content), &result); err != nil {
+		llm.Logger.Errorln("Error parsing intent classification response as JSON", err)
+		return result, err
+	}
+
+	// Validate the intent
+	switch result.Intent {
+	case IntentAddExpense, IntentAddIncome, IntentEdit, IntentDelete, IntentSearch,
+		IntentList, IntentWeekRecap, IntentMonthRecap, IntentYearRecap, IntentExport:
+		// Valid intent
+	default:
+		result.Intent = IntentUnknown
+	}
+
+	return result, nil
 }

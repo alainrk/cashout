@@ -1,8 +1,6 @@
 package client
 
 import (
-	"cashout/internal/model"
-	"cashout/internal/utils"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,9 +8,74 @@ import (
 	"strings"
 	"time"
 
+	"cashout/internal/model"
+	"cashout/internal/utils"
+
 	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 )
+
+// AddTransactionExpense handles the add expense intent at top-level
+func (c *Client) AddTransactionExpense(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	// Reset user state and start delete search flow
+	user.Session.State = model.StateInsertingExpense
+	user.Session.Body = ""
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to update user data: %w", err)
+	}
+
+	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, "Sure! To add a new <b>expense</b>:\nTell me category, amount and description. You can also specify a date and change it later, today is default.\n\n<i>Examples:</i>\n<code>Irish Pub 3.4</code>\n<code>January salary 3k 10/01</code>", &gotgbot.SendMessageOpts{
+		ParseMode: "HTML",
+		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+				{{Text: "Cancel", CallbackData: "transactions.cancel"}},
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return ext.ContinueGroups
+}
+
+// AddTransactionIncome handles the add income intent at top-level
+func (c *Client) AddTransactionIncome(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	// Reset user state and start delete search flow
+	user.Session.State = model.StateInsertingIncome
+	user.Session.Body = ""
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to update user data: %w", err)
+	}
+
+	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, "Sure! To add a new <b>income</b>:\nTell me category, amount and description. You can also specify a date and change it later, today is default.\n\n<i>Examples:</i>\n<code>Irish Pub 3.4</code>\n<code>January salary 3k 10/01</code>", &gotgbot.SendMessageOpts{
+		ParseMode: "HTML",
+		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
+			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+				{{Text: "Cancel", CallbackData: "transactions.cancel"}},
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return ext.ContinueGroups
+}
 
 func (c *Client) AddTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 	_, u := c.getUserFromContext(ctx)
