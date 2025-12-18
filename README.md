@@ -15,6 +15,7 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
 
 ### 🤖 AI-Powered Transaction Processing
 
+- **Intelligent Intent Routing**: Just type naturally - no commands needed. The AI understands whether you want to add a transaction, check your weekly summary, search, edit, delete, or export. Simply say "show me this week" or "delete coffee" and the bot figures out the rest
 - **Natural Language Understanding**: Just type "coffee 3.50" or "salary 3000 yesterday" - no complex commands needed
 - **Smart Categorization**: Automatically assigns the right category based on your description
 - **Flexible Date Recognition**: Understands various date formats (dd/mm, dd-mm-yyyy, "yesterday", etc.)
