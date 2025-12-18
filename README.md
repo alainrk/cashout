@@ -15,55 +15,54 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
 
 ### 🤖 AI-Powered Transaction Processing
 
-- **Intelligent Intent Routing**: Just type naturally - no commands needed. The AI understands whether you want to add a transaction, check your weekly summary, search, edit, delete, or export. Simply say "show me this week" or "delete coffee" and the bot figures out the rest
-- **Natural Language Understanding**: Just type "coffee 3.50" or "salary 3000 yesterday" - no complex commands needed
-- **Smart Categorization**: Automatically assigns the right category based on your description
-- **Flexible Date Recognition**: Understands various date formats (dd/mm, dd-mm-yyyy, "yesterday", etc.)
-- **Multi-language Support**: Works with transaction descriptions in any language
+- **Intelligent Intent Routing**: Just type naturally, no commands needed. The AI understands whether you want to add a transaction, check your weekly summary, search, edit, delete, or export. Simply say "show me this week", "delete expense" or "irish pub 4.50" and the bot figures out the rest. If there is no match or you prefer to do otherwise, you can always fall back to a completely deterministic and classic flow.
+- **Smart Categorization**: Automatically assigns the right category based on your description.
+- **Flexible Date Recognition**: Understands various date formats (dd/mm, dd-mm-yyyy, "yesterday", etc.).
+- **Multi-language Support**: Works with transaction descriptions in any language.
 
 ### 💰 Transaction Management
 
-- **Quick Entry**: Add expenses and income with a single message
-- **Inline Editing**: Modify amount, category, description, or date before confirming
-- **Bulk Operations**: Edit or delete existing transactions with paginated navigation
-- **Transaction Types**: Track both expenses (18 categories) and income (2 categories)
-- **Search and Full Listing**: Find transactions by full text search and category or full listing
-- **Export Functionality**: Download all your transactions as CSV files
+- **Quick Entry**: Add expenses and income with a single message.
+- **Inline Editing**: Modify amount, category, description, or date before confirming.
+- **Bulk Operations**: Edit or delete existing transactions with paginated navigation.
+- **Transaction Types**: Track both expenses (18 categories) and income (2 categories).
+- **Search and Full Listing**: Find transactions by full text search and category or full listing.
+- **Export Functionality**: Download all your transactions as CSV files.
 
 ### 📊 Financial Insights
 
-- **Weekly Recap**: Get detailed breakdowns of your current week's spending
-- **Monthly Summary**: View month-by-month financial performance with category breakdowns
-- **Yearly Overview**: See annual trends and top spending categories
-- **Balance Tracking**: Instant calculation of income vs expenses for any period
-- **Category Analysis**: Understand where your money goes with percentage breakdowns
+- **Weekly Recap**: Get detailed breakdowns of your current week's spending.
+- **Monthly Summary**: View month-by-month financial performance with category breakdowns.
+- **Yearly Overview**: See annual trends and top spending categories.
+- **Balance Tracking**: Instant calculation of income vs expenses for any period.
+- **Category Analysis**: Understand where your money goes with percentage breakdowns.
 
 ### 🌐 Web Dashboard
 
 - **Multiple Authentication Methods**:
-  - Telegram-based login with verification codes
-  - Email-based passwordless authentication
-  - Passkey/WebAuthn support for passwordless biometric login
+  - Telegram-based login with verification codes.
+  - Email-based passwordless authentication.
+  - Passkey/WebAuthn support for passwordless biometric login.
 - **Transaction Management**:
-  - Add new transactions directly from the web interface
-  - View detailed transaction history with search and filtering
-  - Monthly navigation with intuitive controls
+  - Add new transactions directly from the web interface.
+  - View detailed transaction history with search and filtering.
+  - Monthly navigation with intuitive controls.
 - **Visual Analytics**:
-  - Real-time balance, income, and expense statistics
-  - Category breakdowns and trends
-  - Transaction counts and summaries
+  - Real-time balance, income, and expense statistics.
+  - Category breakdowns and trends.
+  - Transaction counts and summaries.
 - **Security Features**:
-  - Rate-limited authentication endpoints
-  - Secure session management with configurable duration
-  - Support for multiple passkeys per user
-  - Passkey management (register, list, delete)
+  - Rate-limited authentication endpoints.
+  - Secure session management with configurable duration.
+  - Support for multiple passkeys per user.
+  - Passkey management (register, list, delete).
 
 ### 🔔 Smart Reminders
 
-- **Automated Weekly Recaps**: Receive your previous week's summary every Monday
-- **Automated Monthly Recaps**: Receive your previous month's summary on the 1st of each month
-- **Intelligent Scheduling**: Only sends reminders to active users
-- **Reliable Delivery**: Built-in retry mechanism for failed notifications
+- **Automated Weekly Recaps**: Receive your previous week's summary every Monday.
+- **Automated Monthly Recaps**: Receive your previous month's summary on the 1st of each month.
+- **Intelligent Scheduling**: Only sends reminders to active users.
+- **Reliable Delivery**: Built-in retry mechanism for failed notifications.
 
 ### 💻 Available Commands
 
@@ -79,19 +78,19 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
 
 ### 🎯 User Experience
 
-- **Intuitive Interface**: Clean inline keyboards for all operations
-- **Smart Navigation**: Year/month selectors for browsing historical data
-- **Pagination**: Handle large transaction lists with ease
-- **Quick Actions**: Home screen with instant access to all major functions
-- **Cancel Anytime**: Every operation can be cancelled mid-flow
+- **Intuitive Interface**: Clean inline keyboards for all operations.
+- **Smart Navigation**: Year/month selectors for browsing historical data.
+- **Pagination**: Handle large transaction lists with ease.
+- **Quick Actions**: Home screen with instant access to all major functions.
+- **Cancel Anytime**: Every operation can be cancelled mid-flow.
 
 ### 🛠️ Technical Features
 
 - **Database Migrations**: Version-controlled schema management
-- **Webhook & Polling Support**: Flexible deployment options
-- **Development Tools**: Built-in database seeder for testing
-- **Modular Architecture**: Clean separation of concerns for easy maintenance
-- **Configurable Access**: Optional user whitelist for private deployments
+- **Webhook & Polling Support**: Flexible deployment options.
+- **Development Tools**: Built-in database seeder for testing.
+- **Modular Architecture**: Clean separation of concerns for easy maintenance.
+- **Configurable Access**: Optional user whitelist for private deployments.
 
 ## Getting Started
 
@@ -252,11 +251,11 @@ make db/seed
 
 The seeder will:
 
-- Generate 5 years of transaction history
-- Create 90% expenses and 10% income transactions
-- Distribute transactions across all categories
-- Ensure at least one salary per month
-- Delete existing transactions before seeding (idempotent)
+- Generate 5 years of transaction history.
+- Create 90% expenses and 10% income transactions.
+- Distribute transactions across all categories.
+- Ensure at least one salary per month.
+- Delete existing transactions before seeding (idempotent).
 
 ## Deployment
 
@@ -341,39 +340,39 @@ LLM_MODEL='gpt-4'
 The web dashboard supports three authentication methods:
 
 1. **Telegram Login** (code-based):
-   - Enter your Telegram username
-   - Check Telegram for a 6-digit verification code
-   - Enter the code to access your dashboard
+   - Enter your Telegram username.
+   - Check Telegram for a 6-digit verification code.
+   - Enter the code to access your dashboard.
 
 2. **Email Login** (passwordless):
-   - Enter your registered email address
-   - Check your email for a 6-digit verification code
-   - Enter the code to access your dashboard
+   - Enter your registered email address.
+   - Check your email for a 6-digit verification code.
+   - Enter the code to access your dashboard.
 
 3. **Passkey Login** (WebAuthn):
-   - Register a passkey from your dashboard settings after initial login
-   - Use biometric authentication (fingerprint, face recognition) on subsequent logins
-   - No codes needed - instant secure access
+   - Register a passkey from your dashboard settings after initial login.
+   - Use biometric authentication (fingerprint, face recognition) on subsequent logins.
+   - No codes needed - instant secure access.
 
 ### Dashboard Features
 
-1. **Access**: Navigate to `http://localhost:8081` (or your configured domain)
-2. **Login**: Choose your preferred authentication method
-3. **Dashboard**: View your financial data with month navigation
-4. **Statistics**: See real-time balance, income, expenses, and transaction counts
+1. **Access**: Navigate to `http://localhost:8081` (or your configured domain).
+2. **Login**: Choose your preferred authentication method.
+3. **Dashboard**: View your financial data with month navigation.
+4. **Statistics**: See real-time balance, income, expenses, and transaction counts.
 5. **Transactions**:
-   - Add new transactions directly from the web interface
-   - Browse detailed transaction history with search and filtering
-   - View transactions by category
-6. **Passkey Management**: Register, view, and delete passkeys for your account
+   - Add new transactions directly from the web interface.
+   - Browse detailed transaction history with search and filtering.
+   - View transactions by category.
+6. **Passkey Management**: Register, view, and delete passkeys for your account.
 
 The web dashboard provides a complementary interface to the Telegram bot, offering:
 
-- Better visualization for large datasets
-- Month-by-month navigation
-- Desktop and mobile-friendly transaction management
-- Multiple secure authentication options
-- Direct transaction creation without needing Telegram
+- Better visualization for large datasets.
+- Month-by-month navigation.
+- Desktop and mobile-friendly transaction management.
+- Multiple secure authentication options.
+- Direct transaction creation without needing Telegram.
 
 ## Testing
 
