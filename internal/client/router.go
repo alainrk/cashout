@@ -1,17 +1,21 @@
 package client
 
 import (
-	"cashout/internal/model"
-	"cashout/internal/utils"
 	"errors"
 	"fmt"
 	"strings"
+
+	"cashout/internal/model"
+	"cashout/internal/utils"
 
 	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 )
 
+// FreeTextRouter is the default router for the bot.
+// It tries to infer if the user is adding a transaction (and in that case if it is an expense or income) if the state is not set to any other state.
+// If the user is adding a transaction, it sets the correct prompt and calls the LLM to extract the transaction information.
 func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 	_, u := c.getUserFromContext(ctx)
 	user, err := c.authAndGetUser(u)
@@ -24,11 +28,12 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 		return c.Cancel(b, ctx)
 	}
 
+	// The use pre-selected the adding transaction flow, so we don't need to infer it.
 	if user.Session.State == model.StateInsertingIncome || user.Session.State == model.StateInsertingExpense {
 		return c.addTransaction(b, ctx, user)
 	}
 
-	// During-insert edit transaction
+	// During-insert edit transaction.
 
 	if user.Session.State == model.StateEditingTransactionDate {
 		return c.editTransactionDate(b, ctx, user)
@@ -46,9 +51,7 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 		return c.editTransactionDescription(b, ctx, user)
 	}
 
-	// End of during-insert edit transaction
-
-	// Top-level edit transaction
+	// Top-level edit transaction cases.
 
 	if user.Session.State == model.StateTopLevelEditingTransactionDate {
 		return c.EditTransactionDateConfirm(b, ctx)
@@ -66,33 +69,36 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 		return c.EditTransactionDescriptionConfirm(b, ctx)
 	}
 
-	// Search-related states
+	// Search-related states.
 	if user.Session.State == model.StateEnteringSearchQuery {
 		return c.SearchQueryEntered(b, ctx)
 	}
 
-	// Edit search-related states
+	// Edit search-related states.
 	if user.Session.State == model.StateEnteringEditSearchQuery {
 		return c.EditSearchQueryEntered(b, ctx)
 	}
 
-	// Delete search-related states
+	// Delete search-related states.
 	if user.Session.State == model.StateEnteringDeleteSearchQuery {
 		return c.DeleteSearchQueryEntered(b, ctx)
 	}
 
-	// End of top-level edit transaction
+	// Heuristic phase: try to infer if the user is adding a transaction or any other action.
 
 	// Default behavior: start transaction flow for any unhandled text.
 	// Heuristic 1: there must be at least a digit in text.
 	if strings.ContainsAny(ctx.Message.Text, "0123456789") {
 
-		// Heuristic 2: it's more common to be an expense than an income, set it to default.
+		// Heuristic 1.a: it's more common to be an expense than an income, set it to default.
 		user.Session.State = model.StateInsertingExpense
-		// Heuristic 3: try to extract if it could be an income by looking in the text.
+
+		// Heuristic 1.b: try to extract if it could be an income by looking in the text.
 		if utils.IsAnIncomeTransactionPrompt(ctx.Message.Text) {
 			user.Session.State = model.StateInsertingIncome
 		}
+
+		// Update user data.
 		err = c.Repositories.Users.Update(&user)
 		if err != nil {
 			return fmt.Errorf("failed to set user data: %w", err)
