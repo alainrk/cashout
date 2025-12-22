@@ -13,14 +13,14 @@ You can self-host it following the Developer section down below.
 
 Cashout is an intelligent Telegram bot that leverages AI to make expense tracking effortless. Simply send a message in natural language, and the bot will understand and categorize your transactions automatically.
 
-### 🤖 AI-Powered Transaction Processing
+### AI-Powered Transaction Processing
 
 - **Intelligent Intent Routing**: Just type naturally, no commands needed. The AI understands whether you want to add a transaction, check your weekly summary, search, edit, delete, or export. Simply say "show me this week", "delete expense" or "irish pub 4.50" and the bot figures out the rest. If there is no match or you prefer to do otherwise, you can always fall back to a completely deterministic and classic flow.
 - **Smart Categorization**: Automatically assigns the right category based on your description.
 - **Flexible Date Recognition**: Understands various date formats (dd/mm, dd-mm-yyyy, "yesterday", etc.).
 - **Multi-language Support**: Works with transaction descriptions in any language.
 
-### 💰 Transaction Management
+### Transaction Management
 
 - **Quick Entry**: Add expenses and income with a single message.
 - **Inline Editing**: Modify amount, category, description, or date before confirming.
@@ -29,7 +29,7 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
 - **Search and Full Listing**: Find transactions by full text search and category or full listing.
 - **Export Functionality**: Download all your transactions as CSV files.
 
-### 📊 Financial Insights
+### Financial Insights
 
 - **Weekly Recap**: Get detailed breakdowns of your current week's spending.
 - **Monthly Summary**: View month-by-month financial performance with category breakdowns.
@@ -37,7 +37,7 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
 - **Balance Tracking**: Instant calculation of income vs expenses for any period.
 - **Category Analysis**: Understand where your money goes with percentage breakdowns.
 
-### 🌐 Web Dashboard
+### Web Dashboard
 
 - **Multiple Authentication Methods**:
   - Telegram-based login with verification codes.
@@ -57,14 +57,14 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
   - Support for multiple passkeys per user.
   - Passkey management (register, list, delete).
 
-### 🔔 Smart Reminders
+### Smart Reminders
 
 - **Automated Weekly Recaps**: Receive your previous week's summary every Monday.
 - **Automated Monthly Recaps**: Receive your previous month's summary on the 1st of each month.
 - **Intelligent Scheduling**: Only sends reminders to active users.
 - **Reliable Delivery**: Built-in retry mechanism for failed notifications.
 
-### 💻 Available Commands
+### Available Commands
 
 - `/start` - Initialize the bot and see the main menu
 - `/edit` - Edit an existing transaction
@@ -76,7 +76,7 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
 - `/year` - Get current year's financial summary
 - `/export` - Export all transactions to CSV
 
-### 🎯 User Experience
+### User Experience
 
 - **Intuitive Interface**: Clean inline keyboards for all operations.
 - **Smart Navigation**: Year/month selectors for browsing historical data.
@@ -84,7 +84,7 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
 - **Quick Actions**: Home screen with instant access to all major functions.
 - **Cancel Anytime**: Every operation can be cancelled mid-flow.
 
-### 🛠️ Technical Features
+### Technical Features
 
 - **Database Migrations**: Version-controlled schema management
 - **Webhook & Polling Support**: Flexible deployment options.
