@@ -17,7 +17,7 @@ func main() {
 		log.Fatalf("Error loading %s file", ".env")
 	}
 
-	var ctx context.Context
+	ctx := context.Background()
 	cfg := brevo.NewConfiguration()
 	cfg.AddDefaultHeader("api-key", os.Getenv("BREVO_API_KEY"))
 	cfg.AddDefaultHeader("partner-key", os.Getenv("BREVO_API_KEY"))
@@ -32,7 +32,7 @@ func main() {
 
 	fmt.Println("GetAccount Object:", result, " GetAccount Response: ", resp)
 
-	_, _, err = br.TransactionalEmailsApi.SendTransacEmail(context.TODO(), brevo.SendSmtpEmail{
+	_, _, err = br.TransactionalEmailsApi.SendTransacEmail(ctx, brevo.SendSmtpEmail{
 		Sender: &brevo.SendSmtpEmailSender{
 			Name:  os.Getenv("EMAIL_FROM_NAME"),
 			Email: os.Getenv("EMAIL_FROM_ADDRESS"),
