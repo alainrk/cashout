@@ -1,19 +1,19 @@
 package main
 
 import (
+	"errors"
+	"fmt"
+	"net/http"
+	"os"
+	"strings"
+	"time"
+
 	"cashout/internal/ai"
 	"cashout/internal/client"
 	"cashout/internal/db"
 	"cashout/internal/logging"
 	"cashout/internal/scheduler"
 	server_health "cashout/internal/server"
-	"errors"
-	"fmt"
-	"log"
-	"net/http"
-	"os"
-	"strings"
-	"time"
 
 	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -28,7 +28,7 @@ import (
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		fmt.Println("Error loading .env file")
 	}
 
 	logger := logging.GetLogger(os.Getenv("LOG_LEVEL"))
