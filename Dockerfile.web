@@ -16,17 +16,11 @@ RUN go mod download
 # Copy the source code
 COPY . .
 
-# Build the Telegram bot
+# Build the web server
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags="-w -s" \
-    -o cashout \
-    ./cmd/server/main.go
-
-# Build the migration tool
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-    -ldflags="-w -s" \
-    -o migrate \
-    ./cmd/migrate/main.go
+    -o cashout-web \
+    ./cmd/web/main.go
 
 # Final stage
 FROM alpine:latest
@@ -42,8 +36,10 @@ RUN addgroup -g 1000 -S cashout && \
 WORKDIR /app
 
 # Copy binaries from builder
-COPY --from=builder /app/cashout /app/cashout
-COPY --from=builder /app/migrate /app/migrate
+COPY --from=builder /app/cashout-web /app/cashout-web
+
+# Copy web assets (templates and static files)
+COPY web/ ./web/
 
 # Change ownership
 RUN chown -R cashout:cashout /app
@@ -51,8 +47,8 @@ RUN chown -R cashout:cashout /app
 # Switch to non-root user
 USER cashout
 
-# Expose ports: 8080 (webhook), 8082 (health)
-EXPOSE 8080 8082
+# Expose port 8081 (web)
+EXPOSE 8081
 
 # Set entrypoint
-ENTRYPOINT ["/app/cashout"]
+ENTRYPOINT ["/app/cashout-web"]
