@@ -33,8 +33,8 @@ func (r *Transactions) GetMonthlyTotalsInYear(tgID int64, year int) (map[int]map
 	return r.DB.GetMonthlyTotalsInYear(tgID, year)
 }
 
-func (r *Transactions) GetUserTransactionsByMonthPaginated(tgID int64, year, month, offset, limit int) ([]model.Transaction, int64, error) {
-	return r.DB.GetUserTransactionsByMonthPaginated(tgID, year, month, offset, limit)
+func (r *Transactions) GetUserTransactionsByMonthPaginated(tgID int64, year, month, offset, limit int, category string) ([]model.Transaction, int64, error) {
+	return r.DB.GetUserTransactionsByMonthPaginated(tgID, year, month, offset, limit, category)
 }
 
 func (r *Transactions) GetUserTransactionsByDateRangePaginated(tgID int64, startDate, endDate time.Time, offset, limit int) ([]model.Transaction, int64, error) {

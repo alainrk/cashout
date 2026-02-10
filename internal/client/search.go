@@ -182,11 +182,17 @@ func (c *Client) SearchCategorySelected(b *gotgbot.Bot, ctx *ext.Context) error 
 
 	_, _, err = ctx.CallbackQuery.Message.EditText(
 		b,
-		fmt.Sprintf("🔍 Searching in <b>%s</b>\n\nEnter your search text:", categoryText),
+		fmt.Sprintf("🔍 Searching in <b>%s</b>\n\nEnter your search text or tap Show All:", categoryText),
 		&gotgbot.EditMessageTextOpts{
 			ParseMode: "HTML",
 			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 				InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+					{
+						{
+							Text:         "📋 Show All",
+							CallbackData: "search.showall",
+						},
+					},
 					{
 						{
 							Text:         "❌ Cancel",
@@ -493,4 +499,26 @@ func (c *Client) SearchNoop(b *gotgbot.Bot, ctx *ext.Context) error {
 	// Answer callback query to remove loading state
 	_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{})
 	return err
+}
+
+// SearchShowAll handles the "Show All" button — searches with wildcard
+func (c *Client) SearchShowAll(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	// Get category from session
+	category := user.Session.Body
+
+	// Reset user state
+	user.Session.State = model.StateNormal
+	user.Session.Body = ""
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to update user data: %w", err)
+	}
+
+	return c.showSearchResults(b, ctx, user, category, "%", 0)
 }

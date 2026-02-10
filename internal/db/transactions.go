@@ -203,26 +203,38 @@ func (db *DB) GetMonthlyTotalsInYear(tgID int64, year int) (map[int]map[model.Tr
 	return monthlyTotals, nil
 }
 
-// GetUserTransactionsByMonthPaginated retrieves paginated transactions for a user for a specific year and month
-func (db *DB) GetUserTransactionsByMonthPaginated(tgID int64, year int, month int, offset, limit int) ([]model.Transaction, int64, error) {
+// GetUserTransactionsByMonthPaginated retrieves paginated transactions for a user for a specific year and month.
+// If category is non-empty, results are filtered to that category.
+func (db *DB) GetUserTransactionsByMonthPaginated(tgID int64, year int, month int, offset, limit int, category string) ([]model.Transaction, int64, error) {
 	startDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
 	endDate := startDate.AddDate(0, 1, -1) // Last day of the month
 
 	var transactions []model.Transaction
 	var total int64
 
-	// Get total count
-	err := db.conn.Model(&model.Transaction{}).
+	query := db.conn.Model(&model.Transaction{}).
 		Where("tg_id = ? AND date BETWEEN ? AND ?",
-			tgID, startDate.Format("2006-01-02"), endDate.Format("2006-01-02")).
-		Count(&total).Error
+			tgID, startDate.Format("2006-01-02"), endDate.Format("2006-01-02"))
+
+	if category != "" {
+		query = query.Where("category = ?", category)
+	}
+
+	// Get total count
+	err := query.Count(&total).Error
 	if err != nil {
 		return nil, 0, err
 	}
 
 	// Get paginated results
 	result := db.conn.Where("tg_id = ? AND date BETWEEN ? AND ?",
-		tgID, startDate.Format("2006-01-02"), endDate.Format("2006-01-02")).
+		tgID, startDate.Format("2006-01-02"), endDate.Format("2006-01-02"))
+
+	if category != "" {
+		result = result.Where("category = ?", category)
+	}
+
+	result = result.
 		Order("date DESC").
 		Offset(offset).
 		Limit(limit).

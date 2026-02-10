@@ -33,10 +33,13 @@ func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("transactions.confirm"), c.Confirm))
 
 	dispatcher.AddHandler(handlers.NewCommand("list", c.ListTransactions))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("list.cat."), c.ListCategorySelected))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("list.backtocategories"), c.ListBackToCategories))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("list.cancel"), c.Cancel))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("list.year."), c.ListYearNavigation))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("list.month."), c.ListMonthTransactions))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("list.page."), c.ListTransactionPage))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("list.noop"), c.ListNoop))
 
 	dispatcher.AddHandler(handlers.NewCommand("edit", c.EditTransactions))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("edit.page."), c.EditTransactionPage))
@@ -95,4 +98,5 @@ func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("search.home"), c.SearchHome))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("search.new"), c.SearchNew))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("search.noop"), c.SearchNoop))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("search.showall"), c.SearchShowAll))
 }
