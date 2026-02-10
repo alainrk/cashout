@@ -321,7 +321,7 @@ func (c *Client) sendMonthSelectionKeyboard(b *gotgbot.Bot, ctx *ext.Context, ye
 
 // showTransactionPage renders the paginated transaction list
 func (c *Client) showTransactionPage(b *gotgbot.Bot, ctx *ext.Context, user model.User, year, month, offset int, category string) error {
-	limit := 10
+	limit := 20
 
 	// Convert "all" to empty string for DB query
 	dbCategory := ""

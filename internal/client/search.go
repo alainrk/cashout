@@ -239,7 +239,7 @@ func (c *Client) SearchQueryEntered(b *gotgbot.Bot, ctx *ext.Context) error {
 
 // showSearchResults displays paginated search results
 func (c *Client) showSearchResults(b *gotgbot.Bot, ctx *ext.Context, user model.User, category, searchQuery string, offset int) error {
-	limit := 10
+	limit := 20
 
 	// Perform search
 	var transactions []model.Transaction
@@ -370,43 +370,36 @@ func formatSearchResults(transactions []model.Transaction, searchQuery, category
 	var msg strings.Builder
 
 	msg.WriteString("🔍 <b>Search Results</b>\n")
-	msg.WriteString(fmt.Sprintf("Query: \"%s\"", searchQuery))
+
+	// Show query unless it's a wildcard "Show All"
+	if searchQuery != "%" {
+		msg.WriteString(fmt.Sprintf("Query: \"%s\"", searchQuery))
+	}
 
 	if category != "all" {
 		emoji := utils.GetCategoryEmoji(model.TransactionCategory(category))
 		msg.WriteString(fmt.Sprintf(" in %s %s", emoji, category))
 	}
 
-	msg.WriteString(fmt.Sprintf("\n\nShowing %d-%d of %d results\n\n", offset+1, offset+len(transactions), total))
+	msg.WriteString(fmt.Sprintf("\nShowing %d–%d of %d\n\n", offset+1, offset+len(transactions), total))
 
-	for i, t := range transactions {
+	for _, t := range transactions {
 		emoji := utils.GetCategoryEmoji(t.Category)
-
-		// Highlight the search term in description
-		highlightedDesc := t.Description
-		if idx := strings.Index(strings.ToLower(t.Description), strings.ToLower(searchQuery)); idx != -1 {
-			// Simple highlighting with bold
-			highlightedDesc = t.Description[:idx] + "<b>" +
-				t.Description[idx:idx+len(searchQuery)] + "</b>" +
-				t.Description[idx+len(searchQuery):]
-		}
-
-		msg.WriteString(fmt.Sprintf("%d. %s - %.2f€\n",
-			offset+i+1,
-			highlightedDesc,
-			t.Amount,
-		))
-
-		msg.WriteString(fmt.Sprintf("   %s %s | 📅 %s\n",
-			emoji, t.Category, t.Date.Format("02-01-2006")))
-
+		sign := "-"
 		if t.Type == model.TypeIncome {
-			msg.WriteString("   💰 Income\n")
-		} else {
-			msg.WriteString("   💸 Expense\n")
+			sign = "+"
 		}
 
-		msg.WriteString("\n")
+		// Highlight the search term in description (skip for wildcard)
+		desc := t.Description
+		if searchQuery != "%" {
+			if idx := strings.Index(strings.ToLower(desc), strings.ToLower(searchQuery)); idx != -1 {
+				desc = desc[:idx] + "<b>" + desc[idx:idx+len(searchQuery)] + "</b>" + desc[idx+len(searchQuery):]
+			}
+		}
+
+		msg.WriteString(fmt.Sprintf("%s %s · %s€%.2f · %s\n",
+			emoji, desc, sign, t.Amount, t.Date.Format("02/01")))
 	}
 
 	return msg.String()
