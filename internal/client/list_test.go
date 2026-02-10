@@ -172,3 +172,15 @@ func TestCreatePaginationKeyboard_SinglePage(t *testing.T) {
 		t.Errorf("expected back button, got %q", kb[1][0].Text)
 	}
 }
+
+func TestCreatePaginationKeyboard_ZeroTotal(t *testing.T) {
+	kb := createPaginationKeyboard(2026, 2, 0, 20, 0, "Pets")
+
+	// Should only have the "Back to Months" row, no nav row
+	if len(kb) != 1 {
+		t.Fatalf("expected 1 row (back only), got %d", len(kb))
+	}
+	if kb[0][0].Text != "🔙 Back to Months" {
+		t.Errorf("expected back button, got %q", kb[0][0].Text)
+	}
+}

@@ -1,12 +1,13 @@
 package client
 
 import (
-	"cashout/internal/model"
-	"cashout/internal/utils"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
+
+	"cashout/internal/model"
+	"cashout/internal/utils"
 
 	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -755,7 +756,7 @@ func (c *Client) EditTransactionDateConfirm(b *gotgbot.Bot, ctx *ext.Context) er
 
 // showEditableTransactionPage displays a paginated list of all user transactions for editing
 func (c *Client) showEditableTransactionPage(b *gotgbot.Bot, ctx *ext.Context, user model.User, offset int) error {
-	limit := 5
+	limit := 10
 
 	// Get all user transactions with pagination
 	transactions, total, err := c.Repositories.Transactions.GetUserTransactionsPaginated(
@@ -810,24 +811,19 @@ func (c *Client) showEditableTransactionPage(b *gotgbot.Bot, ctx *ext.Context, u
 func formatEditableTransactions(transactions []model.Transaction, offset, total int) string {
 	var msg strings.Builder
 	msg.WriteString("<b>✏️ Edit Transaction</b>\n")
-	msg.WriteString("Select a transaction to edit:\n")
-	msg.WriteString(fmt.Sprintf("Showing %d-%d of %d transactions\n\n", offset+1, offset+len(transactions), total))
+	msg.WriteString(fmt.Sprintf("Showing %d–%d of %d\n\n", offset+1, offset+len(transactions), total))
 
 	for i, t := range transactions {
 		emoji := utils.GetCategoryEmoji(t.Category)
-
-		msg.WriteString(fmt.Sprintf("%d. <b>%s</b> - %.2f€\n",
-			i+1,
-			t.Description,
-			t.Amount,
-		))
-
-		msg.WriteString(fmt.Sprintf("   %s %s\n", emoji, t.Category))
-		msg.WriteString(fmt.Sprintf("   📅 %s\n", t.Date.Format("02-01-2006")))
-		msg.WriteString("\n")
+		sign := "-"
+		if t.Type == model.TypeIncome {
+			sign = "+"
+		}
+		msg.WriteString(fmt.Sprintf("%d. %s %s · %s€%.2f · %s\n",
+			i+1, emoji, t.Description, sign, t.Amount, t.Date.Format("02/01")))
 	}
 
-	msg.WriteString("\nClick on a number to edit the corresponding transaction.")
+	msg.WriteString("\nTap a number to edit.")
 	return msg.String()
 }
 
@@ -835,58 +831,53 @@ func formatEditableTransactions(transactions []model.Transaction, offset, total 
 func createEditPaginationKeyboard(transactions []model.Transaction, offset, limit, total int) [][]gotgbot.InlineKeyboardButton {
 	var keyboard [][]gotgbot.InlineKeyboardButton
 
-	// Create number buttons for each transaction (up to 5 per row)
+	// Create number buttons (up to 10 per row)
 	var row []gotgbot.InlineKeyboardButton
 	for i, t := range transactions {
-		button := gotgbot.InlineKeyboardButton{
+		row = append(row, gotgbot.InlineKeyboardButton{
 			Text:         fmt.Sprintf("%d", i+1),
 			CallbackData: fmt.Sprintf("edit.select.%d", t.ID),
-		}
-		row = append(row, button)
-
-		// Create a new row after 5 buttons
+		})
 		if len(row) == 5 {
 			keyboard = append(keyboard, row)
 			row = []gotgbot.InlineKeyboardButton{}
 		}
 	}
-
-	// Add any remaining buttons
 	if len(row) > 0 {
 		keyboard = append(keyboard, row)
 	}
 
-	// Navigation buttons (previous, cancel, next)
-	var navigationRow []gotgbot.InlineKeyboardButton
-
-	// Next page button (for older transactions)
-	if offset+limit < total {
-		nextOffset := offset + limit
-		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
-			Text:         "⬅️ Previous",
-			CallbackData: fmt.Sprintf("edit.page.%d", nextOffset),
-		})
-	}
-
-	// Cancel button
-	navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
-		Text:         "❌ Cancel",
-		CallbackData: "transactions.cancel",
-	})
-
-	// Previous page button (for newer transactions)
-	if offset > 0 {
-		prevOffset := offset - limit
-		if prevOffset < 0 {
-			prevOffset = 0
+	// Navigation row with page indicator
+	if total > 0 {
+		var navigationRow []gotgbot.InlineKeyboardButton
+		if offset+limit < total {
+			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
+				Text:         "⬅️ Previous",
+				CallbackData: fmt.Sprintf("edit.page.%d", offset+limit),
+			})
 		}
+		currentPage := (offset / limit) + 1
+		totalPages := (total + limit - 1) / limit
 		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
-			Text:         "Next ➡️",
-			CallbackData: fmt.Sprintf("edit.page.%d", prevOffset),
+			Text:         fmt.Sprintf("%d/%d", currentPage, totalPages),
+			CallbackData: "edit.noop",
 		})
+		if offset > 0 {
+			prevOffset := offset - limit
+			if prevOffset < 0 {
+				prevOffset = 0
+			}
+			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
+				Text:         "Next ➡️",
+				CallbackData: fmt.Sprintf("edit.page.%d", prevOffset),
+			})
+		}
+		keyboard = append(keyboard, navigationRow)
 	}
 
-	keyboard = append(keyboard, navigationRow)
+	keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{{
+		Text: "❌ Cancel", CallbackData: "transactions.cancel",
+	}})
 	return keyboard
 }
 
@@ -1088,11 +1079,17 @@ func (c *Client) EditSearchCategorySelected(b *gotgbot.Bot, ctx *ext.Context) er
 
 	_, _, err = ctx.CallbackQuery.Message.EditText(
 		b,
-		fmt.Sprintf("✏️ Searching in <b>%s</b>\n\nEnter your search text:", categoryText),
+		fmt.Sprintf("✏️ Searching in <b>%s</b>\n\nEnter your search text or tap Show All:", categoryText),
 		&gotgbot.EditMessageTextOpts{
 			ParseMode: "HTML",
 			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 				InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+					{
+						{
+							Text:         "📋 Show All",
+							CallbackData: "edit.search.showall",
+						},
+					},
 					{
 						{
 							Text:         "❌ Cancel",
@@ -1139,7 +1136,7 @@ func (c *Client) EditSearchQueryEntered(b *gotgbot.Bot, ctx *ext.Context) error 
 
 // showEditSearchResults displays paginated search results for editing
 func (c *Client) showEditSearchResults(b *gotgbot.Bot, ctx *ext.Context, user model.User, category, searchQuery string, offset int) error {
-	limit := 5 // Same as original edit page limit
+	limit := 10
 
 	// Perform search
 	var transactions []model.Transaction
@@ -1243,47 +1240,38 @@ func (c *Client) showEditSearchResults(b *gotgbot.Bot, ctx *ext.Context, user mo
 func formatEditSearchResults(transactions []model.Transaction, searchQuery, category string, offset, total int) string {
 	var msg strings.Builder
 
-	msg.WriteString("✏️ <b>Edit Transaction - Search Results</b>\n")
-	msg.WriteString(fmt.Sprintf("Query: \"%s\"", searchQuery))
+	msg.WriteString("✏️ <b>Edit Transaction</b>\n")
+
+	if searchQuery != "%" {
+		msg.WriteString(fmt.Sprintf("Query: \"%s\"", searchQuery))
+	}
 
 	if category != "all" {
 		emoji := utils.GetCategoryEmoji(model.TransactionCategory(category))
 		msg.WriteString(fmt.Sprintf(" in %s %s", emoji, category))
 	}
 
-	msg.WriteString(fmt.Sprintf("\n\nShowing %d-%d of %d results\n", offset+1, offset+len(transactions), total))
-	msg.WriteString("Select a transaction to edit:\n\n")
+	msg.WriteString(fmt.Sprintf("\nShowing %d–%d of %d\n\n", offset+1, offset+len(transactions), total))
 
 	for i, t := range transactions {
 		emoji := utils.GetCategoryEmoji(t.Category)
-
-		// Highlight the search term in description
-		highlightedDesc := t.Description
-		if idx := strings.Index(strings.ToLower(t.Description), strings.ToLower(searchQuery)); idx != -1 {
-			// Simple highlighting with bold
-			highlightedDesc = t.Description[:idx] + "<b>" +
-				t.Description[idx:idx+len(searchQuery)] + "</b>" +
-				t.Description[idx+len(searchQuery):]
-		}
-
-		msg.WriteString(fmt.Sprintf("<b>%d.</b> %s - %.2f€\n",
-			i+1,
-			highlightedDesc,
-			t.Amount,
-		))
-
-		msg.WriteString(fmt.Sprintf("   %s %s | 📅 %s\n",
-			emoji, t.Category, t.Date.Format("02-01-2006")))
-
+		sign := "-"
 		if t.Type == model.TypeIncome {
-			msg.WriteString("   💰 Income\n")
-		} else {
-			msg.WriteString("   💸 Expense\n")
+			sign = "+"
 		}
 
-		msg.WriteString("\n")
+		desc := t.Description
+		if searchQuery != "%" {
+			if idx := strings.Index(strings.ToLower(desc), strings.ToLower(searchQuery)); idx != -1 {
+				desc = desc[:idx] + "<b>" + desc[idx:idx+len(searchQuery)] + "</b>" + desc[idx+len(searchQuery):]
+			}
+		}
+
+		msg.WriteString(fmt.Sprintf("%d. %s %s · %s€%.2f · %s\n",
+			i+1, emoji, desc, sign, t.Amount, t.Date.Format("02/01")))
 	}
 
+	msg.WriteString("\nTap a number to edit.")
 	return msg.String()
 }
 
@@ -1291,64 +1279,49 @@ func formatEditSearchResults(transactions []model.Transaction, searchQuery, cate
 func createEditSearchPaginationKeyboard(transactions []model.Transaction, category, searchQuery string, offset, limit, total int) [][]gotgbot.InlineKeyboardButton {
 	var keyboard [][]gotgbot.InlineKeyboardButton
 
-	// Add numbered buttons for transaction selection (1-5)
-	var selectionRow []gotgbot.InlineKeyboardButton
+	// Numbered selection buttons (up to 10 per row)
+	var row []gotgbot.InlineKeyboardButton
 	for i, t := range transactions {
-		selectionRow = append(selectionRow, gotgbot.InlineKeyboardButton{
+		row = append(row, gotgbot.InlineKeyboardButton{
 			Text:         fmt.Sprintf("%d", i+1),
 			CallbackData: fmt.Sprintf("edit.search.select.%d", t.ID),
 		})
-	}
-	if len(selectionRow) > 0 {
-		keyboard = append(keyboard, selectionRow)
-	}
-
-	// Navigation row
-	var navigationRow []gotgbot.InlineKeyboardButton
-
-	// Previous page button
-	if offset > 0 {
-		prevOffset := offset - limit
-		if prevOffset < 0 {
-			prevOffset = 0
+		if len(row) == 5 {
+			keyboard = append(keyboard, row)
+			row = []gotgbot.InlineKeyboardButton{}
 		}
-		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
-			Text:         "⬅️ Previous",
-			CallbackData: fmt.Sprintf("edit.search.page.%s.%d.%s", category, prevOffset, searchQuery),
-		})
+	}
+	if len(row) > 0 {
+		keyboard = append(keyboard, row)
 	}
 
-	// Page indicator
-	currentPage := (offset / limit) + 1
-	totalPages := (total + limit - 1) / limit
-	navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
-		Text:         fmt.Sprintf("%d/%d", currentPage, totalPages),
-		CallbackData: "edit.search.noop",
-	})
-
-	// Next page button
-	if offset+limit < total {
-		nextOffset := offset + limit
+	// Navigation with page indicator
+	if total > 0 {
+		var navigationRow []gotgbot.InlineKeyboardButton
+		if offset > 0 {
+			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
+				Text:         "⬅️ Previous",
+				CallbackData: fmt.Sprintf("edit.search.page.%s.%d.%s", category, max(offset-limit, 0), searchQuery),
+			})
+		}
+		currentPage := (offset / limit) + 1
+		totalPages := (total + limit - 1) / limit
 		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
-			Text:         "Next ➡️",
-			CallbackData: fmt.Sprintf("edit.search.page.%s.%d.%s", category, nextOffset, searchQuery),
+			Text:         fmt.Sprintf("%d/%d", currentPage, totalPages),
+			CallbackData: "edit.search.noop",
 		})
-	}
-
-	if len(navigationRow) > 0 {
+		if offset+limit < total {
+			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
+				Text:         "Next ➡️",
+				CallbackData: fmt.Sprintf("edit.search.page.%s.%d.%s", category, offset+limit, searchQuery),
+			})
+		}
 		keyboard = append(keyboard, navigationRow)
 	}
 
-	// Action buttons
 	keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
-		{
-			Text:         "🔍 New Search",
-			CallbackData: "edit.search.new",
-		},
-		{
-			Text:         "🏠 Home",
-			CallbackData: "edit.search.home",
-		},
+		{Text: "🔍 New Search", CallbackData: "edit.search.new"},
+		{Text: "🏠 Home", CallbackData: "edit.search.home"},
 	})
 
 	return keyboard
@@ -1461,5 +1434,32 @@ func (c *Client) EditSearchNew(b *gotgbot.Bot, ctx *ext.Context) error {
 
 // EditSearchNoop handles no-op callbacks (like page indicators)
 func (c *Client) EditSearchNoop(b *gotgbot.Bot, ctx *ext.Context) error {
-	return nil
+	_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{})
+	return err
+}
+
+// EditNoop handles no-op callbacks for the recent-transactions pagination
+func (c *Client) EditNoop(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{})
+	return err
+}
+
+// EditSearchShowAll handles "Show All" — searches with wildcard
+func (c *Client) EditSearchShowAll(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	category := user.Session.Body
+
+	user.Session.State = model.StateNormal
+	user.Session.Body = ""
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to update user data: %w", err)
+	}
+
+	return c.showEditSearchResults(b, ctx, user, category, "%", 0)
 }

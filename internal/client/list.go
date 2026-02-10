@@ -397,37 +397,40 @@ func createPaginationKeyboard(year, month, offset, limit, total int, category st
 	var keyboard [][]gotgbot.InlineKeyboardButton
 	var navigationRow []gotgbot.InlineKeyboardButton
 
-	// Previous page button
-	if offset > 0 {
-		prevOffset := offset - limit
-		if prevOffset < 0 {
-			prevOffset = 0
+	// Only show pagination when there are results
+	if total > 0 {
+		// Previous page button
+		if offset > 0 {
+			prevOffset := offset - limit
+			if prevOffset < 0 {
+				prevOffset = 0
+			}
+			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
+				Text:         "⬅️ Previous",
+				CallbackData: fmt.Sprintf("list.page.%d.%02d.%d.%s", year, month, prevOffset, category),
+			})
 		}
+
+		// Page indicator
+		currentPage := (offset / limit) + 1
+		totalPages := (total + limit - 1) / limit
 		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
-			Text:         "⬅️ Previous",
-			CallbackData: fmt.Sprintf("list.page.%d.%02d.%d.%s", year, month, prevOffset, category),
+			Text:         fmt.Sprintf("%d/%d", currentPage, totalPages),
+			CallbackData: "list.noop",
 		})
-	}
 
-	// Page indicator
-	currentPage := (offset / limit) + 1
-	totalPages := (total + limit - 1) / limit
-	navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
-		Text:         fmt.Sprintf("%d/%d", currentPage, totalPages),
-		CallbackData: "list.noop",
-	})
+		// Next page button
+		if offset+limit < total {
+			nextOffset := offset + limit
+			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
+				Text:         "Next ➡️",
+				CallbackData: fmt.Sprintf("list.page.%d.%02d.%d.%s", year, month, nextOffset, category),
+			})
+		}
 
-	// Next page button
-	if offset+limit < total {
-		nextOffset := offset + limit
-		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
-			Text:         "Next ➡️",
-			CallbackData: fmt.Sprintf("list.page.%d.%02d.%d.%s", year, month, nextOffset, category),
-		})
-	}
-
-	if len(navigationRow) > 0 {
-		keyboard = append(keyboard, navigationRow)
+		if len(navigationRow) > 0 {
+			keyboard = append(keyboard, navigationRow)
+		}
 	}
 
 	// Back to month selection

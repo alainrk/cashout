@@ -54,6 +54,8 @@ func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("edit.search.home"), c.EditSearchHome))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("edit.search.new"), c.EditSearchNew))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("edit.search.noop"), c.EditSearchNoop))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("edit.search.showall"), c.EditSearchShowAll))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("edit.noop"), c.EditNoop))
 
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.page."), c.DeleteTransactionPage))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("delete.showconfirm."), c.ShowDeleteConfirmation))
@@ -66,6 +68,8 @@ func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("delete.search.home"), c.DeleteSearchHome))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("delete.search.new"), c.DeleteSearchNew))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("delete.search.noop"), c.DeleteSearchNoop))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("delete.search.showall"), c.DeleteSearchShowAll))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("delete.noop"), c.DeleteNoop))
 
 	dispatcher.AddHandler(handlers.NewCommand("cancel", c.Cancel))
 	dispatcher.AddHandler(handlers.NewCommand("delete", c.DeleteTransactions))

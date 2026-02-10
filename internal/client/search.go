@@ -239,7 +239,7 @@ func (c *Client) SearchQueryEntered(b *gotgbot.Bot, ctx *ext.Context) error {
 
 // showSearchResults displays paginated search results
 func (c *Client) showSearchResults(b *gotgbot.Bot, ctx *ext.Context, user model.User, category, searchQuery string, offset int) error {
-	limit := 20
+	limit := 10
 
 	// Perform search
 	var transactions []model.Transaction
