@@ -273,7 +273,7 @@ func formatDeletableTransactions(transactions []model.Transaction, offset, total
 			sign = "+"
 		}
 		msg.WriteString(fmt.Sprintf("%d. %s %s · %s€%.2f · %s\n",
-			i+1, emoji, t.Description, sign, t.Amount, t.Date.Format("02/01")))
+			i+1, emoji, t.Description, sign, t.Amount, t.Date.Format("02/01/2006")))
 	}
 
 	msg.WriteString("\nTap a number to delete.")
@@ -658,7 +658,7 @@ func formatDeleteSearchResults(transactions []model.Transaction, searchQuery, ca
 		}
 
 		msg.WriteString(fmt.Sprintf("%d. %s %s · %s€%.2f · %s\n",
-			i+1, emoji, desc, sign, t.Amount, t.Date.Format("02/01")))
+			i+1, emoji, desc, sign, t.Amount, t.Date.Format("02/01/2006")))
 	}
 
 	msg.WriteString("\nTap a number to delete.")

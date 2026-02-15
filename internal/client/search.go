@@ -399,7 +399,7 @@ func formatSearchResults(transactions []model.Transaction, searchQuery, category
 		}
 
 		msg.WriteString(fmt.Sprintf("%s %s · %s€%.2f · %s\n",
-			emoji, desc, sign, t.Amount, t.Date.Format("02/01")))
+			emoji, desc, sign, t.Amount, t.Date.Format("02/01/2006")))
 	}
 
 	return msg.String()

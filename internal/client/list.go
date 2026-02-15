@@ -386,7 +386,7 @@ func formatTransactions(year, month int, transactions []model.Transaction, offse
 			sign = "+"
 		}
 		msg.WriteString(fmt.Sprintf("%s <b>%s</b> · %s€%.2f · %s\n",
-			emoji, t.Description, sign, t.Amount, t.Date.Format("02/01")))
+			emoji, t.Description, sign, t.Amount, t.Date.Format("02/01/2006")))
 	}
 
 	return msg.String()

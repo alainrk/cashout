@@ -52,11 +52,11 @@ func TestFormatTransactions_CompactSingleLine(t *testing.T) {
 		t.Error("missing showing count")
 	}
 
-	// Compact: emoji <b>desc</b> · sign€amount · DD/MM
-	if !strings.Contains(result, "🛒 <b>Grocery Shopping</b> · -€45.00 · 10/02") {
+	// Compact: emoji <b>desc</b> · sign€amount · DD/MM/YYYY
+	if !strings.Contains(result, "🛒 <b>Grocery Shopping</b> · -€45.00 · 10/02/2026") {
 		t.Errorf("missing compact grocery expense line, got:\n%s", result)
 	}
-	if !strings.Contains(result, "💵 <b>January Salary</b> · +€3000.00 · 01/02") {
+	if !strings.Contains(result, "💵 <b>January Salary</b> · +€3000.00 · 01/02/2026") {
 		t.Errorf("missing compact salary income line, got:\n%s", result)
 	}
 }
