@@ -274,6 +274,33 @@ func (db *DB) GetUserTransactionsPaginated(tgID int64, offset, limit int) ([]mod
 	return transactions, total, nil
 }
 
+// GetUserTransactionsByTypePaginated retrieves paginated transactions for a user filtered by type
+func (db *DB) GetUserTransactionsByTypePaginated(tgID int64, transactionType model.TransactionType, offset, limit int) ([]model.Transaction, int64, error) {
+	var transactions []model.Transaction
+	var total int64
+
+	// Get total count
+	err := db.conn.Model(&model.Transaction{}).
+		Where("tg_id = ? AND type = ?", tgID, transactionType).
+		Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Get paginated results
+	result := db.conn.Where("tg_id = ? AND type = ?", tgID, transactionType).
+		Order("date DESC").
+		Offset(offset).
+		Limit(limit).
+		Find(&transactions)
+
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+
+	return transactions, total, nil
+}
+
 // SearchUserTransactions searches transactions by description with optional category filter
 func (db *DB) SearchUserTransactions(tgID int64, searchQuery string, category string, offset, limit int) ([]model.Transaction, int64, error) {
 	var transactions []model.Transaction

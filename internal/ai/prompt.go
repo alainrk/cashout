@@ -97,6 +97,7 @@ Available intents (use ONLY these exact strings):
 - "month_recap": User wants to see a monthly summary/recap
 - "year_recap": User wants to see a yearly summary/recap
 - "export": User wants to export/download transactions (CSV, file)
+- "clone": User wants to clone/duplicate/repeat/copy an existing transaction
 - "unknown": Cannot determine the intent or it doesn't match any of the above
 
 Classification rules:
@@ -109,7 +110,8 @@ Classification rules:
 7. List-related words: list, show all, view, display, transactions, history
 8. Recap-related words: recap, summary, overview, total, how much
 9. Export-related words: export, download, CSV, file, backup
-10. If the message is a greeting, question about the bot, or unrelated to finance, use "unknown"
+10. Clone-related words: clone, duplicate, repeat, copy, same again, re-enter
+11. If the message is a greeting, question about the bot, or unrelated to finance, use "unknown"
 
 Format the result as a JSON object:
 { "intent": "intent_name", "confidence": 0.95 }

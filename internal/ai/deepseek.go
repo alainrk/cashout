@@ -45,6 +45,7 @@ const (
 	IntentMonthRecap Intent = "month_recap"
 	IntentYearRecap  Intent = "year_recap"
 	IntentExport     Intent = "export"
+	IntentClone      Intent = "clone"
 	IntentUnknown    Intent = "unknown"
 )
 
@@ -297,7 +298,7 @@ func (llm *LLM) ClassifyIntent(userText string) (ClassifiedIntent, error) {
 	// Validate the intent
 	switch result.Intent {
 	case IntentAddExpense, IntentAddIncome, IntentEdit, IntentDelete, IntentSearch,
-		IntentList, IntentWeekRecap, IntentMonthRecap, IntentYearRecap, IntentExport:
+		IntentList, IntentWeekRecap, IntentMonthRecap, IntentYearRecap, IntentExport, IntentClone:
 		// Valid intent
 	default:
 		result.Intent = IntentUnknown
