@@ -85,6 +85,11 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 		return c.DeleteSearchQueryEntered(b, ctx)
 	}
 
+	// Clone search-related states.
+	if user.Session.State == model.StateEnteringCloneSearchQuery {
+		return c.CloneSearchQueryEntered(b, ctx)
+	}
+
 	// Free text top level case: use LLM to classify user intent.
 	return c.classifyAndRouteIntent(b, ctx, user)
 }
@@ -149,6 +154,9 @@ func (c *Client) classifyAndRouteIntent(b *gotgbot.Bot, ctx *ext.Context, user m
 
 	case ai.IntentExport:
 		return c.ExportTransactions(b, ctx)
+
+	case ai.IntentClone:
+		return c.CloneTransactions(b, ctx)
 
 	default:
 		// Unknown intent - show help

@@ -6,8 +6,8 @@ on:
   pull_request:
 
 env:
-  GO_VERSION: "1.24"
-  GOLANGCI_LINT_VERSION: "v2.2.1"
+  GO_VERSION: "1.26"
+  GOLANGCI_LINT_VERSION: "v2.9.0"
 
 jobs:
   lint:
@@ -28,8 +28,6 @@ jobs:
         with:
           version: ${{ env.GOLANGCI_LINT_VERSION }}
           skip-cache: true
-          skip-pkg-cache: true
-          skip-build-cache: true
 
       - name: Run linter
         run: make lint

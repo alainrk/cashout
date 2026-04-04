@@ -30,6 +30,7 @@ func (c *Client) SendHomeKeyboard(b *gotgbot.Bot, ctx *ext.Context, text string)
 		},
 		{
 			{Text: "✏️ Edit", CallbackData: "home.edit"},
+			{Text: "📋 Clone", CallbackData: "home.clone"},
 			{Text: "🗑 Delete", CallbackData: "home.delete"},
 		},
 		{
@@ -182,6 +183,7 @@ func (c *Client) sendRecapWithNavigation(b *gotgbot.Bot, ctx *ext.Context, text 
 		},
 		{
 			{Text: "✏️ Edit", CallbackData: "home.edit"},
+			{Text: "📋 Clone", CallbackData: "home.clone"},
 			{Text: "🗑 Delete", CallbackData: "home.delete"},
 		},
 		{

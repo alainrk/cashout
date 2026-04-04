@@ -373,15 +373,15 @@ func formatSearchResults(transactions []model.Transaction, searchQuery, category
 
 	// Show query unless it's a wildcard "Show All"
 	if searchQuery != "%" {
-		msg.WriteString(fmt.Sprintf("Query: \"%s\"", searchQuery))
+		fmt.Fprintf(&msg, "Query: \"%s\"", searchQuery)
 	}
 
 	if category != "all" {
 		emoji := utils.GetCategoryEmoji(model.TransactionCategory(category))
-		msg.WriteString(fmt.Sprintf(" in %s %s", emoji, category))
+		fmt.Fprintf(&msg, " in %s %s", emoji, category)
 	}
 
-	msg.WriteString(fmt.Sprintf("\nShowing %d–%d of %d\n\n", offset+1, offset+len(transactions), total))
+	fmt.Fprintf(&msg, "\nShowing %d–%d of %d\n\n", offset+1, offset+len(transactions), total)
 
 	for _, t := range transactions {
 		emoji := utils.GetCategoryEmoji(t.Category)
@@ -398,8 +398,8 @@ func formatSearchResults(transactions []model.Transaction, searchQuery, category
 			}
 		}
 
-		msg.WriteString(fmt.Sprintf("%s %s · %s€%.2f · %s\n",
-			emoji, desc, sign, t.Amount, t.Date.Format("02/01/2006")))
+		fmt.Fprintf(&msg, "%s %s · %s€%.2f · %s\n",
+			emoji, desc, sign, t.Amount, t.Date.Format("02/01/2006"))
 	}
 
 	return msg.String()
@@ -412,10 +412,7 @@ func createSearchPaginationKeyboard(category, searchQuery string, offset, limit,
 
 	// Previous page button
 	if offset > 0 {
-		prevOffset := offset - limit
-		if prevOffset < 0 {
-			prevOffset = 0
-		}
+		prevOffset := max(offset-limit, 0)
 		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
 			Text:         "⬅️ Previous",
 			CallbackData: fmt.Sprintf("search.page.%s.%d.%s", category, prevOffset, searchQuery),

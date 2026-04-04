@@ -40,6 +40,10 @@ const (
 	// Delete search-related states
 	StateSelectingDeleteSearchCategory StateType = "selecting_delete_search_category"
 	StateEnteringDeleteSearchQuery     StateType = "entering_delete_search_query"
+	// Clone-related states
+	StateSelectingCloneTransaction    StateType = "selecting_clone_transaction"
+	StateSelectingCloneSearchCategory StateType = "selecting_clone_search_category"
+	StateEnteringCloneSearchQuery     StateType = "entering_clone_search_query"
 	// The user has to confirm an action.
 	StateWaitingConfirm StateType = "waiting_confirm"
 	// The user is editing a newly added transaction.

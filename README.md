@@ -96,7 +96,7 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
 
 ### Prerequisites
 
-- Go 1.24 or higher
+- Go 1.26 or higher
 - PostgreSQL Database
 - Access to an OpenAI-compatible API model, with its API Key and Endpoint (e.g. DeepSeek, OpenAI, etc.)
 

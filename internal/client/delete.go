@@ -264,7 +264,7 @@ func (c *Client) showDeletableTransactionPage(b *gotgbot.Bot, ctx *ext.Context, 
 func formatDeletableTransactions(transactions []model.Transaction, offset, total int) string {
 	var msg strings.Builder
 	msg.WriteString("<b>🗑 Delete Transaction</b>\n")
-	msg.WriteString(fmt.Sprintf("Showing %d–%d of %d\n\n", offset+1, offset+len(transactions), total))
+	fmt.Fprintf(&msg, "Showing %d–%d of %d\n\n", offset+1, offset+len(transactions), total)
 
 	for i, t := range transactions {
 		emoji := utils.GetCategoryEmoji(t.Category)
@@ -272,8 +272,8 @@ func formatDeletableTransactions(transactions []model.Transaction, offset, total
 		if t.Type == model.TypeIncome {
 			sign = "+"
 		}
-		msg.WriteString(fmt.Sprintf("%d. %s %s · %s€%.2f · %s\n",
-			i+1, emoji, t.Description, sign, t.Amount, t.Date.Format("02/01/2006")))
+		fmt.Fprintf(&msg, "%d. %s %s · %s€%.2f · %s\n",
+			i+1, emoji, t.Description, sign, t.Amount, t.Date.Format("02/01/2006"))
 	}
 
 	msg.WriteString("\nTap a number to delete.")
@@ -316,10 +316,7 @@ func createDeletionPaginationKeyboard(transactions []model.Transaction, offset, 
 			CallbackData: "delete.noop",
 		})
 		if offset > 0 {
-			prevOffset := offset - limit
-			if prevOffset < 0 {
-				prevOffset = 0
-			}
+			prevOffset := max(offset-limit, 0)
 			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
 				Text:         "Next ➡️",
 				CallbackData: fmt.Sprintf("delete.page.%d", prevOffset),
@@ -633,15 +630,15 @@ func formatDeleteSearchResults(transactions []model.Transaction, searchQuery, ca
 	msg.WriteString("🗑️ <b>Delete Transaction</b>\n")
 
 	if searchQuery != "%" {
-		msg.WriteString(fmt.Sprintf("Query: \"%s\"", searchQuery))
+		fmt.Fprintf(&msg, "Query: \"%s\"", searchQuery)
 	}
 
 	if category != "all" {
 		emoji := utils.GetCategoryEmoji(model.TransactionCategory(category))
-		msg.WriteString(fmt.Sprintf(" in %s %s", emoji, category))
+		fmt.Fprintf(&msg, " in %s %s", emoji, category)
 	}
 
-	msg.WriteString(fmt.Sprintf("\nShowing %d–%d of %d\n\n", offset+1, offset+len(transactions), total))
+	fmt.Fprintf(&msg, "\nShowing %d–%d of %d\n\n", offset+1, offset+len(transactions), total)
 
 	for i, t := range transactions {
 		emoji := utils.GetCategoryEmoji(t.Category)
@@ -657,8 +654,8 @@ func formatDeleteSearchResults(transactions []model.Transaction, searchQuery, ca
 			}
 		}
 
-		msg.WriteString(fmt.Sprintf("%d. %s %s · %s€%.2f · %s\n",
-			i+1, emoji, desc, sign, t.Amount, t.Date.Format("02/01/2006")))
+		fmt.Fprintf(&msg, "%d. %s %s · %s€%.2f · %s\n",
+			i+1, emoji, desc, sign, t.Amount, t.Date.Format("02/01/2006"))
 	}
 
 	msg.WriteString("\nTap a number to delete.")
