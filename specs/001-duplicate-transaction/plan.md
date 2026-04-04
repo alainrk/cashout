@@ -9,7 +9,7 @@ Add a "Clone" flow to the Telegram bot allowing users to duplicate existing tran
 
 ## Technical Context
 
-**Language/Version**: Go 1.24  
+**Language/Version**: Go 1.26  
 **Primary Dependencies**: gotgbot/v2 (Telegram bot framework), GORM (ORM), OpenAI-compatible LLM  
 **Storage**: PostgreSQL with JSONB session column  
 **Testing**: Manual Telegram bot testing (no test framework currently in use)  
