@@ -863,10 +863,7 @@ func createEditPaginationKeyboard(transactions []model.Transaction, offset, limi
 			CallbackData: "edit.noop",
 		})
 		if offset > 0 {
-			prevOffset := offset - limit
-			if prevOffset < 0 {
-				prevOffset = 0
-			}
+			prevOffset := max(offset-limit, 0)
 			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
 				Text:         "Next ➡️",
 				CallbackData: fmt.Sprintf("edit.page.%d", prevOffset),

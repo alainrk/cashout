@@ -54,10 +54,7 @@ func (s *Seeder) SeedTransactions() error {
 	fmt.Printf("Inserting %d transactions...\n", len(transactions))
 	batchSize := 100
 	for i := 0; i < len(transactions); i += batchSize {
-		end := i + batchSize
-		if end > len(transactions) {
-			end = len(transactions)
-		}
+		end := min(i+batchSize, len(transactions))
 
 		batch := transactions[i:end]
 		for _, t := range batch {
@@ -124,7 +121,7 @@ func (s *Seeder) generateTransactions(startDate, endDate time.Time) []model.Tran
 		// Random number of transactions per day (0-3)
 		numTransactions := rand.Intn(4)
 
-		for i := 0; i < numTransactions; i++ {
+		for range numTransactions {
 			// 90% chance of expense, 10% chance of income
 			isExpense := rand.Float32() < 0.9
 

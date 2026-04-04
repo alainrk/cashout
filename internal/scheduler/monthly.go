@@ -193,10 +193,7 @@ func (s *Scheduler) generateMonthlyRecapMessage(user model.User, totals map[int]
 			})
 
 			// Display top 5 categories
-			limit := 5
-			if len(categories) < limit {
-				limit = len(categories)
-			}
+			limit := min(len(categories), 5)
 
 			for i := 0; i < limit; i++ {
 				entry := categories[i]

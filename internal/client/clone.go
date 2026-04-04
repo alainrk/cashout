@@ -550,10 +550,7 @@ func createCloneRecentKeyboard(transactions []model.Transaction, offset, limit, 
 			CallbackData: "clone.noop",
 		})
 		if offset > 0 {
-			prevOffset := offset - limit
-			if prevOffset < 0 {
-				prevOffset = 0
-			}
+			prevOffset := max(offset-limit, 0)
 			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
 				Text:         "Next ➡️",
 				CallbackData: fmt.Sprintf("clone.page.%d", prevOffset),

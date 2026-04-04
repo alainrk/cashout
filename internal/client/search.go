@@ -412,10 +412,7 @@ func createSearchPaginationKeyboard(category, searchQuery string, offset, limit,
 
 	// Previous page button
 	if offset > 0 {
-		prevOffset := offset - limit
-		if prevOffset < 0 {
-			prevOffset = 0
-		}
+		prevOffset := max(offset-limit, 0)
 		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
 			Text:         "⬅️ Previous",
 			CallbackData: fmt.Sprintf("search.page.%s.%d.%s", category, prevOffset, searchQuery),

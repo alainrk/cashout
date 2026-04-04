@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"slices"
 	"strings"
 	"testing"
 )
@@ -43,13 +44,7 @@ func TestCloneIntentValidation(t *testing.T) {
 		IntentList, IntentWeekRecap, IntentMonthRecap, IntentYearRecap, IntentExport, IntentClone,
 	}
 
-	found := false
-	for _, intent := range validIntents {
-		if intent == IntentClone {
-			found = true
-			break
-		}
-	}
+	found := slices.Contains(validIntents, IntentClone)
 	if !found {
 		t.Error("IntentClone not in valid intents list")
 	}

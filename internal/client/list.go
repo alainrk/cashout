@@ -401,10 +401,7 @@ func createPaginationKeyboard(year, month, offset, limit, total int, category st
 	if total > 0 {
 		// Previous page button
 		if offset > 0 {
-			prevOffset := offset - limit
-			if prevOffset < 0 {
-				prevOffset = 0
-			}
+			prevOffset := max(offset-limit, 0)
 			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
 				Text:         "⬅️ Previous",
 				CallbackData: fmt.Sprintf("list.page.%d.%02d.%d.%s", year, month, prevOffset, category),

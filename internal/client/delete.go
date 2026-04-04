@@ -316,10 +316,7 @@ func createDeletionPaginationKeyboard(transactions []model.Transaction, offset, 
 			CallbackData: "delete.noop",
 		})
 		if offset > 0 {
-			prevOffset := offset - limit
-			if prevOffset < 0 {
-				prevOffset = 0
-			}
+			prevOffset := max(offset-limit, 0)
 			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
 				Text:         "Next ➡️",
 				CallbackData: fmt.Sprintf("delete.page.%d", prevOffset),
