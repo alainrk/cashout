@@ -58,73 +58,11 @@ func (c *Client) showRecentExpensesForClone(b *gotgbot.Bot, ctx *ext.Context, us
 		return SendMessage(ctx, b, message, keyboard)
 	}
 
-	// Format transactions
-	var msg strings.Builder
-	msg.WriteString("📋 <b>Clone Transaction</b>\n")
-	msg.WriteString(fmt.Sprintf("Recent expenses — %d–%d of %d\n\n", offset+1, offset+len(transactions), total))
+	// Format transactions and build keyboard
+	msg := formatCloneRecentExpenses(transactions, offset, int(total))
+	keyboard := createCloneRecentKeyboard(transactions, offset, limit, int(total))
 
-	for i, t := range transactions {
-		emoji := utils.GetCategoryEmoji(t.Category)
-		msg.WriteString(fmt.Sprintf("%d. %s %s · €%.2f · %s\n",
-			i+1, emoji, t.Description, t.Amount, t.Date.Format("02/01/2006")))
-	}
-
-	msg.WriteString("\nTap a number to clone it with today's date.")
-
-	// Build keyboard
-	var keyboard [][]gotgbot.InlineKeyboardButton
-
-	// Numbered selection buttons (rows of 5)
-	var row []gotgbot.InlineKeyboardButton
-	for i, t := range transactions {
-		row = append(row, gotgbot.InlineKeyboardButton{
-			Text:         fmt.Sprintf("%d", i+1),
-			CallbackData: fmt.Sprintf("clone.select.%d", t.ID),
-		})
-		if len(row) == 5 {
-			keyboard = append(keyboard, row)
-			row = []gotgbot.InlineKeyboardButton{}
-		}
-	}
-	if len(row) > 0 {
-		keyboard = append(keyboard, row)
-	}
-
-	// Navigation row with page indicator
-	if total > int64(limit) {
-		var navigationRow []gotgbot.InlineKeyboardButton
-		if offset+limit < int(total) {
-			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
-				Text:         "⬅️ Previous",
-				CallbackData: fmt.Sprintf("clone.page.%d", offset+limit),
-			})
-		}
-		currentPage := (offset / limit) + 1
-		totalPages := (int(total) + limit - 1) / limit
-		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
-			Text:         fmt.Sprintf("%d/%d", currentPage, totalPages),
-			CallbackData: "clone.noop",
-		})
-		if offset > 0 {
-			prevOffset := offset - limit
-			if prevOffset < 0 {
-				prevOffset = 0
-			}
-			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
-				Text:         "Next ➡️",
-				CallbackData: fmt.Sprintf("clone.page.%d", prevOffset),
-			})
-		}
-		keyboard = append(keyboard, navigationRow)
-	}
-
-	// Search More + Cancel
-	keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
-		{Text: "🔍 Search More", CallbackData: "clone.searchmore"},
-		{Text: "❌ Cancel", CallbackData: "transactions.cancel"},
-	})
-
-	return SendMessage(ctx, b, msg.String(), keyboard)
+	return SendMessage(ctx, b, msg, keyboard)
 }
 
 // CloneTransactionSelected handles selection of a transaction to clone from the recent list
@@ -448,85 +386,10 @@ func (c *Client) showCloneSearchResults(b *gotgbot.Bot, ctx *ext.Context, user m
 		return SendMessage(ctx, b, message, keyboard)
 	}
 
-	// Format results
-	var msg strings.Builder
-	msg.WriteString("📋 <b>Clone Transaction</b>\n")
-	if searchQuery != "%" {
-		msg.WriteString(fmt.Sprintf("Query: \"%s\"", searchQuery))
-	}
-	if category != "all" {
-		emoji := utils.GetCategoryEmoji(model.TransactionCategory(category))
-		msg.WriteString(fmt.Sprintf(" in %s %s", emoji, category))
-	}
-	msg.WriteString(fmt.Sprintf("\nShowing %d–%d of %d\n\n", offset+1, offset+len(transactions), total))
+	message := formatCloneSearchResults(transactions, searchQuery, category, offset, int(total))
+	keyboard := createCloneSearchKeyboard(transactions, category, searchQuery, offset, limit, int(total))
 
-	for i, t := range transactions {
-		emoji := utils.GetCategoryEmoji(t.Category)
-		sign := "-"
-		if t.Type == model.TypeIncome {
-			sign = "+"
-		}
-		desc := t.Description
-		if searchQuery != "%" {
-			if idx := strings.Index(strings.ToLower(desc), strings.ToLower(searchQuery)); idx != -1 {
-				desc = desc[:idx] + "<b>" + desc[idx:idx+len(searchQuery)] + "</b>" + desc[idx+len(searchQuery):]
-			}
-		}
-		msg.WriteString(fmt.Sprintf("%d. %s %s · %s€%.2f · %s\n",
-			i+1, emoji, desc, sign, t.Amount, t.Date.Format("02/01/2006")))
-	}
-
-	msg.WriteString("\nTap a number to clone it with today's date.")
-
-	// Build keyboard
-	var keyboard [][]gotgbot.InlineKeyboardButton
-
-	// Numbered selection buttons
-	var row []gotgbot.InlineKeyboardButton
-	for i, t := range transactions {
-		row = append(row, gotgbot.InlineKeyboardButton{
-			Text:         fmt.Sprintf("%d", i+1),
-			CallbackData: fmt.Sprintf("clone.search.select.%d", t.ID),
-		})
-		if len(row) == 5 {
-			keyboard = append(keyboard, row)
-			row = []gotgbot.InlineKeyboardButton{}
-		}
-	}
-	if len(row) > 0 {
-		keyboard = append(keyboard, row)
-	}
-
-	// Navigation
-	if total > int64(limit) {
-		var navigationRow []gotgbot.InlineKeyboardButton
-		if offset > 0 {
-			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
-				Text:         "⬅️ Previous",
-				CallbackData: fmt.Sprintf("clone.search.page.%s.%d.%s", category, max(offset-limit, 0), searchQuery),
-			})
-		}
-		currentPage := (offset / limit) + 1
-		totalPages := (int(total) + limit - 1) / limit
-		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
-			Text:         fmt.Sprintf("%d/%d", currentPage, totalPages),
-			CallbackData: "clone.search.noop",
-		})
-		if offset+limit < int(total) {
-			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
-				Text:         "Next ➡️",
-				CallbackData: fmt.Sprintf("clone.search.page.%s.%d.%s", category, offset+limit, searchQuery),
-			})
-		}
-		keyboard = append(keyboard, navigationRow)
-	}
-
-	keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
-		{Text: "🔍 New Search", CallbackData: "clone.search.new"},
-		{Text: "🏠 Home", CallbackData: "clone.search.home"},
-	})
-
-	return SendMessage(ctx, b, msg.String(), keyboard)
+	return SendMessage(ctx, b, message, keyboard)
 }
 
 // CloneSearchTransactionSelected handles transaction selection from search results
@@ -631,4 +494,164 @@ func (c *Client) CloneSearchCancel(b *gotgbot.Bot, ctx *ext.Context) error {
 // CloneSearchHome returns to the home screen
 func (c *Client) CloneSearchHome(b *gotgbot.Bot, ctx *ext.Context) error {
 	return c.SendHomeKeyboard(b, ctx, "What can I do for you?")
+}
+
+// --- Extracted pure functions for formatting and keyboard building (testable) ---
+
+// formatCloneRecentExpenses formats the recent expenses list for the clone UI
+func formatCloneRecentExpenses(transactions []model.Transaction, offset, total int) string {
+	var msg strings.Builder
+	msg.WriteString("📋 <b>Clone Transaction</b>\n")
+	msg.WriteString(fmt.Sprintf("Recent expenses — %d–%d of %d\n\n", offset+1, offset+len(transactions), total))
+
+	for i, t := range transactions {
+		emoji := utils.GetCategoryEmoji(t.Category)
+		msg.WriteString(fmt.Sprintf("%d. %s %s · €%.2f · %s\n",
+			i+1, emoji, t.Description, t.Amount, t.Date.Format("02/01/2006")))
+	}
+
+	msg.WriteString("\nTap a number to clone it with today's date.")
+	return msg.String()
+}
+
+// createCloneRecentKeyboard creates the keyboard for the recent expenses clone list
+func createCloneRecentKeyboard(transactions []model.Transaction, offset, limit, total int) [][]gotgbot.InlineKeyboardButton {
+	var keyboard [][]gotgbot.InlineKeyboardButton
+
+	// Numbered selection buttons (rows of 5)
+	var row []gotgbot.InlineKeyboardButton
+	for i, t := range transactions {
+		row = append(row, gotgbot.InlineKeyboardButton{
+			Text:         fmt.Sprintf("%d", i+1),
+			CallbackData: fmt.Sprintf("clone.select.%d", t.ID),
+		})
+		if len(row) == 5 {
+			keyboard = append(keyboard, row)
+			row = []gotgbot.InlineKeyboardButton{}
+		}
+	}
+	if len(row) > 0 {
+		keyboard = append(keyboard, row)
+	}
+
+	// Navigation row with page indicator
+	if total > limit {
+		var navigationRow []gotgbot.InlineKeyboardButton
+		if offset+limit < total {
+			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
+				Text:         "⬅️ Previous",
+				CallbackData: fmt.Sprintf("clone.page.%d", offset+limit),
+			})
+		}
+		currentPage := (offset / limit) + 1
+		totalPages := (total + limit - 1) / limit
+		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
+			Text:         fmt.Sprintf("%d/%d", currentPage, totalPages),
+			CallbackData: "clone.noop",
+		})
+		if offset > 0 {
+			prevOffset := offset - limit
+			if prevOffset < 0 {
+				prevOffset = 0
+			}
+			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
+				Text:         "Next ➡️",
+				CallbackData: fmt.Sprintf("clone.page.%d", prevOffset),
+			})
+		}
+		keyboard = append(keyboard, navigationRow)
+	}
+
+	// Search More + Cancel
+	keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
+		{Text: "🔍 Search More", CallbackData: "clone.searchmore"},
+		{Text: "❌ Cancel", CallbackData: "transactions.cancel"},
+	})
+
+	return keyboard
+}
+
+// formatCloneSearchResults formats the search results for the clone UI
+func formatCloneSearchResults(transactions []model.Transaction, searchQuery, category string, offset, total int) string {
+	var msg strings.Builder
+	msg.WriteString("📋 <b>Clone Transaction</b>\n")
+	if searchQuery != "%" {
+		msg.WriteString(fmt.Sprintf("Query: \"%s\"", searchQuery))
+	}
+	if category != "all" {
+		emoji := utils.GetCategoryEmoji(model.TransactionCategory(category))
+		msg.WriteString(fmt.Sprintf(" in %s %s", emoji, category))
+	}
+	msg.WriteString(fmt.Sprintf("\nShowing %d–%d of %d\n\n", offset+1, offset+len(transactions), total))
+
+	for i, t := range transactions {
+		emoji := utils.GetCategoryEmoji(t.Category)
+		sign := "-"
+		if t.Type == model.TypeIncome {
+			sign = "+"
+		}
+		desc := t.Description
+		if searchQuery != "%" {
+			if idx := strings.Index(strings.ToLower(desc), strings.ToLower(searchQuery)); idx != -1 {
+				desc = desc[:idx] + "<b>" + desc[idx:idx+len(searchQuery)] + "</b>" + desc[idx+len(searchQuery):]
+			}
+		}
+		msg.WriteString(fmt.Sprintf("%d. %s %s · %s€%.2f · %s\n",
+			i+1, emoji, desc, sign, t.Amount, t.Date.Format("02/01/2006")))
+	}
+
+	msg.WriteString("\nTap a number to clone it with today's date.")
+	return msg.String()
+}
+
+// createCloneSearchKeyboard creates the keyboard for the clone search results
+func createCloneSearchKeyboard(transactions []model.Transaction, category, searchQuery string, offset, limit, total int) [][]gotgbot.InlineKeyboardButton {
+	var keyboard [][]gotgbot.InlineKeyboardButton
+
+	// Numbered selection buttons
+	var row []gotgbot.InlineKeyboardButton
+	for i, t := range transactions {
+		row = append(row, gotgbot.InlineKeyboardButton{
+			Text:         fmt.Sprintf("%d", i+1),
+			CallbackData: fmt.Sprintf("clone.search.select.%d", t.ID),
+		})
+		if len(row) == 5 {
+			keyboard = append(keyboard, row)
+			row = []gotgbot.InlineKeyboardButton{}
+		}
+	}
+	if len(row) > 0 {
+		keyboard = append(keyboard, row)
+	}
+
+	// Navigation
+	if total > limit {
+		var navigationRow []gotgbot.InlineKeyboardButton
+		if offset > 0 {
+			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
+				Text:         "⬅️ Previous",
+				CallbackData: fmt.Sprintf("clone.search.page.%s.%d.%s", category, max(offset-limit, 0), searchQuery),
+			})
+		}
+		currentPage := (offset / limit) + 1
+		totalPages := (total + limit - 1) / limit
+		navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
+			Text:         fmt.Sprintf("%d/%d", currentPage, totalPages),
+			CallbackData: "clone.search.noop",
+		})
+		if offset+limit < total {
+			navigationRow = append(navigationRow, gotgbot.InlineKeyboardButton{
+				Text:         "Next ➡️",
+				CallbackData: fmt.Sprintf("clone.search.page.%s.%d.%s", category, offset+limit, searchQuery),
+			})
+		}
+		keyboard = append(keyboard, navigationRow)
+	}
+
+	keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
+		{Text: "🔍 New Search", CallbackData: "clone.search.new"},
+		{Text: "🏠 Home", CallbackData: "clone.search.home"},
+	})
+
+	return keyboard
 }
