@@ -376,8 +376,8 @@ func formatTransactions(year, month int, transactions []model.Transaction, offse
 		headerCategory = fmt.Sprintf(" · %s %s", emoji, category)
 	}
 
-	msg.WriteString(fmt.Sprintf("📊 <b>%s %d</b>%s\n", time.Month(month).String(), year, headerCategory))
-	msg.WriteString(fmt.Sprintf("Showing %d–%d of %d\n\n", offset+1, offset+len(transactions), total))
+	fmt.Fprintf(&msg, "📊 <b>%s %d</b>%s\n", time.Month(month).String(), year, headerCategory)
+	fmt.Fprintf(&msg, "Showing %d–%d of %d\n\n", offset+1, offset+len(transactions), total)
 
 	for _, t := range transactions {
 		emoji := utils.GetCategoryEmoji(t.Category)
@@ -385,8 +385,8 @@ func formatTransactions(year, month int, transactions []model.Transaction, offse
 		if t.Type == model.TypeIncome {
 			sign = "+"
 		}
-		msg.WriteString(fmt.Sprintf("%s <b>%s</b> · %s€%.2f · %s\n",
-			emoji, t.Description, sign, t.Amount, t.Date.Format("02/01/2006")))
+		fmt.Fprintf(&msg, "%s <b>%s</b> · %s€%.2f · %s\n",
+			emoji, t.Description, sign, t.Amount, t.Date.Format("02/01/2006"))
 	}
 
 	return msg.String()

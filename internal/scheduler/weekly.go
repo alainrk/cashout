@@ -159,10 +159,10 @@ func (s *Scheduler) generateWeeklyRecapMessage(user model.User, transactions []m
 	var text strings.Builder
 
 	// Header
-	text.WriteString(fmt.Sprintf("🗓 <b>%s, here's your weekly recap!</b>\n\n", user.Name))
-	text.WriteString(fmt.Sprintf("📊 <b>Week %s - %s</b>\n\n",
+	fmt.Fprintf(&text, "🗓 <b>%s, here's your weekly recap!</b>\n\n", user.Name)
+	fmt.Fprintf(&text, "📊 <b>Week %s - %s</b>\n\n",
 		startOfWeek.Format("02 Jan"),
-		endOfWeek.Format("02 Jan")))
+		endOfWeek.Format("02 Jan"))
 
 	if len(transactions) == 0 {
 		text.WriteString("You had no transactions last week.\n\n")
@@ -199,12 +199,12 @@ func (s *Scheduler) generateWeeklyRecapMessage(user model.User, transactions []m
 	// Summary section
 	if expenseAmount, ok := typeTotals[model.TypeExpense]; ok && expenseAmount > 0 {
 		weekTotal -= expenseAmount
-		text.WriteString(fmt.Sprintf("💸 <b>Total Expenses:</b> %.2f€\n", expenseAmount))
+		fmt.Fprintf(&text, "💸 <b>Total Expenses:</b> %.2f€\n", expenseAmount)
 	}
 
 	if incomeAmount, ok := typeTotals[model.TypeIncome]; ok && incomeAmount > 0 {
 		weekTotal += incomeAmount
-		text.WriteString(fmt.Sprintf("💰 <b>Total Income:</b> %.2f€\n", incomeAmount))
+		fmt.Fprintf(&text, "💰 <b>Total Income:</b> %.2f€\n", incomeAmount)
 	}
 
 	// Balance
@@ -214,7 +214,7 @@ func (s *Scheduler) generateWeeklyRecapMessage(user model.User, transactions []m
 	} else {
 		balanceEmoji = "❌"
 	}
-	text.WriteString(fmt.Sprintf("\n%s <b>Week Balance:</b> %.2f€\n", balanceEmoji, weekTotal))
+	fmt.Fprintf(&text, "\n%s <b>Week Balance:</b> %.2f€\n", balanceEmoji, weekTotal)
 
 	// Top expense categories (if any)
 	if expenseCats := categoryTotals[model.TypeExpense]; len(expenseCats) > 0 {
@@ -245,14 +245,14 @@ func (s *Scheduler) generateWeeklyRecapMessage(user model.User, transactions []m
 		}
 		for i := 0; i < limit; i++ {
 			emoji := utils.GetCategoryEmoji(sorted[i].cat)
-			text.WriteString(fmt.Sprintf("  %s %s: %.2f€\n", emoji, sorted[i].cat, sorted[i].amount))
+			fmt.Fprintf(&text, "  %s %s: %.2f€\n", emoji, sorted[i].cat, sorted[i].amount)
 		}
 	}
 
 	// Average daily spending
 	if expenseAmount, ok := typeTotals[model.TypeExpense]; ok && expenseAmount > 0 {
 		avgDaily := expenseAmount / 7
-		text.WriteString(fmt.Sprintf("\n📈 <b>Avg Daily Spending:</b> %.2f€\n", avgDaily))
+		fmt.Fprintf(&text, "\n📈 <b>Avg Daily Spending:</b> %.2f€\n", avgDaily)
 	}
 
 	text.WriteString("\n💡 <i>Type /week to see this week's progress!</i>")

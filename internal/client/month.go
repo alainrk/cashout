@@ -194,12 +194,12 @@ func (c *Client) showMonthRecap(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 	var monthTotal float64
 
 	// Header with month name
-	text.WriteString(fmt.Sprintf("📊 <b>%s %d Summary</b>\n\n", time.Month(month).String(), year))
+	fmt.Fprintf(&text, "📊 <b>%s %d Summary</b>\n\n", time.Month(month).String(), year)
 
 	// --- EXPENSES SECTION ---
 	if expenseAmount, ok := t[model.TypeExpense]; ok && expenseAmount > 0 {
 		monthTotal -= expenseAmount
-		text.WriteString(fmt.Sprintf("💸 <b>Expenses:</b> %.2f€\n", expenseAmount))
+		fmt.Fprintf(&text, "💸 <b>Expenses:</b> %.2f€\n", expenseAmount)
 
 		// Add category breakdown for expenses
 		if expenseCats, ok := categoryTotals[model.TypeExpense]; ok && len(expenseCats) > 0 {
@@ -226,8 +226,8 @@ func (c *Client) showMonthRecap(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 			for _, entry := range categories {
 				emoji := utils.GetCategoryEmoji(entry.Category)
 				percentage := (entry.Amount / expenseAmount) * 100
-				text.WriteString(fmt.Sprintf("  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
-					emoji, entry.Category, entry.Amount, percentage))
+				fmt.Fprintf(&text, "  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
+					emoji, entry.Category, entry.Amount, percentage)
 			}
 			text.WriteString("\n")
 		}
@@ -236,7 +236,7 @@ func (c *Client) showMonthRecap(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 	// --- INCOME SECTION ---
 	if incomeAmount, ok := t[model.TypeIncome]; ok && incomeAmount > 0 {
 		monthTotal += incomeAmount
-		text.WriteString(fmt.Sprintf("💰 <b>Income:</b> %.2f€\n", incomeAmount))
+		fmt.Fprintf(&text, "💰 <b>Income:</b> %.2f€\n", incomeAmount)
 
 		// Add category breakdown for income
 		if incomeCats, ok := categoryTotals[model.TypeIncome]; ok && len(incomeCats) > 0 {
@@ -263,8 +263,8 @@ func (c *Client) showMonthRecap(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 			for _, entry := range categories {
 				emoji := utils.GetCategoryEmoji(entry.Category)
 				percentage := (entry.Amount / incomeAmount) * 100
-				text.WriteString(fmt.Sprintf("  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
-					emoji, entry.Category, entry.Amount, percentage))
+				fmt.Fprintf(&text, "  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
+					emoji, entry.Category, entry.Amount, percentage)
 			}
 			text.WriteString("\n")
 		}
@@ -278,7 +278,7 @@ func (c *Client) showMonthRecap(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 		balanceEmoji = "❌"
 	}
 
-	text.WriteString(fmt.Sprintf("\n%s <b>Month Balance:</b> %.2f€", balanceEmoji, monthTotal))
+	fmt.Fprintf(&text, "\n%s <b>Month Balance:</b> %.2f€", balanceEmoji, monthTotal)
 
 	return c.sendRecapWithNavigation(b, ctx, text.String(), "month", year, month)
 }

@@ -156,12 +156,12 @@ func (s *Scheduler) generateMonthlyRecapMessage(user model.User, totals map[int]
 	var monthTotal float64
 
 	// Header
-	text.WriteString(fmt.Sprintf("📅 <b>%s, here's your monthly recap!</b>\n\n", user.Name))
-	text.WriteString(fmt.Sprintf("📊 <b>%s %d Summary</b>\n\n", time.Month(month).String(), year))
+	fmt.Fprintf(&text, "📅 <b>%s, here's your monthly recap!</b>\n\n", user.Name)
+	fmt.Fprintf(&text, "📊 <b>%s %d Summary</b>\n\n", time.Month(month).String(), year)
 
 	t, ok := totals[month]
 	if !ok {
-		text.WriteString(fmt.Sprintf("You had no transactions in %s %d.\n\n", time.Month(month).String(), year))
+		fmt.Fprintf(&text, "You had no transactions in %s %d.\n\n", time.Month(month).String(), year)
 		text.WriteString("💡 <i>Start tracking your expenses to get insights!</i>")
 		return text.String()
 	}
@@ -169,7 +169,7 @@ func (s *Scheduler) generateMonthlyRecapMessage(user model.User, totals map[int]
 	// --- EXPENSES SECTION ---
 	if expenseAmount, ok := t[model.TypeExpense]; ok && expenseAmount > 0 {
 		monthTotal -= expenseAmount
-		text.WriteString(fmt.Sprintf("💸 <b>Expenses:</b> %.2f€\n", expenseAmount))
+		fmt.Fprintf(&text, "💸 <b>Expenses:</b> %.2f€\n", expenseAmount)
 
 		// Add top expense categories
 		if expenseCats, ok := categoryTotals[model.TypeExpense]; ok && len(expenseCats) > 0 {
@@ -202,8 +202,8 @@ func (s *Scheduler) generateMonthlyRecapMessage(user model.User, totals map[int]
 				entry := categories[i]
 				emoji := utils.GetCategoryEmoji(entry.Category)
 				percentage := (entry.Amount / expenseAmount) * 100
-				text.WriteString(fmt.Sprintf("  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
-					emoji, entry.Category, entry.Amount, percentage))
+				fmt.Fprintf(&text, "  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
+					emoji, entry.Category, entry.Amount, percentage)
 			}
 			text.WriteString("\n")
 		}
@@ -212,7 +212,7 @@ func (s *Scheduler) generateMonthlyRecapMessage(user model.User, totals map[int]
 	// --- INCOME SECTION ---
 	if incomeAmount, ok := t[model.TypeIncome]; ok && incomeAmount > 0 {
 		monthTotal += incomeAmount
-		text.WriteString(fmt.Sprintf("💰 <b>Income:</b> %.2f€\n", incomeAmount))
+		fmt.Fprintf(&text, "💰 <b>Income:</b> %.2f€\n", incomeAmount)
 
 		// Add income categories if multiple
 		if incomeCats, ok := categoryTotals[model.TypeIncome]; ok && len(incomeCats) > 1 {
@@ -237,8 +237,8 @@ func (s *Scheduler) generateMonthlyRecapMessage(user model.User, totals map[int]
 			for _, entry := range categories {
 				emoji := utils.GetCategoryEmoji(entry.Category)
 				percentage := (entry.Amount / incomeAmount) * 100
-				text.WriteString(fmt.Sprintf("  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
-					emoji, entry.Category, entry.Amount, percentage))
+				fmt.Fprintf(&text, "  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
+					emoji, entry.Category, entry.Amount, percentage)
 			}
 			text.WriteString("\n")
 		}
@@ -252,13 +252,13 @@ func (s *Scheduler) generateMonthlyRecapMessage(user model.User, totals map[int]
 		balanceEmoji = "❌"
 	}
 
-	text.WriteString(fmt.Sprintf("\n%s <b>Month Balance:</b> %.2f€\n", balanceEmoji, monthTotal))
+	fmt.Fprintf(&text, "\n%s <b>Month Balance:</b> %.2f€\n", balanceEmoji, monthTotal)
 
 	// --- AVERAGE DAILY SPENDING ---
 	if expenseAmount, ok := t[model.TypeExpense]; ok && expenseAmount > 0 {
 		daysInMonth := time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC).Day()
 		avgDaily := expenseAmount / float64(daysInMonth)
-		text.WriteString(fmt.Sprintf("📈 <b>Avg Daily Spending:</b> %.2f€\n", avgDaily))
+		fmt.Fprintf(&text, "📈 <b>Avg Daily Spending:</b> %.2f€\n", avgDaily)
 	}
 
 	// --- COMPARISON WITH PREVIOUS MONTH ---
@@ -280,9 +280,9 @@ func (s *Scheduler) generateMonthlyRecapMessage(user model.User, totals map[int]
 					percentChange := (diff / prevExpense) * 100
 
 					if diff > 0 {
-						text.WriteString(fmt.Sprintf("  📈 Expenses: +%.2f€ (+%.1f%%)\n", diff, percentChange))
+						fmt.Fprintf(&text, "  📈 Expenses: +%.2f€ (+%.1f%%)\n", diff, percentChange)
 					} else {
-						text.WriteString(fmt.Sprintf("  📉 Expenses: %.2f€ (%.1f%%)\n", diff, percentChange))
+						fmt.Fprintf(&text, "  📉 Expenses: %.2f€ (%.1f%%)\n", diff, percentChange)
 					}
 				}
 			}
@@ -294,9 +294,9 @@ func (s *Scheduler) generateMonthlyRecapMessage(user model.User, totals map[int]
 					percentChange := (diff / prevIncome) * 100
 
 					if diff > 0 {
-						text.WriteString(fmt.Sprintf("  📈 Income: +%.2f€ (+%.1f%%)\n", diff, percentChange))
+						fmt.Fprintf(&text, "  📈 Income: +%.2f€ (+%.1f%%)\n", diff, percentChange)
 					} else {
-						text.WriteString(fmt.Sprintf("  📉 Income: %.2f€ (%.1f%%)\n", diff, percentChange))
+						fmt.Fprintf(&text, "  📉 Income: %.2f€ (%.1f%%)\n", diff, percentChange)
 					}
 				}
 			}

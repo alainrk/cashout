@@ -87,9 +87,9 @@ func (c *Client) WeekRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 	var weekTotal float64
 
 	// Header with week dates
-	text.WriteString(fmt.Sprintf("📊 <b>Week %s - %s</b>\n\n",
+	fmt.Fprintf(&text, "📊 <b>Week %s - %s</b>\n\n",
 		startOfWeek.Format("02 Jan"),
-		endOfWeek.Format("02 Jan")))
+		endOfWeek.Format("02 Jan"))
 
 	// --- DAILY BREAKDOWN ---
 	text.WriteString("<b>Daily Activity:</b>\n")
@@ -107,15 +107,15 @@ func (c *Client) WeekRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 			hasActivity = true
 			dayBalance := 0.0
 
-			text.WriteString(fmt.Sprintf("\n📅 <b>%s</b>\n", dayKey))
+			fmt.Fprintf(&text, "\n📅 <b>%s</b>\n", dayKey)
 
 			if expense, ok := totals[model.TypeExpense]; ok && expense > 0 {
-				text.WriteString(fmt.Sprintf("  💸 %.2f€\n", expense))
+				fmt.Fprintf(&text, "  💸 %.2f€\n", expense)
 				dayBalance -= expense
 			}
 
 			if income, ok := totals[model.TypeIncome]; ok && income > 0 {
-				text.WriteString(fmt.Sprintf("  💰 %.2f€\n", income))
+				fmt.Fprintf(&text, "  💰 %.2f€\n", income)
 				dayBalance += income
 			}
 
@@ -125,7 +125,7 @@ func (c *Client) WeekRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 				if dayBalance < 0 {
 					emoji = "❌"
 				}
-				text.WriteString(fmt.Sprintf("  %s Balance: %.2f€\n", emoji, dayBalance))
+				fmt.Fprintf(&text, "  %s Balance: %.2f€\n", emoji, dayBalance)
 			}
 		}
 	}
@@ -139,7 +139,7 @@ func (c *Client) WeekRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 	// --- EXPENSES SECTION ---
 	if expenseAmount, ok := typeTotals[model.TypeExpense]; ok && expenseAmount > 0 {
 		weekTotal -= expenseAmount
-		text.WriteString(fmt.Sprintf("💸 <b>Total Expenses:</b> %.2f€\n", expenseAmount))
+		fmt.Fprintf(&text, "💸 <b>Total Expenses:</b> %.2f€\n", expenseAmount)
 
 		// Add category breakdown for expenses
 		if expenseCats := categoryTotals[model.TypeExpense]; len(expenseCats) > 0 {
@@ -166,8 +166,8 @@ func (c *Client) WeekRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 			for _, entry := range categories {
 				emoji := utils.GetCategoryEmoji(entry.Category)
 				percentage := (entry.Amount / expenseAmount) * 100
-				text.WriteString(fmt.Sprintf("  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
-					emoji, entry.Category, entry.Amount, percentage))
+				fmt.Fprintf(&text, "  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
+					emoji, entry.Category, entry.Amount, percentage)
 			}
 			text.WriteString("\n")
 		}
@@ -176,7 +176,7 @@ func (c *Client) WeekRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 	// --- INCOME SECTION ---
 	if incomeAmount, ok := typeTotals[model.TypeIncome]; ok && incomeAmount > 0 {
 		weekTotal += incomeAmount
-		text.WriteString(fmt.Sprintf("💰 <b>Total Income:</b> %.2f€\n", incomeAmount))
+		fmt.Fprintf(&text, "💰 <b>Total Income:</b> %.2f€\n", incomeAmount)
 
 		// Add category breakdown for income
 		if incomeCats := categoryTotals[model.TypeIncome]; len(incomeCats) > 0 {
@@ -203,8 +203,8 @@ func (c *Client) WeekRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 			for _, entry := range categories {
 				emoji := utils.GetCategoryEmoji(entry.Category)
 				percentage := (entry.Amount / incomeAmount) * 100
-				text.WriteString(fmt.Sprintf("  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
-					emoji, entry.Category, entry.Amount, percentage))
+				fmt.Fprintf(&text, "  %s <b>%s:</b> %.2f€ (%.1f%%)\n",
+					emoji, entry.Category, entry.Amount, percentage)
 			}
 			text.WriteString("\n")
 		}
@@ -218,12 +218,12 @@ func (c *Client) WeekRecap(b *gotgbot.Bot, ctx *ext.Context) error {
 		balanceEmoji = "❌"
 	}
 
-	text.WriteString(fmt.Sprintf("\n%s <b>Week Balance:</b> %.2f€", balanceEmoji, weekTotal))
+	fmt.Fprintf(&text, "\n%s <b>Week Balance:</b> %.2f€", balanceEmoji, weekTotal)
 
 	// --- AVERAGE DAILY SPENDING ---
 	if expenseAmount, ok := typeTotals[model.TypeExpense]; ok && expenseAmount > 0 {
 		avgDaily := expenseAmount / 7
-		text.WriteString(fmt.Sprintf("\n📈 <b>Avg Daily Spending:</b> %.2f€", avgDaily))
+		fmt.Fprintf(&text, "\n📈 <b>Avg Daily Spending:</b> %.2f€", avgDaily)
 	}
 
 	return c.SendHomeKeyboard(b, ctx, text.String())

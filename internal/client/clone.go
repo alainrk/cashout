@@ -502,12 +502,12 @@ func (c *Client) CloneSearchHome(b *gotgbot.Bot, ctx *ext.Context) error {
 func formatCloneRecentExpenses(transactions []model.Transaction, offset, total int) string {
 	var msg strings.Builder
 	msg.WriteString("📋 <b>Clone Transaction</b>\n")
-	msg.WriteString(fmt.Sprintf("Recent expenses — %d–%d of %d\n\n", offset+1, offset+len(transactions), total))
+	fmt.Fprintf(&msg, "Recent expenses — %d–%d of %d\n\n", offset+1, offset+len(transactions), total)
 
 	for i, t := range transactions {
 		emoji := utils.GetCategoryEmoji(t.Category)
-		msg.WriteString(fmt.Sprintf("%d. %s %s · €%.2f · %s\n",
-			i+1, emoji, t.Description, t.Amount, t.Date.Format("02/01/2006")))
+		fmt.Fprintf(&msg, "%d. %s %s · €%.2f · %s\n",
+			i+1, emoji, t.Description, t.Amount, t.Date.Format("02/01/2006"))
 	}
 
 	msg.WriteString("\nTap a number to clone it with today's date.")
@@ -576,13 +576,13 @@ func formatCloneSearchResults(transactions []model.Transaction, searchQuery, cat
 	var msg strings.Builder
 	msg.WriteString("📋 <b>Clone Transaction</b>\n")
 	if searchQuery != "%" {
-		msg.WriteString(fmt.Sprintf("Query: \"%s\"", searchQuery))
+		fmt.Fprintf(&msg, "Query: \"%s\"", searchQuery)
 	}
 	if category != "all" {
 		emoji := utils.GetCategoryEmoji(model.TransactionCategory(category))
-		msg.WriteString(fmt.Sprintf(" in %s %s", emoji, category))
+		fmt.Fprintf(&msg, " in %s %s", emoji, category)
 	}
-	msg.WriteString(fmt.Sprintf("\nShowing %d–%d of %d\n\n", offset+1, offset+len(transactions), total))
+	fmt.Fprintf(&msg, "\nShowing %d–%d of %d\n\n", offset+1, offset+len(transactions), total)
 
 	for i, t := range transactions {
 		emoji := utils.GetCategoryEmoji(t.Category)
@@ -596,8 +596,8 @@ func formatCloneSearchResults(transactions []model.Transaction, searchQuery, cat
 				desc = desc[:idx] + "<b>" + desc[idx:idx+len(searchQuery)] + "</b>" + desc[idx+len(searchQuery):]
 			}
 		}
-		msg.WriteString(fmt.Sprintf("%d. %s %s · %s€%.2f · %s\n",
-			i+1, emoji, desc, sign, t.Amount, t.Date.Format("02/01/2006")))
+		fmt.Fprintf(&msg, "%d. %s %s · %s€%.2f · %s\n",
+			i+1, emoji, desc, sign, t.Amount, t.Date.Format("02/01/2006"))
 	}
 
 	msg.WriteString("\nTap a number to clone it with today's date.")
