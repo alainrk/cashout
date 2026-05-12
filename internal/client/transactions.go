@@ -304,45 +304,11 @@ func (c *Client) EditTransactionIntent(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 		opts = &gotgbot.SendMessageOpts{ReplyMarkup: gotgbot.InlineKeyboardMarkup{InlineKeyboard: keyboard}}
 	case "category":
-		user.Session.State = model.StateEditingTransactionCategory
-		text = "Choose your category among the following ones."
-
-		keyboard := [][]gotgbot.KeyboardButton{
-			{{Text: "Cancel"}},
-			{{Text: "Salary"}},
-			{{Text: "OtherIncomes"}},
-		}
-
-		if transaction.Type == model.TypeExpense {
-			keyboard = [][]gotgbot.KeyboardButton{
-				{{Text: "Cancel"}},
-				{{Text: "Car"}},
-				{{Text: "Clothes"}},
-				{{Text: "Grocery"}},
-				{{Text: "House"}},
-				{{Text: "Bills"}},
-				{{Text: "Entertainment"}},
-				{{Text: "Sport"}},
-				{{Text: "EatingOut"}},
-				{{Text: "Transport"}},
-				{{Text: "Learning"}},
-				{{Text: "Toiletry"}},
-				{{Text: "Health"}},
-				{{Text: "Tech"}},
-				{{Text: "Gifts"}},
-				{{Text: "Travel"}},
-				{{Text: "Pets"}},
-				{{Text: "OtherExpenses"}},
-			}
-		}
-
+		text = fmt.Sprintf("Choose a new category for the transaction:\n\nCurrent: <b>%s</b>", transaction.Category)
+		keyboard := BuildCategoryInlineKeyboard(transaction.Type, "transactions.editcat", "transactions.editcancel", false)
 		opts = &gotgbot.SendMessageOpts{
-			ReplyMarkup: gotgbot.ReplyKeyboardMarkup{
-				Keyboard:        keyboard,
-				OneTimeKeyboard: true,
-				IsPersistent:    false,
-				ResizeKeyboard:  true,
-			},
+			ParseMode:   "HTML",
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{InlineKeyboard: keyboard},
 		}
 	default:
 		return fmt.Errorf("unknown field: %s", field)
@@ -640,8 +606,26 @@ func (c *Client) editTransactionDescription(b *gotgbot.Bot, ctx *ext.Context, us
 	return err
 }
 
-func (c *Client) editTransactionCategory(b *gotgbot.Bot, ctx *ext.Context, user model.User) error {
-	// Load transaction from DB using the ID stored in session
+// EditTransactionCategorySelected handles inline-callback category selection
+// during the just-inserted transaction edit flow (transactions.editcat.<CATEGORY>).
+func (c *Client) EditTransactionCategorySelected(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	query := ctx.CallbackQuery
+	parts := strings.Split(query.Data, ".")
+	if len(parts) < 3 {
+		return fmt.Errorf("invalid callback data: %s", query.Data)
+	}
+	newCategory := parts[2]
+
+	if !model.IsValidTransactionCategory(newCategory) {
+		return fmt.Errorf("invalid category: %s", newCategory)
+	}
+
 	transactionID, err := strconv.ParseInt(user.Session.Body, 10, 64)
 	if err != nil {
 		return fmt.Errorf("failed to parse transaction ID from session: %w", err)
@@ -652,22 +636,13 @@ func (c *Client) editTransactionCategory(b *gotgbot.Bot, ctx *ext.Context, user 
 		return fmt.Errorf("failed to get transaction from database: %w", err)
 	}
 
-	if !model.IsValidTransactionCategory(ctx.Message.Text) {
-		_, err = b.SendMessage(ctx.EffectiveSender.ChatId, "Invalid category, please try again.", nil)
-		return errors.Join(err, fmt.Errorf("invalid category: %s", ctx.Message.Text))
-	}
-
-	// Update the transaction in DB
-	transaction.Category = model.TransactionCategory(ctx.Message.Text)
-	err = c.Repositories.Transactions.Update(&transaction)
-	if err != nil {
+	transaction.Category = model.TransactionCategory(newCategory)
+	if err := c.Repositories.Transactions.Update(&transaction); err != nil {
 		return fmt.Errorf("failed to update transaction: %w", err)
 	}
 
-	// Update session state
 	user.Session.State = model.StateEditingNewTransaction
-	err = c.Repositories.Users.Update(&user)
-	if err != nil {
+	if err := c.Repositories.Users.Update(&user); err != nil {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
@@ -677,48 +652,21 @@ func (c *Client) editTransactionCategory(b *gotgbot.Bot, ctx *ext.Context, user 
 	}
 
 	m := fmt.Sprintf("%s <b>Transaction updated!</b>\n\n%s (€ %.2f), %s on %s", emoji, transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
-	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
+	_, _, err = query.Message.EditText(b, m, &gotgbot.EditMessageTextOpts{
 		ParseMode: "HTML",
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 			InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+				{{Text: "Edit description", CallbackData: "transactions.edit.description"}},
+				{{Text: "Edit category", CallbackData: "transactions.edit.category"}},
+				{{Text: "Edit date", CallbackData: "transactions.edit.date"}},
+				{{Text: "Edit amount", CallbackData: "transactions.edit.amount"}},
 				{
-					{
-						Text:         "Edit description",
-						CallbackData: "transactions.edit.description",
-					},
-				},
-				{
-					{
-						Text:         "Edit category",
-						CallbackData: "transactions.edit.category",
-					},
-				},
-				{
-					{
-						Text:         "Edit date",
-						CallbackData: "transactions.edit.date",
-					},
-				},
-				{
-					{
-						Text:         "Edit amount",
-						CallbackData: "transactions.edit.amount",
-					},
-				},
-				{
-					{
-						Text:         "Delete",
-						CallbackData: fmt.Sprintf("transactions.delete.%d", transaction.ID),
-					},
-					{
-						Text:         "Home",
-						CallbackData: "transactions.home",
-					},
+					{Text: "Delete", CallbackData: fmt.Sprintf("transactions.delete.%d", transaction.ID)},
+					{Text: "Home", CallbackData: "transactions.home"},
 				},
 			},
 		},
 	})
-
 	return err
 }
 

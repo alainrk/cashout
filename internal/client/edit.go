@@ -185,88 +185,24 @@ func (c *Client) EditTransactionField(b *gotgbot.Bot, ctx *ext.Context) error {
 }
 
 func (c *Client) editTopLevelTransactionCategory(b *gotgbot.Bot, ctx *ext.Context, transaction model.Transaction) error {
-	// Create keyboard with appropriate categories
-	var keyboard [][]gotgbot.KeyboardButton
+	keyboard := BuildCategoryInlineKeyboard(transaction.Type, "edit.setcat", "transactions.cancel", false)
 
-	if transaction.Type == model.TypeIncome {
-		keyboard = [][]gotgbot.KeyboardButton{
-			{{Text: "Cancel"}},
-			{{Text: "Salary"}},
-			{{Text: "OtherIncomes"}},
-		}
-	} else {
-		keyboard = [][]gotgbot.KeyboardButton{
-			{{Text: "Cancel"}},
-			{{Text: "Car"}},
-			{{Text: "Clothes"}},
-			{{Text: "Grocery"}},
-			{{Text: "House"}},
-			{{Text: "Bills"}},
-			{{Text: "Entertainment"}},
-			{{Text: "Sport"}},
-			{{Text: "EatingOut"}},
-			{{Text: "Transport"}},
-			{{Text: "Learning"}},
-			{{Text: "Toiletry"}},
-			{{Text: "Health"}},
-			{{Text: "Tech"}},
-			{{Text: "Gifts"}},
-			{{Text: "Travel"}},
-			{{Text: "Pets"}},
-			{{Text: "OtherExpenses"}},
-		}
-	}
-
-	// Set user state
-	_, u := c.getUserFromContext(ctx)
-	user, err := c.authAndGetUser(u)
-	if err != nil {
-		return err
-	}
-
-	user.Session.State = model.StateTopLevelEditingTransactionCategory
-	err = c.Repositories.Users.Update(&user)
-	if err != nil {
-		return fmt.Errorf("failed to update user data: %w", err)
-	}
-
-	// Send keyboard
-	_, _, err = ctx.CallbackQuery.Message.EditText(
+	_, _, err := ctx.CallbackQuery.Message.EditText(
 		b,
 		fmt.Sprintf("Select a new category for the transaction:\n\nCurrent: <b>%s</b> - %.2f€ (%s)",
 			transaction.Category,
 			transaction.Amount,
 			transaction.Date.Format("02-01-2006")),
 		&gotgbot.EditMessageTextOpts{
-			ParseMode: "HTML",
-			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
-				InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
-					{
-						{
-							Text:         "Cancel",
-							CallbackData: "transactions.cancel",
-						},
-					},
-				},
-			},
+			ParseMode:   "HTML",
+			ReplyMarkup: gotgbot.InlineKeyboardMarkup{InlineKeyboard: keyboard},
 		},
 	)
-	if err != nil {
-		return err
-	}
-
-	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, "Choose a category:", &gotgbot.SendMessageOpts{
-		ReplyMarkup: gotgbot.ReplyKeyboardMarkup{
-			Keyboard:        keyboard,
-			OneTimeKeyboard: true,
-			IsPersistent:    false,
-			ResizeKeyboard:  true,
-		},
-	})
-
 	return err
 }
 
+// EditTransactionCategoryConfirm handles inline-callback category selection
+// for the top-level /edit category flow (edit.setcat.<CATEGORY>).
 func (c *Client) EditTransactionCategoryConfirm(b *gotgbot.Bot, ctx *ext.Context) error {
 	_, u := c.getUserFromContext(ctx)
 	user, err := c.authAndGetUser(u)
@@ -274,101 +210,67 @@ func (c *Client) EditTransactionCategoryConfirm(b *gotgbot.Bot, ctx *ext.Context
 		return err
 	}
 
-	// Get transaction ID from session
+	query := ctx.CallbackQuery
+	parts := strings.Split(query.Data, ".")
+	if len(parts) < 3 {
+		return fmt.Errorf("invalid callback data: %s", query.Data)
+	}
+	newCategory := parts[2]
+
+	if !model.IsValidTransactionCategory(newCategory) {
+		return fmt.Errorf("invalid category: %s", newCategory)
+	}
+
 	transactionID, err := strconv.ParseInt(user.Session.Body, 10, 64)
 	if err != nil {
 		return fmt.Errorf("invalid transaction ID in session: %v", err)
 	}
 
-	// Get the transaction
 	transaction, err := c.Repositories.Transactions.GetByID(transactionID)
 	if err != nil {
 		return fmt.Errorf("failed to get transaction: %w", err)
 	}
 
-	// Get new category from message
-	newCategory := ctx.Message.Text
-
-	// Verify it's a valid category
-	if !model.IsValidTransactionCategory(newCategory) {
-		_, err = b.SendMessage(
-			ctx.EffectiveSender.ChatId,
-			"Invalid category. Please select a valid category.",
-			&gotgbot.SendMessageOpts{
-				ReplyMarkup: gotgbot.ReplyKeyboardRemove{},
-			},
-		)
-		return err
-	}
-
-	// Check if category is valid for the transaction type
+	// Disallow swap between income/expense categories.
 	isIncome := transaction.Type == model.TypeIncome
-	isIncomeCategory := newCategory == "Salary" || newCategory == "OtherIncomes"
-
+	isIncomeCategory := newCategory == string(model.CategorySalary) || newCategory == string(model.CategoryOtherIncomes)
 	if isIncome != isIncomeCategory {
-		_, err = b.SendMessage(
-			ctx.EffectiveSender.ChatId,
-			fmt.Sprintf("Cannot change between expense and income categories. Please select a valid %s category.", transaction.Type),
-			&gotgbot.SendMessageOpts{
-				ReplyMarkup: gotgbot.ReplyKeyboardRemove{},
-			},
-		)
-		return err
+		return fmt.Errorf("cannot change between income and expense categories")
 	}
 
-	// Update the transaction
 	oldCategory := transaction.Category
 	transaction.Category = model.TransactionCategory(newCategory)
-
-	err = c.Repositories.Transactions.Update(&transaction)
-	if err != nil {
-		_, err = b.SendMessage(
-			ctx.EffectiveSender.ChatId,
-			"Failed to update transaction. Please try again.",
-			&gotgbot.SendMessageOpts{
-				ReplyMarkup: gotgbot.ReplyKeyboardRemove{},
-			},
-		)
-		return err
+	if err := c.Repositories.Transactions.Update(&transaction); err != nil {
+		return fmt.Errorf("failed to update transaction: %w", err)
 	}
 
-	// Reset user state
 	user.Session.State = model.StateNormal
 	user.Session.Body = ""
-	err = c.Repositories.Users.Update(&user)
-	if err != nil {
+	if err := c.Repositories.Users.Update(&user); err != nil {
 		return fmt.Errorf("failed to update user data: %w", err)
 	}
 
-	// Send confirmation
 	emoji := "💰"
 	if transaction.Type == model.TypeExpense {
 		emoji = "💸"
 	}
 
-	_, err = b.SendMessage(
-		ctx.EffectiveSender.ChatId,
+	_, _, err = query.Message.EditText(
+		b,
 		fmt.Sprintf("%s Category updated successfully!\n\nChanged from <b>%s</b> to <b>%s</b>",
 			emoji, oldCategory, transaction.Category),
-		&gotgbot.SendMessageOpts{
+		&gotgbot.EditMessageTextOpts{
 			ParseMode: "HTML",
 			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 				InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 					{
-						{
-							Text:         "Keep Editing",
-							CallbackData: fmt.Sprintf("edit.select.%d", transaction.ID),
-						},
-						{
-							Text:         "Done",
-							CallbackData: "edit.done",
-						},
+						{Text: "Keep Editing", CallbackData: fmt.Sprintf("edit.select.%d", transaction.ID)},
+						{Text: "Done", CallbackData: "edit.done"},
 					},
 				},
 			},
 		},
 	)
-
 	return err
 }
 
@@ -943,81 +845,7 @@ func (c *Client) showEditOptions(b *gotgbot.Bot, ctx *ext.Context, transaction m
 
 // showEditSearchCategorySelection displays the category selection keyboard for edit search
 func (c *Client) showEditSearchCategorySelection(b *gotgbot.Bot, ctx *ext.Context) error {
-	var keyboard [][]gotgbot.InlineKeyboardButton
-
-	// Add "All" option first
-	keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
-		{
-			Text:         "🔍 All Categories",
-			CallbackData: "edit.search.category.all",
-		},
-	})
-
-	// Add income categories
-	incomeCategories := []model.TransactionCategory{
-		model.CategorySalary,
-		model.CategoryOtherIncomes,
-	}
-
-	for _, cat := range incomeCategories {
-		emoji := utils.GetCategoryEmoji(cat)
-		keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
-			{
-				Text:         fmt.Sprintf("%s %s", emoji, cat),
-				CallbackData: fmt.Sprintf("edit.search.category.%s", cat),
-			},
-		})
-	}
-
-	// Add expense categories in rows of 2
-	expenseCategories := []model.TransactionCategory{
-		model.CategoryCar,
-		model.CategoryClothes,
-		model.CategoryGrocery,
-		model.CategoryHouse,
-		model.CategoryBills,
-		model.CategoryEntertainment,
-		model.CategorySport,
-		model.CategoryEatingOut,
-		model.CategoryTransport,
-		model.CategoryLearning,
-		model.CategoryToiletry,
-		model.CategoryHealth,
-		model.CategoryTech,
-		model.CategoryGifts,
-		model.CategoryTravel,
-		model.CategoryPets,
-		model.CategoryOtherExpenses,
-	}
-
-	for i := 0; i < len(expenseCategories); i += 2 {
-		row := []gotgbot.InlineKeyboardButton{}
-
-		emoji := utils.GetCategoryEmoji(expenseCategories[i])
-		row = append(row, gotgbot.InlineKeyboardButton{
-			Text:         fmt.Sprintf("%s %s", emoji, expenseCategories[i]),
-			CallbackData: fmt.Sprintf("edit.search.category.%s", expenseCategories[i]),
-		})
-
-		// Add second button if exists
-		if i+1 < len(expenseCategories) {
-			emoji2 := utils.GetCategoryEmoji(expenseCategories[i+1])
-			row = append(row, gotgbot.InlineKeyboardButton{
-				Text:         fmt.Sprintf("%s %s", emoji2, expenseCategories[i+1]),
-				CallbackData: fmt.Sprintf("edit.search.category.%s", expenseCategories[i+1]),
-			})
-		}
-
-		keyboard = append(keyboard, row)
-	}
-
-	// Add cancel button
-	keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
-		{
-			Text:         "❌ Cancel",
-			CallbackData: "edit.search.cancel",
-		},
-	})
+	keyboard := BuildCategoryInlineKeyboard("", "edit.search.category", "edit.search.cancel", true)
 
 	message := "✏️ <b>Edit Transaction</b>\n\nFirst, select a category to search in:"
 

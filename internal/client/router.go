@@ -40,10 +40,6 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 		return c.editTransactionDate(b, ctx, user)
 	}
 
-	if user.Session.State == model.StateEditingTransactionCategory {
-		return c.editTransactionCategory(b, ctx, user)
-	}
-
 	if user.Session.State == model.StateEditingTransactionAmount {
 		return c.editTransactionAmount(b, ctx, user)
 	}
@@ -56,10 +52,6 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	if user.Session.State == model.StateTopLevelEditingTransactionDate {
 		return c.EditTransactionDateConfirm(b, ctx)
-	}
-
-	if user.Session.State == model.StateTopLevelEditingTransactionCategory {
-		return c.EditTransactionCategoryConfirm(b, ctx)
 	}
 
 	if user.Session.State == model.StateTopLevelEditingTransactionAmount {

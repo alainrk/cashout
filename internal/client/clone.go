@@ -1,12 +1,13 @@
 package client
 
 import (
-	"cashout/internal/model"
-	"cashout/internal/utils"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
+
+	"cashout/internal/model"
+	"cashout/internal/utils"
 
 	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -233,59 +234,15 @@ func (c *Client) CloneSearchTypeSelected(b *gotgbot.Bot, ctx *ext.Context) error
 
 // showCloneSearchCategorySelection displays category selection filtered by type
 func (c *Client) showCloneSearchCategorySelection(b *gotgbot.Bot, ctx *ext.Context, selectedType string) error {
-	var keyboard [][]gotgbot.InlineKeyboardButton
-
-	// "All Categories" option
-	keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
-		{Text: "🔍 All Categories", CallbackData: "clone.search.category.all"},
-	})
-
-	// Income categories
-	if selectedType == "income" || selectedType == "all" {
-		incomeCategories := []model.TransactionCategory{
-			model.CategorySalary,
-			model.CategoryOtherIncomes,
-		}
-		for _, cat := range incomeCategories {
-			emoji := utils.GetCategoryEmoji(cat)
-			keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
-				{Text: fmt.Sprintf("%s %s", emoji, cat), CallbackData: fmt.Sprintf("clone.search.category.%s", cat)},
-			})
-		}
+	var txType model.TransactionType
+	switch selectedType {
+	case "income":
+		txType = model.TypeIncome
+	case "expense":
+		txType = model.TypeExpense
 	}
 
-	// Expense categories
-	if selectedType == "expense" || selectedType == "all" {
-		expenseCategories := []model.TransactionCategory{
-			model.CategoryCar, model.CategoryClothes, model.CategoryGrocery,
-			model.CategoryHouse, model.CategoryBills, model.CategoryEntertainment,
-			model.CategorySport, model.CategoryEatingOut, model.CategoryTransport,
-			model.CategoryLearning, model.CategoryToiletry, model.CategoryHealth,
-			model.CategoryTech, model.CategoryGifts, model.CategoryTravel,
-			model.CategoryPets, model.CategoryOtherExpenses,
-		}
-		for i := 0; i < len(expenseCategories); i += 2 {
-			var row []gotgbot.InlineKeyboardButton
-			emoji := utils.GetCategoryEmoji(expenseCategories[i])
-			row = append(row, gotgbot.InlineKeyboardButton{
-				Text:         fmt.Sprintf("%s %s", emoji, expenseCategories[i]),
-				CallbackData: fmt.Sprintf("clone.search.category.%s", expenseCategories[i]),
-			})
-			if i+1 < len(expenseCategories) {
-				emoji2 := utils.GetCategoryEmoji(expenseCategories[i+1])
-				row = append(row, gotgbot.InlineKeyboardButton{
-					Text:         fmt.Sprintf("%s %s", emoji2, expenseCategories[i+1]),
-					CallbackData: fmt.Sprintf("clone.search.category.%s", expenseCategories[i+1]),
-				})
-			}
-			keyboard = append(keyboard, row)
-		}
-	}
-
-	keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
-		{Text: "❌ Cancel", CallbackData: "clone.search.cancel"},
-	})
-
+	keyboard := BuildCategoryInlineKeyboard(txType, "clone.search.category", "clone.search.cancel", true)
 	return SendMessage(ctx, b, "📋 <b>Clone Transaction</b>\n\nSelect a category to search in:", keyboard)
 }
 

@@ -67,22 +67,18 @@ func (c *Client) SendHomeKeyboard(b *gotgbot.Bot, ctx *ext.Context, text string)
 }
 
 func (c *Client) CleanupKeyboard(b *gotgbot.Bot, ctx *ext.Context) error {
-	var err error
-	// Cleanup inline keyboard if exists
+	// Cleanup inline keyboard if exists. Reply keyboards are no longer used in
+	// this bot, so we only need to clear inline ones; a follow-up SendMessage
+	// can carry ReplyKeyboardRemove if any stale reply keyboard ever needs it.
 	if ctx.CallbackQuery != nil {
-		_, _, err = ctx.CallbackQuery.Message.EditReplyMarkup(b, &gotgbot.EditMessageReplyMarkupOpts{
+		_, _, err := ctx.CallbackQuery.Message.EditReplyMarkup(b, &gotgbot.EditMessageReplyMarkupOpts{
 			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
 				InlineKeyboard: [][]gotgbot.InlineKeyboardButton{},
 			},
 		})
+		return err
 	}
-	// Cleanup markup keyboard if exists
-	if ctx.Message != nil {
-		_, err = ctx.Message.Reply(b, "", &gotgbot.SendMessageOpts{
-			ReplyMarkup: gotgbot.ReplyKeyboardRemove{},
-		})
-	}
-	return err
+	return nil
 }
 
 // SendMessage abstracts the sending of a message regardless it's a callback from inline keyboard or a "top level" message

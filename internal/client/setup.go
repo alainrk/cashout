@@ -19,13 +19,29 @@ func cancelText(msg *gotgbot.Message) bool {
 	return message.Text(msg) && strings.ToLower(strings.Trim(msg.Text, " ")) == "cancel"
 }
 
+// SendTypingAction is a best-effort pre-handler that sends a "typing" chat
+// action so the user gets instant feedback. Errors are swallowed because the
+// indicator must never block real handler dispatch.
+func (c *Client) SendTypingAction(b *gotgbot.Bot, ctx *ext.Context) error {
+	if ctx.EffectiveChat != nil {
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+	}
+	return ext.ContinueGroups
+}
+
 func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
+	// Pre-handlers (group -1): send a typing chat action for every incoming
+	// update so the user sees instant feedback while the real handler runs.
+	dispatcher.AddHandlerToGroup(handlers.NewMessage(func(*gotgbot.Message) bool { return true }, c.SendTypingAction), -1)
+	dispatcher.AddHandlerToGroup(handlers.NewCallback(func(*gotgbot.CallbackQuery) bool { return true }, c.SendTypingAction), -1)
+
 	// Top-level message for LLM goes into AddTransaction and gets the expense/income intent from user session state.
 	dispatcher.AddHandler(handlers.NewMessage(noCommands, c.FreeTextRouter))
 	dispatcher.AddHandler(handlers.NewMessage(cancelText, c.Cancel))
 
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.new."), c.AddTransactionIntent))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.edit."), c.EditTransactionIntent))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.editcat."), c.EditTransactionCategorySelected))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("transactions.delete."), c.DeleteNewTransaction))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("transactions.cancel"), c.Cancel))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("transactions.editcancel"), c.EditCancel))
@@ -42,6 +58,7 @@ func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("list.noop"), c.ListNoop))
 
 	dispatcher.AddHandler(handlers.NewCommand("edit", c.EditTransactions))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("edit.setcat."), c.EditTransactionCategoryConfirm))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("edit.page."), c.EditTransactionPage))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("edit.select."), c.EditTransactionSelect))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("edit.field."), c.EditTransactionField))
