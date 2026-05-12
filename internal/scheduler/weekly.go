@@ -240,7 +240,7 @@ func (s *Scheduler) generateWeeklyRecapMessage(user model.User, transactions []m
 
 		// Show top 3
 		limit := min(len(sorted), 3)
-		for i := 0; i < limit; i++ {
+		for i := range limit {
 			emoji := utils.GetCategoryEmoji(sorted[i].cat)
 			fmt.Fprintf(&text, "  %s %s: %.2f€\n", emoji, sorted[i].cat, sorted[i].amount)
 		}

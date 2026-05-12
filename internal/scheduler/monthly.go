@@ -195,7 +195,7 @@ func (s *Scheduler) generateMonthlyRecapMessage(user model.User, totals map[int]
 			// Display top 5 categories
 			limit := min(len(categories), 5)
 
-			for i := 0; i < limit; i++ {
+			for i := range limit {
 				entry := categories[i]
 				emoji := utils.GetCategoryEmoji(entry.Category)
 				percentage := (entry.Amount / expenseAmount) * 100
