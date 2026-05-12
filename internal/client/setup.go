@@ -30,10 +30,11 @@ func (c *Client) SendTypingAction(b *gotgbot.Bot, ctx *ext.Context) error {
 }
 
 func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
-	// Pre-handlers (group -1): send a typing chat action for every incoming
-	// update so the user sees instant feedback while the real handler runs.
+	// Pre-handler (group -1): send a typing chat action for text/command
+	// messages so the user gets feedback during slower operations (LLM, DB,
+	// reports). Callback queries are intentionally excluded — they resolve
+	// fast and the 5s typing indicator otherwise lingers visibly.
 	dispatcher.AddHandlerToGroup(handlers.NewMessage(func(*gotgbot.Message) bool { return true }, c.SendTypingAction), -1)
-	dispatcher.AddHandlerToGroup(handlers.NewCallback(func(*gotgbot.CallbackQuery) bool { return true }, c.SendTypingAction), -1)
 
 	// Top-level message for LLM goes into AddTransaction and gets the expense/income intent from user session state.
 	dispatcher.AddHandler(handlers.NewMessage(noCommands, c.FreeTextRouter))

@@ -22,6 +22,8 @@ func (c *Client) SendAddTransactionKeyboard(b *gotgbot.Bot, ctx *ext.Context, te
 }
 
 func (c *Client) SendHomeKeyboard(b *gotgbot.Bot, ctx *ext.Context, text string) error {
+	c.dismissReplyKeyboard(b, ctx)
+
 	var err error
 	keyboard := [][]gotgbot.InlineKeyboardButton{
 		{
@@ -64,6 +66,23 @@ func (c *Client) SendHomeKeyboard(b *gotgbot.Bot, ctx *ext.Context, text string)
 	}
 
 	return err
+}
+
+// dismissReplyKeyboard sends a placeholder message with ReplyKeyboardRemove
+// and immediately deletes it. This is the only way in Telegram to clear a
+// stale reply (normal) keyboard left over on a user's client; the message
+// markup is the carrier, but the message itself is noise so we drop it.
+func (c *Client) dismissReplyKeyboard(b *gotgbot.Bot, ctx *ext.Context) {
+	if ctx.EffectiveSender == nil {
+		return
+	}
+	msg, err := b.SendMessage(ctx.EffectiveSender.ChatId, "🏠", &gotgbot.SendMessageOpts{
+		ReplyMarkup: gotgbot.ReplyKeyboardRemove{},
+	})
+	if err != nil || msg == nil {
+		return
+	}
+	_, _ = msg.Delete(b, nil)
 }
 
 func (c *Client) CleanupKeyboard(b *gotgbot.Bot, ctx *ext.Context) error {
