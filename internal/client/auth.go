@@ -1,8 +1,9 @@
 package client
 
 import (
-	"cashout/internal/model"
 	"fmt"
+
+	"cashout/internal/model"
 
 	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"

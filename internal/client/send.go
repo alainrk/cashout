@@ -77,7 +77,7 @@ func (c *Client) dismissReplyKeyboard(b *gotgbot.Bot, ctx *ext.Context) {
 		return
 	}
 	msg, err := b.SendMessage(ctx.EffectiveSender.ChatId, "🏠", &gotgbot.SendMessageOpts{
-		ReplyMarkup: gotgbot.ReplyKeyboardRemove{},
+		ReplyMarkup: gotgbot.ReplyKeyboardRemove{RemoveKeyboard: true},
 	})
 	if err != nil || msg == nil {
 		return
