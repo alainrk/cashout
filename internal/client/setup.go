@@ -128,6 +128,7 @@ func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.delete"), c.DeleteTransactions))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.edit"), c.EditTransactions))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.search"), c.SearchTransactions))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.export"), c.ExportTransactions))
 
 	dispatcher.AddHandler(handlers.NewCommand("search", c.SearchTransactions))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("search.category."), c.SearchCategorySelected))

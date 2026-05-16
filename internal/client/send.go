@@ -44,6 +44,10 @@ func (c *Client) SendHomeKeyboard(b *gotgbot.Bot, ctx *ext.Context, text string)
 			{Text: "Month Recap", CallbackData: "home.month"},
 		},
 		{
+			{Text: "🔍 Search", CallbackData: "home.search"},
+			{Text: "📤 Export CSV", CallbackData: "home.export"},
+		},
+		{
 			{Text: "🌐 Web Dashboard", Url: c.Config.WebDashboardURL},
 		},
 	}
@@ -208,6 +212,10 @@ func (c *Client) sendRecapWithNavigation(b *gotgbot.Bot, ctx *ext.Context, text 
 		{
 			{Text: "Year Recap", CallbackData: "home.year"},
 			{Text: "Month Recap", CallbackData: "home.month"},
+		},
+		{
+			{Text: "🔍 Search", CallbackData: "home.search"},
+			{Text: "📤 Export CSV", CallbackData: "home.export"},
 		},
 		{
 			{Text: "🌐 Web Dashboard", Url: c.Config.WebDashboardURL},

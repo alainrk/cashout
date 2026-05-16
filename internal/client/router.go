@@ -153,7 +153,7 @@ func (c *Client) classifyAndRouteIntent(b *gotgbot.Bot, ctx *ext.Context, user m
 	default:
 		// Unknown intent - show help
 		err = c.CleanupKeyboard(b, ctx)
-		err = errors.Join(err, c.SendHomeKeyboard(b, ctx, "I'm not sure what you'd like to do. Here are the available options:\n\n/edit - Edit a transaction\n/delete - Delete a transaction\n/search - Search transactions\n/list - List your transactions\n/week - Week Recap\n/month - Month Recap\n/year - Year Recap\n/export - Export all transactions to CSV\n\nOr just type a transaction like \"coffee 5\" to add it!"))
+		err = errors.Join(err, c.SendHomeKeyboard(b, ctx, "I'm not sure what you'd like to do.\n\nOr just type a transaction like \"coffee 5\" to add it!"))
 		if err != nil {
 			return err
 		}
