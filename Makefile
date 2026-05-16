@@ -53,6 +53,10 @@ test-coverage: lint
 test: lint
 	gotestsum --format dots -- -race -buildvcs ./...
 
+.PHONY: test/live
+test/live:
+	gotcha watch # --fast
+
 .PHONY: vet
 vet:
 	go vet ./...

@@ -1,0 +1,18 @@
+include:
+  - ./...
+exclude:
+  - vendor/
+  - mocks/
+  - .git/
+  - tmp/
+  - .serena/
+  - .claude/
+  - .vscode/
+  - web/
+  - assets/
+  - favicon/
+  - specs/
+  - "*.out"
+  - "*.test"
+args:
+  - -v
