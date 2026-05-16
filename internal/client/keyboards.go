@@ -43,15 +43,6 @@ var expenseCategories = []model.TransactionCategory{
 func BuildCategoryInlineKeyboard(txType model.TransactionType, callbackPrefix, cancelCallback string, includeAll bool) [][]gotgbot.InlineKeyboardButton {
 	var keyboard [][]gotgbot.InlineKeyboardButton
 
-	if includeAll {
-		keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
-			{
-				Text:         "🔍 All Categories",
-				CallbackData: fmt.Sprintf("%s.all", callbackPrefix),
-			},
-		})
-	}
-
 	if txType == "" || txType == model.TypeIncome {
 		for _, cat := range incomeCategories {
 			keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
@@ -79,6 +70,15 @@ func BuildCategoryInlineKeyboard(txType model.TransactionType, callbackPrefix, c
 			}
 			keyboard = append(keyboard, row)
 		}
+	}
+
+	if includeAll {
+		keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
+			{
+				Text:         "🔍 All Categories",
+				CallbackData: fmt.Sprintf("%s.all", callbackPrefix),
+			},
+		})
 	}
 
 	if cancelCallback != "" {
