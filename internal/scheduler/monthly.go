@@ -3,12 +3,15 @@ package scheduler
 import (
 	"cashout/internal/model"
 	"cashout/internal/utils"
+	"errors"
 	"fmt"
+	"math"
 	"sort"
 	"strings"
 	"time"
 
 	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
+	"gorm.io/gorm"
 )
 
 func getNextFirstDayOfMonth() time.Time {
@@ -139,8 +142,14 @@ func (s *Scheduler) sendMonthlyRecap(tgID int64) error {
 		return fmt.Errorf("failed to get category totals: %w", err)
 	}
 
+	// Get budget (optional) for budget section
+	budget, err := s.repositories.Budgets.Get(user.TgID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("failed to get budget: %w", err)
+	}
+
 	// Generate the recap message
-	message := s.generateMonthlyRecapMessage(user, totals, categoryTotals, prevYear, prevMonth)
+	message := s.generateMonthlyRecapMessage(user, totals, categoryTotals, budget, prevYear, prevMonth)
 
 	// Send the message
 	_, err = s.bot.SendMessage(tgID, message, &gotgbot.SendMessageOpts{
@@ -151,7 +160,7 @@ func (s *Scheduler) sendMonthlyRecap(tgID int64) error {
 }
 
 // generateMonthlyRecapMessage generates the monthly recap message
-func (s *Scheduler) generateMonthlyRecapMessage(user model.User, totals map[int]map[model.TransactionType]float64, categoryTotals map[model.TransactionType]map[model.TransactionCategory]float64, year int, month int) string {
+func (s *Scheduler) generateMonthlyRecapMessage(user model.User, totals map[int]map[model.TransactionType]float64, categoryTotals map[model.TransactionType]map[model.TransactionCategory]float64, budget *model.Budget, year int, month int) string {
 	var text strings.Builder
 	var monthTotal float64
 
@@ -250,6 +259,20 @@ func (s *Scheduler) generateMonthlyRecapMessage(user model.User, totals map[int]
 	}
 
 	fmt.Fprintf(&text, "\n%s <b>Month Balance:</b> %.2f€\n", balanceEmoji, monthTotal)
+
+	// --- BUDGET SECTION ---
+	if budget != nil {
+		expenseAmount := t[model.TypeExpense]
+		pct := int(math.Floor(expenseAmount / budget.Amount * 100))
+		indicator := "✅"
+		if pct >= 100 {
+			indicator = "🚨"
+		} else if pct >= 80 {
+			indicator = "⚠️"
+		}
+		fmt.Fprintf(&text, "📊 <b>Budget:</b> %.2f / %.2f€ (%d%%) %s\n",
+			expenseAmount, budget.Amount, pct, indicator)
+	}
 
 	// --- AVERAGE DAILY SPENDING ---
 	if expenseAmount, ok := t[model.TypeExpense]; ok && expenseAmount > 0 {

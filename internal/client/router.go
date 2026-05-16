@@ -82,6 +82,11 @@ func (c *Client) FreeTextRouter(b *gotgbot.Bot, ctx *ext.Context) error {
 		return c.CloneSearchQueryEntered(b, ctx)
 	}
 
+	// Budget set wizard.
+	if user.Session.State == model.StateBudgetSetWaitAmount {
+		return c.BudgetSetFromMessage(b, ctx, user)
+	}
+
 	// Free text top level case: use LLM to classify user intent.
 	return c.classifyAndRouteIntent(b, ctx, user)
 }

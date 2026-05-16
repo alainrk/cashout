@@ -21,6 +21,7 @@ type Repositories struct {
 	Transactions repository.Transactions
 	Auth         repository.Auth
 	WebAuthn     *repository.WebAuthn
+	Budgets      repository.Budgets
 }
 
 type Server struct {

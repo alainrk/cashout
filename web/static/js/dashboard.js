@@ -522,6 +522,7 @@ function showPage(pageName) {
     const pageMap = {
         'transactions': 'transactionsPage',
         'add-transaction': 'addTransactionPage',
+        'budget': 'budgetPage',
         'security': 'securityPage'
     };
 

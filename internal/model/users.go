@@ -46,6 +46,8 @@ const (
 	StateWaitingConfirm StateType = "waiting_confirm"
 	// The user is editing a newly added transaction.
 	StateEditingNewTransaction StateType = "editing_new_transaction"
+	// The user is entering the amount for their monthly budget.
+	StateBudgetSetWaitAmount StateType = "budget_set_wait_amount"
 )
 
 // CommandType represents the type of command sent by the user

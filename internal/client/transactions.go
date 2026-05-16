@@ -190,6 +190,11 @@ func (c *Client) addTransaction(b *gotgbot.Bot, ctx *ext.Context, user model.Use
 	}
 
 	msg := fmt.Sprintf("%s <b>Transaction saved!</b>\n\n%s (€ %.2f), %s on %s", emoji, transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
+	if progress, perr := c.EvaluateAfterExpenseInsert(transaction); perr == nil {
+		msg += FormatBudgetSuffix(progress)
+	} else {
+		c.Logger.Warnf("budget evaluation failed: %v", perr)
+	}
 	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, msg, &gotgbot.SendMessageOpts{
 		ParseMode: "HTML",
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
@@ -375,6 +380,9 @@ func (c *Client) editTransactionDate(b *gotgbot.Bot, ctx *ext.Context, user mode
 	}
 
 	m := fmt.Sprintf("%s <b>Transaction updated!</b>\n\n%s (€ %.2f), %s on %s", emoji, transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
+	if transaction.Type == model.TypeExpense {
+		m += c.BudgetSuffixForTx(transaction)
+	}
 	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
 		ParseMode: "HTML",
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
@@ -474,6 +482,9 @@ func (c *Client) editTransactionAmount(b *gotgbot.Bot, ctx *ext.Context, user mo
 	}
 
 	m := fmt.Sprintf("%s <b>Transaction updated!</b>\n\n%s (€ %.2f), %s on %s", emoji, transaction.Category, transaction.Amount, transaction.Description, transaction.Date.Format("02-01-2006"))
+	if transaction.Type == model.TypeExpense {
+		m += c.BudgetSuffixForTx(transaction)
+	}
 	_, err = b.SendMessage(ctx.EffectiveSender.ChatId, m, &gotgbot.SendMessageOpts{
 		ParseMode: "HTML",
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
@@ -729,7 +740,13 @@ func (c *Client) Confirm(b *gotgbot.Bot, ctx *ext.Context) error {
 	if transaction.Type == model.TypeExpense {
 		emoji = "💸"
 	}
-	return c.SendHomeKeyboard(b, ctx, fmt.Sprintf("%s Your transaction has been saved!", emoji))
+	text := fmt.Sprintf("%s Your transaction has been saved!", emoji)
+	if progress, perr := c.EvaluateAfterExpenseInsert(transaction); perr == nil {
+		text += FormatBudgetSuffix(progress)
+	} else {
+		c.Logger.Warnf("budget evaluation failed: %v", perr)
+	}
+	return c.SendHomeKeyboard(b, ctx, text)
 }
 
 // Cancel returns to normal state.
@@ -790,6 +807,9 @@ func (c *Client) DeleteNewTransaction(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 
+	// Capture for budget context before delete.
+	deletedTx := transaction
+
 	// Delete the transaction
 	err = c.Repositories.Transactions.Delete(transactionID, user.TgID)
 	if err != nil {
@@ -804,8 +824,12 @@ func (c *Client) DeleteNewTransaction(b *gotgbot.Bot, ctx *ext.Context) error {
 		return fmt.Errorf("failed to set user data: %w", err)
 	}
 
+	text := "Transaction deleted!"
+	if deletedTx.Type == model.TypeExpense {
+		text += c.BudgetSuffixForTx(deletedTx)
+	}
 	// Send success message and return to home
-	return c.SendHomeKeyboard(b, ctx, "Transaction deleted!")
+	return c.SendHomeKeyboard(b, ctx, text)
 }
 
 // TransactionHome returns to home after adding/editing a transaction.

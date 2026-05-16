@@ -61,6 +61,9 @@
       <button class="nav-tab" data-page="add-transaction">
         Add Transaction
       </button>
+      <button class="nav-tab" data-page="budget">
+        Budget
+      </button>
       <button class="nav-tab" id="securityTab" data-page="security" style="display: none">
         Security
       </button>
@@ -157,6 +160,42 @@
         </div>
       </div>
 
+      <!-- Budget Page -->
+      <div class="page" id="budgetPage">
+        <div class="section">
+          <h2 class="section-title">Monthly Budget</h2>
+          <p class="section-subtitle">Set a single monthly expense limit. Progress is tracked across all categories for the current month.</p>
+
+          <div id="budgetStatus" class="budget-status">
+            <div class="loading">Loading…</div>
+          </div>
+
+          <form id="budgetForm" class="transaction-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="budgetAmount">Amount (€)</label>
+                <input
+                  type="text"
+                  id="budgetAmount"
+                  name="amount"
+                  placeholder="e.g. 1500"
+                  required
+                  pattern="[0-9]+([.,][0-9]{1,2})?"
+                  title="Enter a positive number (e.g. 1500 or 1500.00)"
+                />
+              </div>
+            </div>
+            <button type="submit" id="submitBudgetBtn" class="submit-btn">
+              Save Budget
+            </button>
+            <button type="button" id="deleteBudgetBtn" class="submit-btn" style="background:#b22; display:none; margin-left:8px;">
+              Remove Budget
+            </button>
+          </form>
+          <div id="budgetMessage" class="message"></div>
+        </div>
+      </div>
+
       <!-- Security Page -->
       <div class="page" id="securityPage">
         <div class="section">
@@ -193,6 +232,7 @@
 
     <script src="/web/static/js/webauthn.js"></script>
     <script src="/web/static/js/dashboard.js"></script>
+    <script src="/web/static/js/budget.js"></script>
     <script src="/web/static/js/passkey-manager.js"></script>
   </body>
 </html>

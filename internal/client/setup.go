@@ -105,6 +105,13 @@ func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("clone.search.cancel"), c.CloneSearchCancel))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("clone.search.home"), c.CloneSearchHome))
 
+	dispatcher.AddHandler(handlers.NewCommand("budget", c.BudgetCommand))
+	dispatcher.AddHandler(handlers.NewCommand("budgets", c.BudgetCommand))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.budget"), c.ShowBudget))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("budget.setprompt"), c.BudgetSetPrompt))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("budget.delete"), c.BudgetDeleteCallback))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("budget.cancel"), c.BudgetCancel))
+
 	dispatcher.AddHandler(handlers.NewCommand("cancel", c.Cancel))
 	dispatcher.AddHandler(handlers.NewCommand("delete", c.DeleteTransactions))
 	dispatcher.AddHandler(handlers.NewCommand("start", c.Start))

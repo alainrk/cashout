@@ -84,6 +84,7 @@ func main() {
 		Transactions: repository.Transactions{Repository: repo},
 		Auth:         repository.Auth{Repository: repo},
 		WebAuthn:     webAuthnRepo,
+		Budgets:      repository.Budgets{Repository: repo},
 	}
 
 	// Start periodic WebAuthn session cleanup (every hour)

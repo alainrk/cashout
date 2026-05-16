@@ -179,16 +179,20 @@ func (c *Client) DeleteTransactionConfirm(b *gotgbot.Bot, ctx *ext.Context) erro
 		emoji = "💸"
 	}
 
+	text := fmt.Sprintf("%s Transaction deleted successfully!\n\n%s: %s - %.2f€ (%s)",
+		emoji,
+		transaction.Category,
+		transaction.Description,
+		transaction.Amount,
+		transaction.Date.Format("02-01-2006"),
+	)
+	if transaction.Type == model.TypeExpense {
+		text += c.BudgetSuffixForTx(transaction)
+	}
 	// Send success message
 	_, _, err = ctx.CallbackQuery.Message.EditText(
 		b,
-		fmt.Sprintf("%s Transaction deleted successfully!\n\n%s: %s - %.2f€ (%s)",
-			emoji,
-			transaction.Category,
-			transaction.Description,
-			transaction.Amount,
-			transaction.Date.Format("02-01-2006"),
-		),
+		text,
 		&gotgbot.EditMessageTextOpts{
 			ParseMode: "HTML",
 			ReplyMarkup: gotgbot.InlineKeyboardMarkup{

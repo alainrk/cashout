@@ -499,10 +499,14 @@ func (c *Client) EditTransactionAmountConfirm(b *gotgbot.Bot, ctx *ext.Context) 
 		emoji = "💸"
 	}
 
+	text := fmt.Sprintf("%s Amount updated successfully!\n\nChanged from <b>%.2f€</b> to <b>%.2f€</b>",
+		emoji, oldAmount, transaction.Amount)
+	if transaction.Type == model.TypeExpense {
+		text += c.BudgetSuffixForTx(transaction)
+	}
 	_, err = b.SendMessage(
 		ctx.EffectiveSender.ChatId,
-		fmt.Sprintf("%s Amount updated successfully!\n\nChanged from <b>%.2f€</b> to <b>%.2f€</b>",
-			emoji, oldAmount, transaction.Amount),
+		text,
 		&gotgbot.SendMessageOpts{
 			ParseMode: "HTML",
 			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
@@ -628,12 +632,24 @@ func (c *Client) EditTransactionDateConfirm(b *gotgbot.Bot, ctx *ext.Context) er
 		emoji = "💸"
 	}
 
+	text := fmt.Sprintf("%s Date updated successfully!\n\nChanged from <b>%s</b> to <b>%s</b>",
+		emoji,
+		oldDate.Format("02-01-2006"),
+		transaction.Date.Format("02-01-2006"))
+	if transaction.Type == model.TypeExpense {
+		// Show NEW month's budget status — that's where the impact landed.
+		text += c.BudgetSuffixForTx(transaction)
+		// If the date moved across months, also surface the OLD month's status
+		// (it lost an expense — possibly bringing the user back under budget).
+		if oldDate.Year() != transaction.Date.Year() || oldDate.Month() != transaction.Date.Month() {
+			oldMonthTx := transaction
+			oldMonthTx.Date = oldDate
+			text += c.BudgetSuffixForTx(oldMonthTx)
+		}
+	}
 	_, err = b.SendMessage(
 		ctx.EffectiveSender.ChatId,
-		fmt.Sprintf("%s Date updated successfully!\n\nChanged from <b>%s</b> to <b>%s</b>",
-			emoji,
-			oldDate.Format("02-01-2006"),
-			transaction.Date.Format("02-01-2006")),
+		text,
 		&gotgbot.SendMessageOpts{
 			ParseMode: "HTML",
 			ReplyMarkup: gotgbot.InlineKeyboardMarkup{
