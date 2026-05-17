@@ -41,9 +41,9 @@ func (db *DB) GetCategoryAggregates(tgID int64, startDate, endDate time.Time, tr
 
 // MonthTotal is per-month totals keyed by YYYY-MM string.
 type MonthTotal struct {
-	YM      string
-	Type    model.TransactionType
-	Total   float64
+	YM    string
+	Type  model.TransactionType
+	Total float64
 }
 
 // GetMonthlyTotalsByRange returns per (month, type) totals between startDate

@@ -14,15 +14,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// budgetThresholds are the percentages at which alerts fire (each at most once per month).
-var budgetThresholds = []int16{80, 100}
-
 // BudgetProgress is the result of evaluating a user's spending against their budget.
 type BudgetProgress struct {
 	Limit     float64
 	Spent     float64
 	Pct       int
-	NewAlerts []int16 // subset of budgetThresholds that just crossed on this insert
+	NewAlerts []int16 // subset of threshold percentages that just crossed on this insert
 }
 
 // EvaluateAfterExpenseInsert computes budget progress and fires any newly-crossed

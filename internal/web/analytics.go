@@ -198,7 +198,7 @@ func buildCategoryEntries(rows []db.CategoryAggregate) ([]categoryEntry, float64
 func buildMonthPoints(start time.Time, months int, rows []db.MonthTotal) []monthPoint {
 	idx := make(map[string]int, months)
 	points := make([]monthPoint, months)
-	for i := 0; i < months; i++ {
+	for i := range months {
 		ym := start.AddDate(0, i, 0).Format(monthLayout)
 		points[i] = monthPoint{Month: ym}
 		idx[ym] = i

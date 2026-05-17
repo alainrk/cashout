@@ -8,7 +8,6 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 )
 
-
 func (c *Client) SendAddTransactionKeyboard(b *gotgbot.Bot, ctx *ext.Context, text string) (*gotgbot.Message, error) {
 	return b.SendMessage(ctx.EffectiveSender.ChatId, text, &gotgbot.SendMessageOpts{
 		ReplyMarkup: gotgbot.InlineKeyboardMarkup{
