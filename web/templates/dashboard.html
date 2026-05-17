@@ -61,6 +61,12 @@
       <button class="nav-tab" data-page="add-transaction">
         Add Transaction
       </button>
+      <button class="nav-tab" data-page="trends">
+        Trends
+      </button>
+      <button class="nav-tab" data-page="year">
+        Year
+      </button>
       <button class="nav-tab" data-page="budget">
         Budget
       </button>
@@ -86,6 +92,26 @@
 
         <div class="stats-grid" id="statsGrid">
           <div class="loading">Loading statistics...</div>
+        </div>
+
+        <div class="charts-row">
+          <div class="chart-card">
+            <h3 class="chart-title">Income vs Expenses</h3>
+            <div class="chart-canvas-wrap chart-canvas-wrap--bar">
+              <canvas id="incomeExpenseBar"></canvas>
+            </div>
+            <div class="chart-caption" id="balanceCaption"></div>
+          </div>
+          <div class="chart-card">
+            <h3 class="chart-title">Expenses by Category</h3>
+            <div class="chart-canvas-wrap chart-canvas-wrap--donut">
+              <canvas id="categoryDonut"></canvas>
+            </div>
+            <div class="chart-filter-banner" id="categoryFilterBanner" style="display:none;">
+              Filtered by <span id="categoryFilterName"></span>
+              <button type="button" id="clearCategoryFilter">Clear</button>
+            </div>
+          </div>
         </div>
 
         <div class="section">
@@ -160,6 +186,52 @@
         </div>
       </div>
 
+      <!-- Trends Page -->
+      <div class="page" id="trendsPage">
+        <div class="section">
+          <div class="section-header">
+            <h2 class="section-title">Monthly Trend</h2>
+            <div class="trend-controls">
+              <label for="trendWindow">Window</label>
+              <select id="trendWindow">
+                <option value="3">3 months</option>
+                <option value="6">6 months</option>
+                <option value="12" selected>12 months</option>
+                <option value="24">24 months</option>
+              </select>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap chart-canvas-wrap--trend">
+            <canvas id="trendLine"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Year Page -->
+      <div class="page" id="yearPage">
+        <div class="section">
+          <div class="section-header">
+            <h2 class="section-title">Year Overview</h2>
+            <div class="year-controls">
+              <label for="yearSelect">Year</label>
+              <select id="yearSelect"></select>
+            </div>
+          </div>
+          <div class="stats-grid" id="yearStatsGrid">
+            <div class="loading">Loading…</div>
+          </div>
+          <div class="chart-canvas-wrap chart-canvas-wrap--year">
+            <canvas id="yearStacked"></canvas>
+          </div>
+          <div class="chart-card chart-card--full">
+            <h3 class="chart-title">Expenses by Category</h3>
+            <div class="chart-canvas-wrap chart-canvas-wrap--donut">
+              <canvas id="yearDonut"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Budget Page -->
       <div class="page" id="budgetPage">
         <div class="section">
@@ -230,7 +302,10 @@
       </div>
     </div>
 
+    <script src="/web/static/js/vendor/chart.umd.min.js"></script>
     <script src="/web/static/js/webauthn.js"></script>
+    <script src="/web/static/js/analytics.js"></script>
+    <script src="/web/static/js/charts.js"></script>
     <script src="/web/static/js/dashboard.js"></script>
     <script src="/web/static/js/budget.js"></script>
     <script src="/web/static/js/passkey-manager.js"></script>

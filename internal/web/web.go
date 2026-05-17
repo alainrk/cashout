@@ -39,6 +39,9 @@ func Router(s *Server) http.Handler {
 	mux.HandleFunc(basePath+"/api/categories", s.requireAuth(s.handleAPICategories))
 	mux.HandleFunc(basePath+"/api/stats", s.requireAuth(s.handleAPIStats))
 	mux.HandleFunc(basePath+"/api/budget", s.requireAuth(s.handleAPIBudget))
+	mux.HandleFunc(basePath+"/api/analytics/monthly", s.requireAuth(s.handleAPIAnalyticsMonthly))
+	mux.HandleFunc(basePath+"/api/analytics/trend", s.requireAuth(s.handleAPIAnalyticsTrend))
+	mux.HandleFunc(basePath+"/api/analytics/year", s.requireAuth(s.handleAPIAnalyticsYear))
 
 	// WebAuthn/Passkey management (protected)
 	mux.HandleFunc(basePath+"/api/passkey/begin-register", s.requireAuth(s.handlePasskeyBeginRegister))

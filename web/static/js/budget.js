@@ -56,8 +56,8 @@
     try {
       const res = await fetch('/web/api/budget', { credentials: 'same-origin' });
       const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || 'Request failed');
-      renderStatus(json.data);
+      if (!res.ok) throw new Error(json.error || 'Request failed');
+      renderStatus(json);
     } catch (e) {
       statusEl.innerHTML = '<div class="error">Failed to load budget.</div>';
     }
@@ -80,8 +80,8 @@
         body: JSON.stringify({ amount }),
       });
       const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || 'Save failed');
-      renderStatus(json.data);
+      if (!res.ok) throw new Error(json.error || 'Save failed');
+      renderStatus(json);
       showMessage('Budget saved.', 'success');
     } catch (e) {
       showMessage('Failed to save budget.', 'error');
@@ -99,9 +99,9 @@
         credentials: 'same-origin',
       });
       const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || 'Delete failed');
+      if (!res.ok) throw new Error(json.error || 'Delete failed');
       amountInput.value = '';
-      renderStatus(json.data);
+      renderStatus(json);
       showMessage('Budget removed.', 'success');
     } catch (e) {
       showMessage('Failed to remove budget.', 'error');

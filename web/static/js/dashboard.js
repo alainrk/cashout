@@ -63,6 +63,25 @@ let transactionsData = [];
 let currentView = localStorage.getItem('dashboardView') || 'list';
 let sortColumn = 'date';
 let sortDirection = 'desc';
+let categoryFilter = null;
+
+function setCategoryFilter(category) {
+    categoryFilter = category;
+    const banner = document.getElementById('categoryFilterBanner');
+    const name = document.getElementById('categoryFilterName');
+    if (category) {
+        if (name) name.textContent = category;
+        if (banner) banner.style.display = '';
+    } else if (banner) {
+        banner.style.display = 'none';
+    }
+    renderTransactions();
+}
+
+function getFilteredTransactions() {
+    if (!categoryFilter) return transactionsData;
+    return transactionsData.filter((tx) => tx.category === categoryFilter);
+}
 
 // Load transactions
 async function loadTransactions(month) {
@@ -137,12 +156,13 @@ function renderTransactions() {
 function renderListView() {
     const container = document.getElementById('transactionsContainer');
 
-    if (transactionsData.length === 0) {
+    const filtered = getFilteredTransactions();
+    if (filtered.length === 0) {
         container.innerHTML = '<p>No transactions for this month.</p>';
         return;
     }
 
-    const sortedData = sortTransactions(transactionsData, sortColumn, sortDirection);
+    const sortedData = sortTransactions(filtered, sortColumn, sortDirection);
 
     // Render table rows for desktop
     const tableRows = sortedData.map(tx =>`
@@ -233,12 +253,13 @@ function renderListView() {
 function renderClusteredView() {
     const container = document.getElementById('transactionsContainer');
 
-    if (transactionsData.length === 0) {
+    const filtered = getFilteredTransactions();
+    if (filtered.length === 0) {
         container.innerHTML = '<p>No transactions for this month.</p>';
         return;
     }
 
-    const clusteredData = transactionsData.reduce((acc, tx) => {
+    const clusteredData = filtered.reduce((acc, tx) => {
         const key = `${tx.type}-${tx.category}`;
         if (!acc[key]) {
             acc[key] = {
@@ -474,8 +495,10 @@ document.getElementById('addTransactionForm').addEventListener('submit', async f
         loadCategories('Expense');
 
         // Reload transactions and stats
+        Analytics.invalidate();
         loadStats(currentMonth);
         loadTransactions(currentMonth);
+        loadMonthlyCharts(currentMonth);
 
         // Navigate to transactions page after a short delay
         setTimeout(() => {
@@ -522,6 +545,8 @@ function showPage(pageName) {
     const pageMap = {
         'transactions': 'transactionsPage',
         'add-transaction': 'addTransactionPage',
+        'trends': 'trendsPage',
+        'year': 'yearPage',
         'budget': 'budgetPage',
         'security': 'securityPage'
     };
@@ -532,6 +557,12 @@ function showPage(pageName) {
         document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
         currentPage = pageName;
         localStorage.setItem('currentPage', pageName);
+        if (pageName === 'trends') {
+            loadTrend();
+        } else if (pageName === 'year') {
+            initYearSelector();
+            loadYear();
+        }
     }
 }
 
@@ -550,6 +581,105 @@ showPage(currentPage);
 const currentMonth = document.getElementById('currentMonth').value;
 loadStats(currentMonth);
 loadTransactions(currentMonth);
+loadMonthlyCharts(currentMonth);
+
+// Monthly charts (donut + income/expense bar)
+async function loadMonthlyCharts(month) {
+    const donutCanvas = document.getElementById('categoryDonut');
+    const barCanvas = document.getElementById('incomeExpenseBar');
+    const caption = document.getElementById('balanceCaption');
+    if (!donutCanvas || !barCanvas) return;
+
+    try {
+        const data = await Analytics.fetchMonthly(month);
+        const expenses = (data.byCategory && data.byCategory.Expense) || [];
+        CashoutCharts.renderCategoryDonut(donutCanvas, expenses, {
+            onSliceClick: (cat) => setCategoryFilter(cat),
+        });
+        CashoutCharts.renderIncomeExpenseBar(barCanvas, data.totalIncome, data.totalExpenses);
+        if (caption) {
+            const sign = data.balance >= 0 ? '+' : '-';
+            caption.textContent = 'Balance: ' + sign + formatCurrency(Math.abs(data.balance));
+            caption.className = 'chart-caption ' + (data.balance >= 0 ? 'income' : 'expense');
+        }
+    } catch (e) {
+        if (caption) caption.textContent = 'Failed to load: ' + e.message;
+    }
+}
+
+const clearFilterBtn = document.getElementById('clearCategoryFilter');
+if (clearFilterBtn) {
+    clearFilterBtn.addEventListener('click', () => setCategoryFilter(null));
+}
+
+// Trends
+async function loadTrend() {
+    const canvas = document.getElementById('trendLine');
+    if (!canvas) return;
+    const sel = document.getElementById('trendWindow');
+    const months = sel ? parseInt(sel.value, 10) : 12;
+    try {
+        const data = await Analytics.fetchTrend(months);
+        CashoutCharts.renderTrendLine(canvas, data.points, {
+            onPointClick: (ym) => {
+                window.location = '/web/dashboard?month=' + encodeURIComponent(ym);
+            },
+        });
+    } catch (e) {
+        console.error('trend load failed', e);
+    }
+}
+const trendSelectEl = document.getElementById('trendWindow');
+if (trendSelectEl) trendSelectEl.addEventListener('change', loadTrend);
+
+// Year
+function initYearSelector() {
+    const sel = document.getElementById('yearSelect');
+    if (!sel || sel.options.length > 0) return;
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    for (let y = currentYear; y >= currentYear - 5; y -= 1) {
+        const opt = document.createElement('option');
+        opt.value = String(y);
+        opt.textContent = String(y);
+        sel.appendChild(opt);
+    }
+    sel.value = String(currentYear);
+    sel.addEventListener('change', loadYear);
+}
+
+async function loadYear() {
+    const sel = document.getElementById('yearSelect');
+    const stacked = document.getElementById('yearStacked');
+    const donut = document.getElementById('yearDonut');
+    const stats = document.getElementById('yearStatsGrid');
+    if (!sel || !stacked || !donut) return;
+    const year = parseInt(sel.value, 10) || new Date().getFullYear();
+    try {
+        const data = await Analytics.fetchYear(year);
+        if (stats) {
+            stats.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-label">Balance</div>
+                    <div class="stat-value">${formatCurrency(data.balance)}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Income</div>
+                    <div class="stat-value income">${formatCurrency(data.totalIncome)}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Expenses</div>
+                    <div class="stat-value expense">${formatCurrency(data.totalExpenses)}</div>
+                </div>
+            `;
+        }
+        CashoutCharts.renderYearStacked(stacked, data.byMonth);
+        const expenses = (data.byCategory && data.byCategory.Expense) || [];
+        CashoutCharts.renderCategoryDonut(donut, expenses, {});
+    } catch (e) {
+        if (stats) stats.innerHTML = '<div class="error">Failed to load: ' + e.message + '</div>';
+    }
+}
 
 // Delete transaction functionality
 function showDeleteConfirmation(id, description) {
@@ -606,8 +736,10 @@ async function deleteTransaction(id) {
         if (!response.ok) throw new Error(data.error || 'Failed to delete transaction');
 
         // Reload transactions and stats
+        Analytics.invalidate();
         await loadStats(currentMonth);
         await loadTransactions(currentMonth);
+        await loadMonthlyCharts(currentMonth);
 
     } catch (error) {
         alert('Error deleting transaction: ' + error.message);
