@@ -242,7 +242,7 @@
             <div class="loading">Loading…</div>
           </div>
 
-          <form id="budgetForm" class="transaction-form">
+          <form id="budgetForm" class="transaction-form budget-form">
             <div class="form-row">
               <div class="form-group">
                 <label for="budgetAmount">Amount (€)</label>
@@ -257,12 +257,14 @@
                 />
               </div>
             </div>
-            <button type="submit" id="submitBudgetBtn" class="submit-btn">
-              Save Budget
-            </button>
-            <button type="button" id="deleteBudgetBtn" class="submit-btn" style="background:#b22; display:none; margin-left:8px;">
-              Remove Budget
-            </button>
+            <div class="budget-actions">
+              <button type="submit" id="submitBudgetBtn" class="submit-btn">
+                Save Budget
+              </button>
+              <button type="button" id="deleteBudgetBtn" class="btn-secondary-danger" hidden>
+                Remove Budget
+              </button>
+            </div>
           </form>
           <div id="budgetMessage" class="message"></div>
         </div>

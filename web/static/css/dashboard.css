@@ -1045,15 +1045,117 @@ body {
 .budget-empty {
     color: #888;
     font-style: italic;
+    padding: 12px 0;
 }
-.budget-line {
+.budget-card {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.budget-card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+.budget-amounts {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+.budget-spent {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+.budget-of {
+    color: #888;
+    font-size: 14px;
+}
+.budget-total {
     font-size: 16px;
+    font-weight: 600;
+    color: #444;
+}
+.budget-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.budget-pct {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #e9f5ea;
+    color: #1f7a31;
+}
+.budget-pct--warn {
+    background: #fff4dc;
+    color: #8a5a00;
+}
+.budget-pct--over {
+    background: #fde2e2;
+    color: #a11a1a;
+}
+.budget-month {
+    color: #888;
+    font-size: 13px;
 }
 .budget-bar {
-    background: #eee;
-    border-radius: 6px;
-    height: 14px;
+    background: #ececec;
+    border-radius: 999px;
+    height: 10px;
     overflow: hidden;
+}
+.budget-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: #2a9d2a;
+    transition: width 0.25s ease;
+}
+.budget-bar-fill--warn { background: #d8a534; }
+.budget-bar-fill--over { background: #c63232; }
+
+.budget-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 1rem;
+    align-items: stretch;
+}
+.budget-actions .submit-btn {
+    margin-top: 0;
+    flex: 1;
+}
+.btn-secondary-danger {
+    padding: 0.875rem 1.25rem;
+    background: transparent;
+    color: #c63232;
+    border: 1px solid rgba(198, 50, 50, 0.35);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.btn-secondary-danger:hover {
+    background: rgba(198, 50, 50, 0.08);
+    border-color: rgba(198, 50, 50, 0.6);
+}
+.btn-secondary-danger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.btn-secondary-danger[hidden] { display: none; }
+
+@media (max-width: 560px) {
+    .budget-actions { flex-direction: column; }
+    .btn-secondary-danger { width: 100%; }
 }
 
 /* Analytics charts */

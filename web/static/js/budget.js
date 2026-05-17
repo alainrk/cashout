@@ -28,27 +28,36 @@
     if (!data || !data.hasBudget) {
       statusEl.innerHTML =
         '<div class="budget-empty">No monthly budget set yet.</div>';
-      deleteBtn.style.display = 'none';
+      deleteBtn.hidden = true;
       submitBtn.textContent = 'Save Budget';
       return;
     }
 
     const pct = Math.max(0, Math.min(100, data.pct));
-    let barColor = '#2a9d2a';
-    if (data.pct >= 100) barColor = '#c63232';
-    else if (data.pct >= 80) barColor = '#d8a534';
+    let state = 'ok';
+    if (data.pct >= 100) state = 'over';
+    else if (data.pct >= 80) state = 'warn';
 
     statusEl.innerHTML = `
-      <div class="budget-line">
-        <strong>${fmtEUR(data.spent)}</strong> spent of
-        <strong>${fmtEUR(data.amount)}</strong> (${data.pct}%) — ${data.month}
-      </div>
-      <div class="budget-bar" style="background:#eee;border-radius:6px;height:14px;margin-top:8px;overflow:hidden;">
-        <div style="width:${pct}%;height:100%;background:${barColor};transition:width .2s ease;"></div>
+      <div class="budget-card">
+        <div class="budget-card-head">
+          <div class="budget-amounts">
+            <span class="budget-spent">${fmtEUR(data.spent)}</span>
+            <span class="budget-of">of</span>
+            <span class="budget-total">${fmtEUR(data.amount)}</span>
+          </div>
+          <div class="budget-meta">
+            <span class="budget-pct budget-pct--${state}">${data.pct}%</span>
+            <span class="budget-month">${data.month}</span>
+          </div>
+        </div>
+        <div class="budget-bar">
+          <div class="budget-bar-fill budget-bar-fill--${state}" style="width:${pct}%"></div>
+        </div>
       </div>
     `;
     amountInput.value = data.amount.toString();
-    deleteBtn.style.display = 'inline-block';
+    deleteBtn.hidden = false;
     submitBtn.textContent = 'Update Budget';
   }
 
