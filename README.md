@@ -17,6 +17,7 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
 
 - **Intelligent Intent Routing**: Just type naturally, no commands needed. The AI understands whether you want to add a transaction, check your weekly summary, search, edit, delete, or export. Simply say "show me this week", "delete expense" or "irish pub 4.50" and the bot figures out the rest. If there is no match or you prefer to do otherwise, you can always fall back to a completely deterministic and classic flow.
 - **Smart Categorization**: Automatically assigns the right category based on your description.
+- **Duplicate Detection**: The AI detects when a new transaction looks like a recent one already saved and asks you to confirm before storing it, preventing accidental double-entries.
 - **Flexible Date Recognition**: Understands various date formats (dd/mm, dd-mm-yyyy, "yesterday", etc.).
 - **Multi-language Support**: Works with transaction descriptions in any language.
 
@@ -37,6 +38,13 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
 - **Balance Tracking**: Instant calculation of income vs expenses for any period.
 - **Category Analysis**: Understand where your money goes with percentage breakdowns.
 
+### Monthly Budgets
+
+- **Per-Category Budgets**: Set monthly spending limits for any expense category.
+- **Live Tracking**: See current month progress against each budget at a glance.
+- **Visual Feedback**: Progress bars and clear status when you are close to or over budget.
+- **Web-Managed**: Create, edit, and delete budgets directly from the dashboard.
+
 ### Web Dashboard
 
 - **Multiple Authentication Methods**:
@@ -44,13 +52,17 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
   - Email-based passwordless authentication.
   - Passkey/WebAuthn support for passwordless biometric login.
 - **Transaction Management**:
-  - Add new transactions directly from the web interface.
+  - Add new transactions directly from the web interface, with auto-save on creation.
+  - Edit and delete existing transactions inline.
   - View detailed transaction history with search and filtering.
   - Monthly navigation with intuitive controls.
 - **Visual Analytics**:
   - Real-time balance, income, and expense statistics.
-  - Category breakdowns and trends.
+  - Interactive charts for category breakdowns and monthly trends.
   - Transaction counts and summaries.
+- **Budget Management**:
+  - Configure monthly budgets per category from the dashboard.
+  - Track usage in real time with progress indicators.
 - **Security Features**:
   - Rate-limited authentication endpoints.
   - Secure session management with configurable duration.
@@ -78,10 +90,11 @@ Cashout is an intelligent Telegram bot that leverages AI to make expense trackin
 
 ### User Experience
 
-- **Intuitive Interface**: Clean inline keyboards for all operations.
-- **Smart Navigation**: Year/month selectors for browsing historical data.
+- **Intuitive Interface**: Clean inline keyboards for all operations, with a homogeneous category selector across add, edit, search, and budget flows.
+- **Smart Navigation**: Year/month selectors for browsing historical data, with the year shown in list and search results to avoid ambiguity.
 - **Pagination**: Handle large transaction lists with ease.
-- **Quick Actions**: Home screen with instant access to all major functions.
+- **Live Typing Indicator**: The bot signals "typing..." while the AI thinks, so you always know it is working.
+- **Quick Actions**: Home screen with instant access to all major functions, kept stable to avoid flicker on updates.
 - **Cancel Anytime**: Every operation can be cancelled mid-flow.
 
 ### Technical Features
