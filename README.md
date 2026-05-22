@@ -387,6 +387,53 @@ The web dashboard provides a complementary interface to the Telegram bot, offeri
 - Multiple secure authentication options.
 - Direct transaction creation without needing Telegram.
 
+## HTTP API & SDKs
+
+The dashboard endpoints under `/web/api/*` also accept programmatic clients via
+`Authorization: Bearer <token>` in addition to the existing browser session cookie.
+
+### Issuing a token (admin-only, direct DB insert)
+
+There is no token-management UI on purpose (as of now); tokens are inserted manually by an
+operator. The plaintext token is shown to the user once and only its SHA-256
+hex digest is stored.
+
+```bash
+# Generate locally:
+TOKEN="cshk_$(openssl rand -base64 24 | tr -d '=+/' | head -c 32)"
+HASH=$(printf %s "$TOKEN" | shasum -a 256 | awk '{print $1}')
+echo "token=$TOKEN"
+
+# Then in psql, replace <tg_id> with the target user's Telegram ID:
+# INSERT INTO api_tokens (tg_id, name, token_hash, prefix)
+#   VALUES (<tg_id>, 'my-cli', '<HASH>', substring('<TOKEN>' from 1 for 8));
+```
+
+Optional `expires_at` is supported; leave NULL for non-expiring tokens.
+
+### Calling the API
+
+```bash
+curl -H "Authorization: Bearer $TOKEN" \
+     "http://localhost:8081/web/api/stats?month=2026-05"
+```
+
+### OpenAPI spec & generated SDKs
+
+The spec lives at `api/swagger.{yaml,json}` and is generated from `swaggo/swag`
+annotations on the handlers. SDKs are committed under `sdks/{python,go,typescript}/`.
+
+```bash
+make openapi        # regenerate the spec
+make sdks           # regenerate spec + all three SDKs
+make sdk-python     # individual languages
+make sdk-go
+make sdk-ts
+```
+
+SDK generation uses the `@openapitools/openapi-generator-cli` npm wrapper and
+requires `npx` and Java 11+ on PATH.
+
 ## Testing
 
 ```bash

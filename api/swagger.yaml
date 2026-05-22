@@ -1,0 +1,633 @@
+basePath: /web
+definitions:
+  web.BudgetResponse:
+    properties:
+      amount:
+        type: number
+      currency:
+        type: string
+      hasBudget:
+        type: boolean
+      month:
+        type: string
+      pct:
+        type: integer
+      spent:
+        type: number
+    type: object
+  web.BudgetUpsertRequest:
+    properties:
+      amount:
+        type: number
+    type: object
+  web.CategoriesResponse:
+    properties:
+      categories:
+        items:
+          type: string
+        type: array
+    type: object
+  web.CategoryBreakdown:
+    properties:
+      Expense:
+        items:
+          $ref: '#/definitions/web.CategoryEntry'
+        type: array
+      Income:
+        items:
+          $ref: '#/definitions/web.CategoryEntry'
+        type: array
+    type: object
+  web.CategoryEntry:
+    properties:
+      amount:
+        type: number
+      category:
+        type: string
+      count:
+        type: integer
+      pct:
+        type: number
+    type: object
+  web.CreateTransactionRequest:
+    properties:
+      amount:
+        example: 12.5
+        type: number
+      category:
+        example: Food
+        type: string
+      date:
+        example: "2026-05-21"
+        type: string
+      description:
+        example: lunch
+        type: string
+      type:
+        example: Expense
+        type: string
+    type: object
+  web.DeleteTransactionRequest:
+    properties:
+      id:
+        type: integer
+    type: object
+  web.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  web.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  web.MonthPoint:
+    properties:
+      balance:
+        type: number
+      expense:
+        type: number
+      income:
+        type: number
+      month:
+        type: string
+    type: object
+  web.MonthlyAnalyticsResponse:
+    properties:
+      balance:
+        type: number
+      byCategory:
+        $ref: '#/definitions/web.CategoryBreakdown'
+      month:
+        type: string
+      totalExpenses:
+        type: number
+      totalIncome:
+        type: number
+    type: object
+  web.StatsResponse:
+    properties:
+      balance:
+        type: number
+      totalExpenses:
+        type: number
+      totalIncome:
+        type: number
+      totalTransactions:
+        type: integer
+    type: object
+  web.TransactionDTO:
+    properties:
+      amount:
+        type: number
+      category:
+        type: string
+      date:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      type:
+        type: string
+    type: object
+  web.TransactionsResponse:
+    properties:
+      count:
+        type: integer
+      transactions:
+        items:
+          $ref: '#/definitions/web.TransactionDTO'
+        type: array
+    type: object
+  web.TrendResponse:
+    properties:
+      from:
+        type: string
+      points:
+        items:
+          $ref: '#/definitions/web.MonthPoint'
+        type: array
+      to:
+        type: string
+    type: object
+  web.YearAnalyticsResponse:
+    properties:
+      balance:
+        type: number
+      byCategory:
+        $ref: '#/definitions/web.CategoryBreakdown'
+      byMonth:
+        items:
+          $ref: '#/definitions/web.YearMonthEntry'
+        type: array
+      totalExpenses:
+        type: number
+      totalIncome:
+        type: number
+      year:
+        type: integer
+    type: object
+  web.YearMonthEntry:
+    properties:
+      balance:
+        type: number
+      expense:
+        type: number
+      income:
+        type: number
+      month:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: 'Personal finance tracking API. All /api/* endpoints require either
+    a session cookie (browser) or an Authorization: Bearer <token> header (machine
+    clients).'
+  title: Cashout API
+  version: "1.0"
+paths:
+  /api/analytics/monthly:
+    get:
+      description: Returns total income/expenses and per-category aggregates for a
+        given month.
+      parameters:
+      - description: Month in YYYY-MM (defaults to current month)
+        in: query
+        name: month
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.MonthlyAnalyticsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Monthly category breakdown
+      tags:
+      - analytics
+  /api/analytics/trend:
+    get:
+      parameters:
+      - description: Number of trailing months (1..60, default 12)
+        in: query
+        name: months
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.TrendResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Monthly trend over the trailing N months
+      tags:
+      - analytics
+  /api/analytics/year:
+    get:
+      parameters:
+      - description: 4-digit year (defaults to current year)
+        in: query
+        name: year
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.YearAnalyticsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Annual breakdown by month and category
+      tags:
+      - analytics
+  /api/budget:
+    delete:
+      consumes:
+      - application/json
+      - application/json
+      parameters:
+      - description: Budget amount
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/web.BudgetUpsertRequest'
+      - description: Budget amount
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/web.BudgetUpsertRequest'
+      produces:
+      - application/json
+      - application/json
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.BudgetResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - BearerAuth: []
+      - BearerAuth: []
+      - BearerAuth: []
+      summary: Delete the monthly budget
+      tags:
+      - budget
+      - budget
+      - budget
+      - budget
+    get:
+      consumes:
+      - application/json
+      - application/json
+      parameters:
+      - description: Budget amount
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/web.BudgetUpsertRequest'
+      - description: Budget amount
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/web.BudgetUpsertRequest'
+      produces:
+      - application/json
+      - application/json
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.BudgetResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - BearerAuth: []
+      - BearerAuth: []
+      - BearerAuth: []
+      summary: Delete the monthly budget
+      tags:
+      - budget
+      - budget
+      - budget
+      - budget
+    post:
+      consumes:
+      - application/json
+      - application/json
+      parameters:
+      - description: Budget amount
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/web.BudgetUpsertRequest'
+      - description: Budget amount
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/web.BudgetUpsertRequest'
+      produces:
+      - application/json
+      - application/json
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.BudgetResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - BearerAuth: []
+      - BearerAuth: []
+      - BearerAuth: []
+      summary: Delete the monthly budget
+      tags:
+      - budget
+      - budget
+      - budget
+      - budget
+    put:
+      consumes:
+      - application/json
+      - application/json
+      parameters:
+      - description: Budget amount
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/web.BudgetUpsertRequest'
+      - description: Budget amount
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/web.BudgetUpsertRequest'
+      produces:
+      - application/json
+      - application/json
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.BudgetResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      security:
+      - BearerAuth: []
+      - BearerAuth: []
+      - BearerAuth: []
+      - BearerAuth: []
+      summary: Delete the monthly budget
+      tags:
+      - budget
+      - budget
+      - budget
+      - budget
+  /api/categories:
+    get:
+      parameters:
+      - description: 'Transaction type: Income or Expense'
+        in: query
+        name: type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.CategoriesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List categories
+      tags:
+      - transactions
+  /api/stats:
+    get:
+      parameters:
+      - description: Month in YYYY-MM (defaults to current month)
+        in: query
+        name: month
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.StatsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Monthly stats
+      tags:
+      - transactions
+  /api/transactions:
+    get:
+      parameters:
+      - description: Month in YYYY-MM (defaults to current month)
+        in: query
+        name: month
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.TransactionsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List transactions for a month
+      tags:
+      - transactions
+  /api/transactions/create:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Transaction payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/web.CreateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create transaction
+      tags:
+      - transactions
+  /api/transactions/delete:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Transaction ID payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/web.DeleteTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete transaction
+      tags:
+      - transactions
+securityDefinitions:
+  BearerAuth:
+    description: 'Provide the value as: Bearer <token>'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

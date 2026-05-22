@@ -2,6 +2,7 @@ package repository
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"os"
@@ -141,4 +142,33 @@ func (r *Auth) DeleteWebSession(sessionID string) error {
 // CleanupExpiredTokens removes expired auth tokens and sessions
 func (r *Auth) CleanupExpiredTokens() error {
 	return r.DB.CleanupExpiredAuthData()
+}
+
+// LookupAPIToken validates a bearer token string and returns the associated user.
+// The token is sha256-hashed before DB lookup; only the hash is stored.
+// Returns ErrInvalidToken if the token is missing, expired, or unknown.
+func (r *Auth) LookupAPIToken(token string) (*model.User, *model.APIToken, error) {
+	if token == "" {
+		return nil, nil, ErrInvalidToken
+	}
+	sum := sha256.Sum256([]byte(token))
+	hash := hex.EncodeToString(sum[:])
+
+	apiTok, err := r.DB.GetAPITokenByHash(hash)
+	if err != nil {
+		return nil, nil, ErrInvalidToken
+	}
+	if !apiTok.IsValid() {
+		return nil, nil, ErrInvalidToken
+	}
+	user, err := r.DB.GetUser(apiTok.TgID)
+	if err != nil {
+		return nil, nil, ErrInvalidToken
+	}
+	return user, apiTok, nil
+}
+
+// TouchAPIToken updates the last-used timestamp on a token (fire-and-forget OK).
+func (r *Auth) TouchAPIToken(id int64) error {
+	return r.DB.TouchAPITokenLastUsed(id)
 }

@@ -55,6 +55,21 @@ func (db *DB) DeleteWebSession(sessionID string) error {
 	return db.conn.Delete(&model.WebSession{}, "id = ?", sessionID).Error
 }
 
+// GetAPITokenByHash retrieves an API token by its sha256 hex hash.
+func (db *DB) GetAPITokenByHash(hash string) (*model.APIToken, error) {
+	var t model.APIToken
+	if err := db.conn.Where("token_hash = ?", hash).First(&t).Error; err != nil {
+		return nil, err
+	}
+	return &t, nil
+}
+
+// TouchAPITokenLastUsed updates the LastUsedAt timestamp.
+func (db *DB) TouchAPITokenLastUsed(id int64) error {
+	now := time.Now().UTC()
+	return db.conn.Model(&model.APIToken{}).Where("id = ?", id).Update("last_used_at", now).Error
+}
+
 // CleanupExpiredAuthData removes expired auth tokens and sessions
 func (db *DB) CleanupExpiredAuthData() error {
 	now := time.Now().UTC()

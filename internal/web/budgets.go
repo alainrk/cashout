@@ -13,7 +13,49 @@ import (
 	"gorm.io/gorm"
 )
 
-// handleAPIBudget multiplexes GET/POST/DELETE on /api/budget.
+// handleAPIBudget multiplexes GET/POST/PUT/DELETE on /api/budget.
+//
+//	@Summary		Get the current monthly budget
+//	@Tags			budget
+//	@Produce		json
+//	@Success		200	{object}	BudgetResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/api/budget [get]
+//
+//	@Summary		Create or update the monthly budget
+//	@Tags			budget
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		BudgetUpsertRequest	true	"Budget amount"
+//	@Success		200		{object}	BudgetResponse
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/api/budget [post]
+//
+//	@Summary		Replace the monthly budget
+//	@Tags			budget
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		BudgetUpsertRequest	true	"Budget amount"
+//	@Success		200		{object}	BudgetResponse
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/api/budget [put]
+//
+//	@Summary		Delete the monthly budget
+//	@Tags			budget
+//	@Produce		json
+//	@Success		200	{object}	BudgetResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/api/budget [delete]
 func (s *Server) handleAPIBudget(w http.ResponseWriter, r *http.Request) {
 	user := client.GetUserFromContext(r.Context())
 	if user == nil {
@@ -37,7 +79,7 @@ func (s *Server) budgetGet(w http.ResponseWriter, user *model.User) {
 	budget, err := s.repositories.Budgets.Get(user.TgID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.sendJSONSuccess(w, map[string]any{"hasBudget": false})
+			s.sendJSONSuccess(w, BudgetResponse{HasBudget: false})
 			return
 		}
 		s.logger.Errorf("Failed to get budget: %v", err)
@@ -57,20 +99,18 @@ func (s *Server) budgetGet(w http.ResponseWriter, user *model.User) {
 		pct = int(math.Floor(spent / budget.Amount * 100))
 	}
 
-	s.sendJSONSuccess(w, map[string]any{
-		"hasBudget": true,
-		"amount":    budget.Amount,
-		"currency":  string(budget.Currency),
-		"spent":     spent,
-		"pct":       pct,
-		"month":     now.Format("2006-01"),
+	s.sendJSONSuccess(w, BudgetResponse{
+		HasBudget: true,
+		Amount:    budget.Amount,
+		Currency:  string(budget.Currency),
+		Spent:     spent,
+		Pct:       pct,
+		Month:     now.Format("2006-01"),
 	})
 }
 
 func (s *Server) budgetUpsert(w http.ResponseWriter, r *http.Request, user *model.User) {
-	var req struct {
-		Amount float64 `json:"amount"`
-	}
+	var req BudgetUpsertRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		s.sendJSONError(w, "Invalid request", http.StatusBadRequest)
 		return
@@ -97,12 +137,12 @@ func (s *Server) budgetUpsert(w http.ResponseWriter, r *http.Request, user *mode
 func (s *Server) budgetDelete(w http.ResponseWriter, user *model.User) {
 	if err := s.repositories.Budgets.Delete(user.TgID); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.sendJSONSuccess(w, map[string]any{"hasBudget": false})
+			s.sendJSONSuccess(w, BudgetResponse{HasBudget: false})
 			return
 		}
 		s.logger.Errorf("Failed to delete budget: %v", err)
 		s.sendJSONError(w, "Failed to delete budget", http.StatusInternalServerError)
 		return
 	}
-	s.sendJSONSuccess(w, map[string]any{"hasBudget": false})
+	s.sendJSONSuccess(w, BudgetResponse{HasBudget: false})
 }

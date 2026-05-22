@@ -179,3 +179,52 @@ db/seed/build:
 .PHONY: db/seed
 db/seed: db/seed/build
 	/tmp/bin/seed
+
+
+# ==================================================================================== #
+# OPENAPI + SDKS
+# ==================================================================================== #
+
+SWAG_VERSION       := v1.16.6
+OPENAPI_WRAPPER    := @openapitools/openapi-generator-cli@2.20.5
+OPENAPI_GEN_JAR    := 7.10.0
+# Use the npm wrapper around openapi-generator. It downloads the matching JAR
+# and runs it via local Java. Requires `npx` and Java 11+ on PATH.
+OPENAPI_GEN := OPENAPI_GENERATOR_VERSION=$(OPENAPI_GEN_JAR) npx --yes $(OPENAPI_WRAPPER)
+
+## openapi: generate api/swagger.{yaml,json} from swag annotations
+.PHONY: openapi
+openapi:
+	go run github.com/swaggo/swag/cmd/swag@$(SWAG_VERSION) init \
+	  --generalInfo cmd/server/main.go \
+	  --output api \
+	  --parseDependency --parseInternal \
+	  --outputTypes yaml,json
+
+## sdk-python: generate the Python SDK into sdks/python
+.PHONY: sdk-python
+sdk-python:
+	$(OPENAPI_GEN) generate \
+	  -i api/swagger.yaml -g python \
+	  -o sdks/python \
+	  --additional-properties=packageName=cashout_sdk,projectName=cashout-sdk
+
+## sdk-go: generate the Go SDK into sdks/go
+.PHONY: sdk-go
+sdk-go:
+	$(OPENAPI_GEN) generate \
+	  -i api/swagger.yaml -g go \
+	  -o sdks/go \
+	  --additional-properties=packageName=cashout,isGoSubmodule=true
+
+## sdk-ts: generate the TypeScript (fetch) SDK into sdks/typescript
+.PHONY: sdk-ts
+sdk-ts:
+	$(OPENAPI_GEN) generate \
+	  -i api/swagger.yaml -g typescript-fetch \
+	  -o sdks/typescript \
+	  --additional-properties=npmName=@cashout/sdk,supportsES6=true
+
+## sdks: regenerate the OpenAPI spec and all SDKs
+.PHONY: sdks
+sdks: openapi sdk-python sdk-go sdk-ts
