@@ -234,7 +234,8 @@ sdk-ts:
 	$(OPENAPI_GEN) generate \
 	  -i api/swagger.yaml -g typescript-fetch \
 	  -o sdks/typescript \
-	  --additional-properties=npmName=@cashout/sdk,supportsES6=true
+	  --git-user-id=$(SDK_GIT_USER) --git-repo-id=$(SDK_GIT_REPO) \
+	  --additional-properties=npmName=@cashout/sdk,npmVersion=1.0.0,supportsES6=true
 
 ## sdks: regenerate the OpenAPI spec and all SDKs
 .PHONY: sdks

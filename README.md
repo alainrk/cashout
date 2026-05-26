@@ -434,6 +434,18 @@ make sdk-ts
 SDK generation uses the `@openapitools/openapi-generator-cli` npm wrapper and
 requires `npx` and Java 11+ on PATH.
 
+### Consuming the TypeScript SDK (npm / pnpm / yarn)
+
+The TypeScript SDK is generated and committed under `sdks/typescript/`, but a
+proper consumer install path is **on standby** until there's a concrete need.
+
+Unlike pip and Go, npm has no first-class way to install a package from a
+subdirectory of a git repo, so shipping this SDK to external consumers requires
+extra work — either publishing to npm under a real scope, or distributing
+packed tarballs. That will be wired up when the first consumer needs it; for
+now the generated code sits in the repo as a starting point and is kept in
+sync with the OpenAPI spec by `make sdk-ts`.
+
 ### Consuming the Python SDK (uv / pip)
 
 The Python SDK is a standard PEP 621 package rooted at `sdks/python/`. uv and
