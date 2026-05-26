@@ -1,3 +1,14 @@
+// Package main is the cashout server entrypoint.
+//
+//	@title			Cashout API
+//	@version		1.0
+//	@description	Personal finance tracking API. All /api/* endpoints require either a session cookie (browser) or an Authorization: Bearer <token> header (machine clients).
+//	@BasePath		/web
+//
+//	@securityDefinitions.apikey	BearerAuth
+//	@in							header
+//	@name						Authorization
+//	@description				Provide the value as: Bearer <token>
 package main
 
 import (

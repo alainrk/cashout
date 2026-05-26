@@ -69,7 +69,17 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleAPIStats returns user statistics for a given month
+// handleAPIStats returns user statistics for a given month.
+//
+//	@Summary		Monthly stats
+//	@Tags			transactions
+//	@Produce		json
+//	@Param			month	query		string	false	"Month in YYYY-MM (defaults to current month)"
+//	@Success		200		{object}	StatsResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/api/stats [get]
 func (s *Server) handleAPIStats(w http.ResponseWriter, r *http.Request) {
 	user := client.GetUserFromContext(r.Context())
 	if user == nil {
@@ -106,17 +116,25 @@ func (s *Server) handleAPIStats(w http.ResponseWriter, r *http.Request) {
 
 	balance := totalIncome - totalExpenses
 
-	stats := map[string]any{
-		"balance":           balance,
-		"totalIncome":       totalIncome,
-		"totalExpenses":     totalExpenses,
-		"totalTransactions": len(transactions),
-	}
-
-	s.sendJSONSuccess(w, stats)
+	s.sendJSONSuccess(w, StatsResponse{
+		Balance:           balance,
+		TotalIncome:       totalIncome,
+		TotalExpenses:     totalExpenses,
+		TotalTransactions: len(transactions),
+	})
 }
 
-// handleAPITransactions returns user transactions for a given month
+// handleAPITransactions returns user transactions for a given month.
+//
+//	@Summary		List transactions for a month
+//	@Tags			transactions
+//	@Produce		json
+//	@Param			month	query		string	false	"Month in YYYY-MM (defaults to current month)"
+//	@Success		200		{object}	TransactionsResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/api/transactions [get]
 func (s *Server) handleAPITransactions(w http.ResponseWriter, r *http.Request) {
 	user := client.GetUserFromContext(r.Context())
 	if user == nil {
@@ -140,19 +158,9 @@ func (s *Server) handleAPITransactions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Convert to response format
-	type TransactionResponse struct {
-		ID          int64     `json:"id"`
-		Date        time.Time `json:"date"`
-		Category    string    `json:"category"`
-		Description string    `json:"description"`
-		Amount      float64   `json:"amount"`
-		Type        string    `json:"type"`
-	}
-
-	transactionResponses := make([]TransactionResponse, len(transactions))
+	transactionResponses := make([]TransactionDTO, len(transactions))
 	for i, tx := range transactions {
-		transactionResponses[i] = TransactionResponse{
+		transactionResponses[i] = TransactionDTO{
 			ID:          tx.ID,
 			Date:        tx.Date,
 			Category:    string(tx.Category),
@@ -162,15 +170,23 @@ func (s *Server) handleAPITransactions(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	response := map[string]any{
-		"transactions": transactionResponses,
-		"count":        len(transactionResponses),
-	}
-
-	s.sendJSONSuccess(w, response)
+	s.sendJSONSuccess(w, TransactionsResponse{
+		Transactions: transactionResponses,
+		Count:        len(transactionResponses),
+	})
 }
 
-// handleAPICategories returns available categories based on transaction type
+// handleAPICategories returns available categories based on transaction type.
+//
+//	@Summary		List categories
+//	@Tags			transactions
+//	@Produce		json
+//	@Param			type	query		string	true	"Transaction type: Income or Expense"
+//	@Success		200		{object}	CategoriesResponse
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/api/categories [get]
 func (s *Server) handleAPICategories(w http.ResponseWriter, r *http.Request) {
 	user := client.GetUserFromContext(r.Context())
 	if user == nil {
@@ -191,12 +207,22 @@ func (s *Server) handleAPICategories(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.sendJSONSuccess(w, map[string]any{
-		"categories": categories,
-	})
+	s.sendJSONSuccess(w, CategoriesResponse{Categories: categories})
 }
 
-// handleAPICreateTransaction creates a new transaction
+// handleAPICreateTransaction creates a new transaction.
+//
+//	@Summary		Create transaction
+//	@Tags			transactions
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		CreateTransactionRequest	true	"Transaction payload"
+//	@Success		200		{object}	MessageResponse
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/api/transactions/create [post]
 func (s *Server) handleAPICreateTransaction(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -209,13 +235,7 @@ func (s *Server) handleAPICreateTransaction(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	var req struct {
-		Type        string  `json:"type"`
-		Category    string  `json:"category"`
-		Amount      float64 `json:"amount"`
-		Description string  `json:"description"`
-		Date        string  `json:"date"`
-	}
+	var req CreateTransactionRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		s.sendJSONError(w, "Invalid request", http.StatusBadRequest)
@@ -265,12 +285,22 @@ func (s *Server) handleAPICreateTransaction(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	s.sendJSONSuccess(w, map[string]any{
-		"message": "Transaction created successfully",
-	})
+	s.sendJSONSuccess(w, MessageResponse{Message: "Transaction created successfully"})
 }
 
-// handleAPIDeleteTransaction deletes a transaction by ID
+// handleAPIDeleteTransaction deletes a transaction by ID.
+//
+//	@Summary		Delete transaction
+//	@Tags			transactions
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		DeleteTransactionRequest	true	"Transaction ID payload"
+//	@Success		200		{object}	MessageResponse
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/api/transactions/delete [delete]
 func (s *Server) handleAPIDeleteTransaction(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -283,9 +313,7 @@ func (s *Server) handleAPIDeleteTransaction(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	var req struct {
-		ID int64 `json:"id"`
-	}
+	var req DeleteTransactionRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		s.sendJSONError(w, "Invalid request", http.StatusBadRequest)
@@ -306,7 +334,5 @@ func (s *Server) handleAPIDeleteTransaction(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	s.sendJSONSuccess(w, map[string]any{
-		"message": "Transaction deleted successfully",
-	})
+	s.sendJSONSuccess(w, MessageResponse{Message: "Transaction deleted successfully"})
 }

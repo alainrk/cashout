@@ -2,6 +2,7 @@ package web
 
 import (
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -109,20 +110,71 @@ func (s *Server) rateLimit(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-// Middleware to require authentication
+// Middleware to require authentication.
+//
+// Accepts either:
+//   - Authorization: Bearer <token> — long-lived API token (issued out-of-band, see api_tokens table)
+//   - session_id cookie — interactive web session
+//
+// API-style requests (path under /web/api/, Accept: application/json, or a bearer
+// header was provided) receive a 401 JSON error on failure; browser requests are
+// redirected to /web/login.
 func (s *Server) requireAuth(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		bearer, hasBearer := extractBearerToken(r)
+		if hasBearer {
+			user, tok, err := s.repositories.Auth.LookupAPIToken(bearer)
+			if err != nil {
+				s.sendJSONError(w, "Invalid or expired token", http.StatusUnauthorized)
+				return
+			}
+			go func(id int64) {
+				if err := s.repositories.Auth.TouchAPIToken(id); err != nil {
+					s.logger.Warnf("failed to touch api token %d: %v", id, err)
+				}
+			}(tok.ID)
+			ctx := client.SetUserInContext(r.Context(), user)
+			handler(w, r.WithContext(ctx))
+			return
+		}
+
 		session, err := s.getSession(r)
 		if err != nil || session == nil || !session.IsValid() {
+			if isAPIRequest(r) {
+				s.sendJSONError(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
 			http.Redirect(w, r, basePath+"/login", http.StatusSeeOther)
 			return
 		}
 
-		// Add user to context
-		ctx := r.Context()
-		ctx = client.SetUserInContext(ctx, session.User)
+		ctx := client.SetUserInContext(r.Context(), session.User)
 		handler(w, r.WithContext(ctx))
 	}
+}
+
+// extractBearerToken pulls the token from an `Authorization: Bearer <token>` header.
+// Returns (token, true) only when the scheme matches; an Authorization header with
+// a different scheme returns ("", false) so it can fall through to cookie auth.
+func extractBearerToken(r *http.Request) (string, bool) {
+	h := r.Header.Get("Authorization")
+	if h == "" {
+		return "", false
+	}
+	const prefix = "Bearer "
+	if len(h) < len(prefix) || !strings.EqualFold(h[:len(prefix)], prefix) {
+		return "", false
+	}
+	return strings.TrimSpace(h[len(prefix):]), true
+}
+
+// isAPIRequest returns true if the caller looks like a programmatic client
+// (path under /web/api/ or an explicit JSON Accept header).
+func isAPIRequest(r *http.Request) bool {
+	if strings.HasPrefix(r.URL.Path, basePath+"/api/") {
+		return true
+	}
+	return strings.Contains(r.Header.Get("Accept"), "application/json")
 }
 
 // Helper to get session from cookie

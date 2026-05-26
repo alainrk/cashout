@@ -387,6 +387,149 @@ The web dashboard provides a complementary interface to the Telegram bot, offeri
 - Multiple secure authentication options.
 - Direct transaction creation without needing Telegram.
 
+## HTTP API & SDKs
+
+The dashboard endpoints under `/web/api/*` also accept programmatic clients via
+`Authorization: Bearer <token>` in addition to the existing browser session cookie.
+
+### Issuing a token (admin-only, direct DB insert)
+
+There is no token-management UI on purpose (as of now); tokens are inserted manually by an
+operator. The plaintext token is shown to the user once and only its SHA-256
+hex digest is stored.
+
+```bash
+# Generate locally:
+TOKEN="cshk_$(openssl rand -base64 24 | tr -d '=+/' | head -c 32)"
+HASH=$(printf %s "$TOKEN" | shasum -a 256 | awk '{print $1}')
+echo "token=$TOKEN"
+
+# Then in psql, replace <tg_id> with the target user's Telegram ID:
+# INSERT INTO api_tokens (tg_id, name, token_hash, prefix)
+#   VALUES (<tg_id>, 'my-cli', '<HASH>', substring('<TOKEN>' from 1 for 8));
+```
+
+Optional `expires_at` is supported; leave NULL for non-expiring tokens.
+
+### Calling the API
+
+```bash
+curl -H "Authorization: Bearer $TOKEN" \
+     "http://localhost:8081/web/api/stats?month=2026-05"
+```
+
+### OpenAPI spec & generated SDKs
+
+The spec lives at `api/swagger.{yaml,json}` and is generated from `swaggo/swag`
+annotations on the handlers. SDKs are committed under `sdks/{python,go,typescript}/`.
+
+```bash
+make openapi        # regenerate the spec
+make sdks           # regenerate spec + all three SDKs
+make sdk-python     # individual languages
+make sdk-go
+make sdk-ts
+```
+
+SDK generation uses the `@openapitools/openapi-generator-cli` npm wrapper and
+requires `npx` and Java 11+ on PATH.
+
+### Consuming the TypeScript SDK (npm / pnpm / yarn)
+
+The TypeScript SDK is generated and committed under `sdks/typescript/`, but a
+proper consumer install path is **on standby** until there's a concrete need.
+
+Unlike pip and Go, npm has no first-class way to install a package from a
+subdirectory of a git repo, so shipping this SDK to external consumers requires
+extra work — either publishing to npm under a real scope, or distributing
+packed tarballs. That will be wired up when the first consumer needs it; for
+now the generated code sits in the repo as a starting point and is kept in
+sync with the OpenAPI spec by `make sdk-ts`.
+
+### Consuming the Python SDK (uv / pip)
+
+The Python SDK is a standard PEP 621 package rooted at `sdks/python/`. uv and
+pip can install it directly from this repo using the `subdirectory` fragment:
+
+```bash
+# Add it to a uv-managed project
+uv add "git+https://github.com/alainrk/cashout.git#subdirectory=sdks/python"
+
+# Or one-off into the current environment
+uv pip install "git+https://github.com/alainrk/cashout.git#subdirectory=sdks/python"
+
+# Plain pip works too
+pip install "git+https://github.com/alainrk/cashout.git#subdirectory=sdks/python"
+```
+
+To pin to a specific commit or tag, append `@<ref>` before the `#`:
+
+```bash
+uv add "git+https://github.com/alainrk/cashout.git@v0.1.0#subdirectory=sdks/python"
+```
+
+Usage:
+
+```python
+import cashout_sdk
+from cashout_sdk.api.transactions_api import TransactionsApi
+
+cfg = cashout_sdk.Configuration(
+    host="http://localhost:8081/web",
+    access_token="cshk_...",
+)
+with cashout_sdk.ApiClient(cfg) as client:
+    stats = TransactionsApi(client).api_stats_get(month="2026-05")
+    print(stats)
+```
+
+### Consuming the Go SDK
+
+The Go SDK is a Go submodule rooted at `sdks/go/`. Its module path matches its
+on-disk location, so it is `go get`-able directly from this repo:
+
+```bash
+go get github.com/alainrk/cashout/sdks/go@latest
+```
+
+```go
+import (
+    "context"
+    cashout "github.com/alainrk/cashout/sdks/go"
+)
+
+func main() {
+    cfg := cashout.NewConfiguration()
+    cfg.Servers = cashout.ServerConfigurations{{URL: "http://localhost:8081/web"}}
+    cfg.DefaultHeader["Authorization"] = "Bearer cshk_..."
+    client := cashout.NewAPIClient(cfg)
+
+    stats, _, err := client.TransactionsAPI.
+        ApiStatsGet(context.Background()).
+        Month("2026-05").
+        Execute()
+    _ = stats; _ = err
+}
+```
+
+**Versioning.** Because the SDK lives in a subdirectory, Go expects git tags to
+be **prefixed with the subdirectory path** when you cut releases:
+
+```bash
+git tag sdks/go/v0.1.0
+git push origin sdks/go/v0.1.0
+```
+
+Consumers then pin via:
+
+```bash
+go get github.com/alainrk/cashout/sdks/go@v0.1.0
+```
+
+Until a `sdks/go/vX.Y.Z` tag exists, `@latest` resolves to a pseudo-version
+synthesized from the commit (`v0.0.0-<timestamp>-<sha>`). That works for early
+adopters but isn't a stable release.
+
 ## Testing
 
 ```bash

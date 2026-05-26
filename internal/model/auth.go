@@ -80,3 +80,30 @@ func (WebSession) TableName() string {
 func (s *WebSession) IsValid() bool {
 	return time.Now().UTC().Before(s.ExpiresAt)
 }
+
+// APIToken represents a long-lived bearer token issued out-of-band (admin inserts directly).
+// The plaintext token is never stored; only its sha256 hex digest in TokenHash.
+type APIToken struct {
+	ID         int64      `gorm:"column:id;primaryKey;autoIncrement"`
+	TgID       int64      `gorm:"column:tg_id;not null;index"`
+	Name       string     `gorm:"column:name;not null"`
+	TokenHash  string     `gorm:"column:token_hash;not null;unique;index"`
+	Prefix     string     `gorm:"column:prefix;not null"`
+	ExpiresAt  *time.Time `gorm:"column:expires_at"`
+	LastUsedAt *time.Time `gorm:"column:last_used_at"`
+	CreatedAt  time.Time  `gorm:"column:created_at;autoCreateTime"`
+
+	User *User `gorm:"foreignKey:TgID;references:TgID"`
+}
+
+func (APIToken) TableName() string {
+	return "api_tokens"
+}
+
+// IsValid checks the token has not expired.
+func (t *APIToken) IsValid() bool {
+	if t.ExpiresAt == nil {
+		return true
+	}
+	return time.Now().UTC().Before(*t.ExpiresAt)
+}

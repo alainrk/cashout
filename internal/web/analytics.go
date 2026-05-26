@@ -10,23 +10,18 @@ import (
 	"cashout/internal/model"
 )
 
-// categoryEntry is the per-category breakdown returned by analytics endpoints.
-type categoryEntry struct {
-	Category string  `json:"category"`
-	Amount   float64 `json:"amount"`
-	Count    int64   `json:"count"`
-	Pct      float64 `json:"pct"`
-}
-
-// monthPoint is a single month's pivoted totals.
-type monthPoint struct {
-	Month   string  `json:"month"` // YYYY-MM
-	Income  float64 `json:"income"`
-	Expense float64 `json:"expense"`
-	Balance float64 `json:"balance"`
-}
-
 // handleAPIAnalyticsMonthly returns category breakdown + totals for a month.
+//
+//	@Summary		Monthly category breakdown
+//	@Description	Returns total income/expenses and per-category aggregates for a given month.
+//	@Tags			analytics
+//	@Produce		json
+//	@Param			month	query		string	false	"Month in YYYY-MM (defaults to current month)"
+//	@Success		200		{object}	MonthlyAnalyticsResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/api/analytics/monthly [get]
 func (s *Server) handleAPIAnalyticsMonthly(w http.ResponseWriter, r *http.Request) {
 	user := client.GetUserFromContext(r.Context())
 	if user == nil {
@@ -59,20 +54,29 @@ func (s *Server) handleAPIAnalyticsMonthly(w http.ResponseWriter, r *http.Reques
 	expenseEntries, totalExpense := buildCategoryEntries(expense)
 	incomeEntries, totalIncome := buildCategoryEntries(income)
 
-	resp := map[string]any{
-		"month":         current.Format(monthLayout),
-		"totalIncome":   totalIncome,
-		"totalExpenses": totalExpense,
-		"balance":       totalIncome - totalExpense,
-		"byCategory": map[string]any{
-			"Expense": expenseEntries,
-			"Income":  incomeEntries,
+	s.sendJSONSuccess(w, MonthlyAnalyticsResponse{
+		Month:         current.Format(monthLayout),
+		TotalIncome:   totalIncome,
+		TotalExpenses: totalExpense,
+		Balance:       totalIncome - totalExpense,
+		ByCategory: CategoryBreakdown{
+			Expense: expenseEntries,
+			Income:  incomeEntries,
 		},
-	}
-	s.sendJSONSuccess(w, resp)
+	})
 }
 
 // handleAPIAnalyticsTrend returns trailing N-month income/expense/balance.
+//
+//	@Summary		Monthly trend over the trailing N months
+//	@Tags			analytics
+//	@Produce		json
+//	@Param			months	query		int	false	"Number of trailing months (1..60, default 12)"
+//	@Success		200		{object}	TrendResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/api/analytics/trend [get]
 func (s *Server) handleAPIAnalyticsTrend(w http.ResponseWriter, r *http.Request) {
 	user := client.GetUserFromContext(r.Context())
 	if user == nil {
@@ -100,14 +104,24 @@ func (s *Server) handleAPIAnalyticsTrend(w http.ResponseWriter, r *http.Request)
 
 	points := buildMonthPoints(startMonth, months, rows)
 
-	s.sendJSONSuccess(w, map[string]any{
-		"from":   points[0].Month,
-		"to":     points[len(points)-1].Month,
-		"points": points,
+	s.sendJSONSuccess(w, TrendResponse{
+		From:   points[0].Month,
+		To:     points[len(points)-1].Month,
+		Points: points,
 	})
 }
 
 // handleAPIAnalyticsYear returns per-month totals and category breakdown for a year.
+//
+//	@Summary		Annual breakdown by month and category
+//	@Tags			analytics
+//	@Produce		json
+//	@Param			year	query		int	false	"4-digit year (defaults to current year)"
+//	@Success		200		{object}	YearAnalyticsResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/api/analytics/year [get]
 func (s *Server) handleAPIAnalyticsYear(w http.ResponseWriter, r *http.Request) {
 	user := client.GetUserFromContext(r.Context())
 	if user == nil {
@@ -133,14 +147,14 @@ func (s *Server) handleAPIAnalyticsYear(w http.ResponseWriter, r *http.Request) 
 	}
 	points := buildMonthPoints(startDate, 12, rows)
 
-	byMonth := make([]map[string]any, 12)
+	byMonth := make([]YearMonthEntry, 12)
 	var totalIncome, totalExpense float64
 	for i, p := range points {
-		byMonth[i] = map[string]any{
-			"month":   i + 1,
-			"income":  p.Income,
-			"expense": p.Expense,
-			"balance": p.Balance,
+		byMonth[i] = YearMonthEntry{
+			Month:   i + 1,
+			Income:  p.Income,
+			Expense: p.Expense,
+			Balance: p.Balance,
 		}
 		totalIncome += p.Income
 		totalExpense += p.Expense
@@ -161,31 +175,31 @@ func (s *Server) handleAPIAnalyticsYear(w http.ResponseWriter, r *http.Request) 
 	expenseEntries, _ := buildCategoryEntries(expense)
 	incomeEntries, _ := buildCategoryEntries(income)
 
-	s.sendJSONSuccess(w, map[string]any{
-		"year":          year,
-		"totalIncome":   totalIncome,
-		"totalExpenses": totalExpense,
-		"balance":       totalIncome - totalExpense,
-		"byMonth":       byMonth,
-		"byCategory": map[string]any{
-			"Expense": expenseEntries,
-			"Income":  incomeEntries,
+	s.sendJSONSuccess(w, YearAnalyticsResponse{
+		Year:          year,
+		TotalIncome:   totalIncome,
+		TotalExpenses: totalExpense,
+		Balance:       totalIncome - totalExpense,
+		ByMonth:       byMonth,
+		ByCategory: CategoryBreakdown{
+			Expense: expenseEntries,
+			Income:  incomeEntries,
 		},
 	})
 }
 
-func buildCategoryEntries(rows []db.CategoryAggregate) ([]categoryEntry, float64) {
+func buildCategoryEntries(rows []db.CategoryAggregate) ([]CategoryEntry, float64) {
 	var total float64
 	for _, r := range rows {
 		total += r.Amount
 	}
-	entries := make([]categoryEntry, len(rows))
+	entries := make([]CategoryEntry, len(rows))
 	for i, r := range rows {
 		pct := 0.0
 		if total > 0 {
 			pct = (r.Amount / total) * 100
 		}
-		entries[i] = categoryEntry{
+		entries[i] = CategoryEntry{
 			Category: string(r.Category),
 			Amount:   r.Amount,
 			Count:    r.Count,
@@ -195,12 +209,12 @@ func buildCategoryEntries(rows []db.CategoryAggregate) ([]categoryEntry, float64
 	return entries, total
 }
 
-func buildMonthPoints(start time.Time, months int, rows []db.MonthTotal) []monthPoint {
+func buildMonthPoints(start time.Time, months int, rows []db.MonthTotal) []MonthPoint {
 	idx := make(map[string]int, months)
-	points := make([]monthPoint, months)
+	points := make([]MonthPoint, months)
 	for i := range months {
 		ym := start.AddDate(0, i, 0).Format(monthLayout)
-		points[i] = monthPoint{Month: ym}
+		points[i] = MonthPoint{Month: ym}
 		idx[ym] = i
 	}
 	for _, r := range rows {
