@@ -1,0 +1,801 @@
+openapi: 3.0.1
+info:
+  contact: {}
+  description: "Personal finance tracking API. All /api/* endpoints require either\
+    \ a session cookie (browser) or an Authorization: Bearer <token> header (machine\
+    \ clients)."
+  title: Cashout API
+  version: "1.0"
+servers:
+- url: /web
+paths:
+  /api/analytics/monthly:
+    get:
+      description: Returns total income/expenses and per-category aggregates for a
+        given month.
+      parameters:
+      - description: Month in YYYY-MM (defaults to current month)
+        in: query
+        name: month
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.MonthlyAnalyticsResponse"
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Monthly category breakdown
+      tags:
+      - analytics
+  /api/analytics/trend:
+    get:
+      parameters:
+      - description: "Number of trailing months (1..60, default 12)"
+        in: query
+        name: months
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.TrendResponse"
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Monthly trend over the trailing N months
+      tags:
+      - analytics
+  /api/analytics/year:
+    get:
+      parameters:
+      - description: 4-digit year (defaults to current year)
+        in: query
+        name: year
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.YearAnalyticsResponse"
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Annual breakdown by month and category
+      tags:
+      - analytics
+  /api/budget:
+    delete:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/web.BudgetUpsertRequest"
+        description: Budget amount
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.BudgetResponse"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      - BearerAuth: []
+      - BearerAuth: []
+      - BearerAuth: []
+      summary: Delete the monthly budget
+      tags:
+      - budget
+      - budget
+      - budget
+      - budget
+      x-codegen-request-body-name: body
+    get:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/web.BudgetUpsertRequest"
+        description: Budget amount
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.BudgetResponse"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      - BearerAuth: []
+      - BearerAuth: []
+      - BearerAuth: []
+      summary: Delete the monthly budget
+      tags:
+      - budget
+      - budget
+      - budget
+      - budget
+      x-codegen-request-body-name: body
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/web.BudgetUpsertRequest"
+        description: Budget amount
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.BudgetResponse"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      - BearerAuth: []
+      - BearerAuth: []
+      - BearerAuth: []
+      summary: Delete the monthly budget
+      tags:
+      - budget
+      - budget
+      - budget
+      - budget
+      x-codegen-request-body-name: body
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/web.BudgetUpsertRequest"
+        description: Budget amount
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.BudgetResponse"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      - BearerAuth: []
+      - BearerAuth: []
+      - BearerAuth: []
+      summary: Delete the monthly budget
+      tags:
+      - budget
+      - budget
+      - budget
+      - budget
+      x-codegen-request-body-name: body
+  /api/categories:
+    get:
+      parameters:
+      - description: "Transaction type: Income or Expense"
+        in: query
+        name: type
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.CategoriesResponse"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Unauthorized
+      security:
+      - BearerAuth: []
+      summary: List categories
+      tags:
+      - transactions
+  /api/stats:
+    get:
+      parameters:
+      - description: Month in YYYY-MM (defaults to current month)
+        in: query
+        name: month
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.StatsResponse"
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Monthly stats
+      tags:
+      - transactions
+  /api/transactions:
+    get:
+      parameters:
+      - description: Month in YYYY-MM (defaults to current month)
+        in: query
+        name: month
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.TransactionsResponse"
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: List transactions for a month
+      tags:
+      - transactions
+  /api/transactions/create:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/web.CreateTransactionRequest"
+        description: Transaction payload
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.MessageResponse"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Create transaction
+      tags:
+      - transactions
+      x-codegen-request-body-name: body
+  /api/transactions/delete:
+    delete:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/web.DeleteTransactionRequest"
+        description: Transaction ID payload
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.MessageResponse"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Delete transaction
+      tags:
+      - transactions
+      x-codegen-request-body-name: body
+components:
+  schemas:
+    web.BudgetResponse:
+      example:
+        pct: 6
+        amount: 0.8008281904610115
+        hasBudget: true
+        month: month
+        spent: 1.4658129805029452
+        currency: currency
+      properties:
+        amount:
+          type: number
+        currency:
+          type: string
+        hasBudget:
+          type: boolean
+        month:
+          type: string
+        pct:
+          type: integer
+        spent:
+          type: number
+      type: object
+    web.BudgetUpsertRequest:
+      properties:
+        amount:
+          type: number
+      type: object
+    web.CategoriesResponse:
+      example:
+        categories:
+        - categories
+        - categories
+      properties:
+        categories:
+          items:
+            type: string
+          type: array
+      type: object
+    web.CategoryBreakdown:
+      example:
+        Expense:
+        - pct: 5.962133916683182
+          amount: 6.027456183070403
+          count: 1
+          category: category
+        - pct: 5.962133916683182
+          amount: 6.027456183070403
+          count: 1
+          category: category
+        Income:
+        - pct: 5.962133916683182
+          amount: 6.027456183070403
+          count: 1
+          category: category
+        - pct: 5.962133916683182
+          amount: 6.027456183070403
+          count: 1
+          category: category
+      properties:
+        Expense:
+          items:
+            $ref: "#/components/schemas/web.CategoryEntry"
+          type: array
+        Income:
+          items:
+            $ref: "#/components/schemas/web.CategoryEntry"
+          type: array
+      type: object
+    web.CategoryEntry:
+      example:
+        pct: 5.962133916683182
+        amount: 6.027456183070403
+        count: 1
+        category: category
+      properties:
+        amount:
+          type: number
+        category:
+          type: string
+        count:
+          type: integer
+        pct:
+          type: number
+      type: object
+    web.CreateTransactionRequest:
+      properties:
+        amount:
+          example: 12.5
+          type: number
+        category:
+          example: Food
+          type: string
+        date:
+          example: 2026-05-21
+          type: string
+        description:
+          example: lunch
+          type: string
+        type:
+          example: Expense
+          type: string
+      type: object
+    web.DeleteTransactionRequest:
+      properties:
+        id:
+          type: integer
+      type: object
+    web.ErrorResponse:
+      example:
+        error: error
+      properties:
+        error:
+          type: string
+      type: object
+    web.MessageResponse:
+      example:
+        message: message
+      properties:
+        message:
+          type: string
+      type: object
+    web.MonthPoint:
+      example:
+        income: 1.4658129805029452
+        balance: 0.8008281904610115
+        month: month
+        expense: 6.027456183070403
+      properties:
+        balance:
+          type: number
+        expense:
+          type: number
+        income:
+          type: number
+        month:
+          type: string
+      type: object
+    web.MonthlyAnalyticsResponse:
+      example:
+        totalIncome: 2.3021358869347655
+        balance: 0.8008281904610115
+        month: month
+        byCategory:
+          Expense:
+          - pct: 5.962133916683182
+            amount: 6.027456183070403
+            count: 1
+            category: category
+          - pct: 5.962133916683182
+            amount: 6.027456183070403
+            count: 1
+            category: category
+          Income:
+          - pct: 5.962133916683182
+            amount: 6.027456183070403
+            count: 1
+            category: category
+          - pct: 5.962133916683182
+            amount: 6.027456183070403
+            count: 1
+            category: category
+        totalExpenses: 5.637376656633329
+      properties:
+        balance:
+          type: number
+        byCategory:
+          $ref: "#/components/schemas/web.CategoryBreakdown"
+        month:
+          type: string
+        totalExpenses:
+          type: number
+        totalIncome:
+          type: number
+      type: object
+    web.StatsResponse:
+      example:
+        totalIncome: 1.4658129805029452
+        totalTransactions: 5
+        balance: 0.8008281904610115
+        totalExpenses: 6.027456183070403
+      properties:
+        balance:
+          type: number
+        totalExpenses:
+          type: number
+        totalIncome:
+          type: number
+        totalTransactions:
+          type: integer
+      type: object
+    web.TransactionDTO:
+      example:
+        date: date
+        amount: 6.027456183070403
+        description: description
+        id: 1
+        category: category
+        type: type
+      properties:
+        amount:
+          type: number
+        category:
+          type: string
+        date:
+          type: string
+        description:
+          type: string
+        id:
+          type: integer
+        type:
+          type: string
+      type: object
+    web.TransactionsResponse:
+      example:
+        count: 0
+        transactions:
+        - date: date
+          amount: 6.027456183070403
+          description: description
+          id: 1
+          category: category
+          type: type
+        - date: date
+          amount: 6.027456183070403
+          description: description
+          id: 1
+          category: category
+          type: type
+      properties:
+        count:
+          type: integer
+        transactions:
+          items:
+            $ref: "#/components/schemas/web.TransactionDTO"
+          type: array
+      type: object
+    web.TrendResponse:
+      example:
+        from: from
+        to: to
+        points:
+        - income: 1.4658129805029452
+          balance: 0.8008281904610115
+          month: month
+          expense: 6.027456183070403
+        - income: 1.4658129805029452
+          balance: 0.8008281904610115
+          month: month
+          expense: 6.027456183070403
+      properties:
+        from:
+          type: string
+        points:
+          items:
+            $ref: "#/components/schemas/web.MonthPoint"
+          type: array
+        to:
+          type: string
+      type: object
+    web.YearAnalyticsResponse:
+      example:
+        totalIncome: 7.061401241503109
+        balance: 0.8008281904610115
+        year: 9
+        byCategory:
+          Expense:
+          - pct: 5.962133916683182
+            amount: 6.027456183070403
+            count: 1
+            category: category
+          - pct: 5.962133916683182
+            amount: 6.027456183070403
+            count: 1
+            category: category
+          Income:
+          - pct: 5.962133916683182
+            amount: 6.027456183070403
+            count: 1
+            category: category
+          - pct: 5.962133916683182
+            amount: 6.027456183070403
+            count: 1
+            category: category
+        byMonth:
+        - income: 5.962133916683182
+          balance: 6.027456183070403
+          month: 5
+          expense: 1.4658129805029452
+        - income: 5.962133916683182
+          balance: 6.027456183070403
+          month: 5
+          expense: 1.4658129805029452
+        totalExpenses: 2.3021358869347655
+      properties:
+        balance:
+          type: number
+        byCategory:
+          $ref: "#/components/schemas/web.CategoryBreakdown"
+        byMonth:
+          items:
+            $ref: "#/components/schemas/web.YearMonthEntry"
+          type: array
+        totalExpenses:
+          type: number
+        totalIncome:
+          type: number
+        year:
+          type: integer
+      type: object
+    web.YearMonthEntry:
+      example:
+        income: 5.962133916683182
+        balance: 6.027456183070403
+        month: 5
+        expense: 1.4658129805029452
+      properties:
+        balance:
+          type: number
+        expense:
+          type: number
+        income:
+          type: number
+        month:
+          type: integer
+      type: object
+  securitySchemes:
+    BearerAuth:
+      description: "Provide the value as: Bearer <token>"
+      in: header
+      name: Authorization
+      type: apiKey
+x-original-swagger-version: "2.0"
