@@ -434,6 +434,53 @@ make sdk-ts
 SDK generation uses the `@openapitools/openapi-generator-cli` npm wrapper and
 requires `npx` and Java 11+ on PATH.
 
+### Consuming the Go SDK
+
+The Go SDK is a Go submodule rooted at `sdks/go/`. Its module path matches its
+on-disk location, so it is `go get`-able directly from this repo:
+
+```bash
+go get github.com/alainrk/cashout/sdks/go@latest
+```
+
+```go
+import (
+    "context"
+    cashout "github.com/alainrk/cashout/sdks/go"
+)
+
+func main() {
+    cfg := cashout.NewConfiguration()
+    cfg.Servers = cashout.ServerConfigurations{{URL: "http://localhost:8081/web"}}
+    cfg.DefaultHeader["Authorization"] = "Bearer cshk_..."
+    client := cashout.NewAPIClient(cfg)
+
+    stats, _, err := client.TransactionsAPI.
+        ApiStatsGet(context.Background()).
+        Month("2026-05").
+        Execute()
+    _ = stats; _ = err
+}
+```
+
+**Versioning.** Because the SDK lives in a subdirectory, Go expects git tags to
+be **prefixed with the subdirectory path** when you cut releases:
+
+```bash
+git tag sdks/go/v0.1.0
+git push origin sdks/go/v0.1.0
+```
+
+Consumers then pin via:
+
+```bash
+go get github.com/alainrk/cashout/sdks/go@v0.1.0
+```
+
+Until a `sdks/go/vX.Y.Z` tag exists, `@latest` resolves to a pseudo-version
+synthesized from the commit (`v0.0.0-<timestamp>-<sha>`). That works for early
+adopters but isn't a stable release.
+
 ## Testing
 
 ```bash

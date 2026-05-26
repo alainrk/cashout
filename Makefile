@@ -192,6 +192,11 @@ OPENAPI_GEN_JAR    := 7.10.0
 # and runs it via local Java. Requires `npx` and Java 11+ on PATH.
 OPENAPI_GEN := OPENAPI_GENERATOR_VERSION=$(OPENAPI_GEN_JAR) npx --yes $(OPENAPI_WRAPPER)
 
+# Module identity used by the Go SDK so it resolves under `go get`.
+# Must match the actual GitHub owner/repo.
+SDK_GIT_USER := alainrk
+SDK_GIT_REPO := cashout
+
 ## openapi: generate api/swagger.{yaml,json} from swag annotations
 .PHONY: openapi
 openapi:
@@ -215,7 +220,12 @@ sdk-go:
 	$(OPENAPI_GEN) generate \
 	  -i api/swagger.yaml -g go \
 	  -o sdks/go \
+	  --git-user-id=$(SDK_GIT_USER) --git-repo-id=$(SDK_GIT_REPO) \
 	  --additional-properties=packageName=cashout,isGoSubmodule=true
+	# The Go generator hard-codes the module path to {gitUserId}/{gitRepoId}/{packageName}
+	# which does not match our on-disk layout (sdks/go). Rewrite the module path so
+	# `go get github.com/$(SDK_GIT_USER)/$(SDK_GIT_REPO)/sdks/go` resolves correctly.
+	@sed -i.bak 's|^module .*|module github.com/$(SDK_GIT_USER)/$(SDK_GIT_REPO)/sdks/go|' sdks/go/go.mod && rm sdks/go/go.mod.bak
 
 ## sdk-ts: generate the TypeScript (fetch) SDK into sdks/typescript
 .PHONY: sdk-ts
