@@ -212,6 +212,7 @@ sdk-python:
 	$(OPENAPI_GEN) generate \
 	  -i api/swagger.yaml -g python \
 	  -o sdks/python \
+	  --git-user-id=$(SDK_GIT_USER) --git-repo-id=$(SDK_GIT_REPO) \
 	  --additional-properties=packageName=cashout_sdk,projectName=cashout-sdk
 
 ## sdk-go: generate the Go SDK into sdks/go

@@ -434,6 +434,43 @@ make sdk-ts
 SDK generation uses the `@openapitools/openapi-generator-cli` npm wrapper and
 requires `npx` and Java 11+ on PATH.
 
+### Consuming the Python SDK (uv / pip)
+
+The Python SDK is a standard PEP 621 package rooted at `sdks/python/`. uv and
+pip can install it directly from this repo using the `subdirectory` fragment:
+
+```bash
+# Add it to a uv-managed project
+uv add "git+https://github.com/alainrk/cashout.git#subdirectory=sdks/python"
+
+# Or one-off into the current environment
+uv pip install "git+https://github.com/alainrk/cashout.git#subdirectory=sdks/python"
+
+# Plain pip works too
+pip install "git+https://github.com/alainrk/cashout.git#subdirectory=sdks/python"
+```
+
+To pin to a specific commit or tag, append `@<ref>` before the `#`:
+
+```bash
+uv add "git+https://github.com/alainrk/cashout.git@v0.1.0#subdirectory=sdks/python"
+```
+
+Usage:
+
+```python
+import cashout_sdk
+from cashout_sdk.api.transactions_api import TransactionsApi
+
+cfg = cashout_sdk.Configuration(
+    host="http://localhost:8081/web",
+    access_token="cshk_...",
+)
+with cashout_sdk.ApiClient(cfg) as client:
+    stats = TransactionsApi(client).api_stats_get(month="2026-05")
+    print(stats)
+```
+
 ### Consuming the Go SDK
 
 The Go SDK is a Go submodule rooted at `sdks/go/`. Its module path matches its
