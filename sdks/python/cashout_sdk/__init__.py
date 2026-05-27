@@ -35,12 +35,16 @@ __all__ = [
     "WebCategoriesResponse",
     "WebCategoryBreakdown",
     "WebCategoryEntry",
+    "WebCloneTransactionRequest",
     "WebCreateTransactionRequest",
     "WebDeleteTransactionRequest",
+    "WebEditTransactionRequest",
     "WebErrorResponse",
     "WebMessageResponse",
     "WebMonthPoint",
     "WebMonthlyAnalyticsResponse",
+    "WebSearchTransactionsRequest",
+    "WebSearchTransactionsResponse",
     "WebStatsResponse",
     "WebTransactionDTO",
     "WebTransactionsResponse",
@@ -71,12 +75,16 @@ from cashout_sdk.models.web_budget_upsert_request import WebBudgetUpsertRequest 
 from cashout_sdk.models.web_categories_response import WebCategoriesResponse as WebCategoriesResponse
 from cashout_sdk.models.web_category_breakdown import WebCategoryBreakdown as WebCategoryBreakdown
 from cashout_sdk.models.web_category_entry import WebCategoryEntry as WebCategoryEntry
+from cashout_sdk.models.web_clone_transaction_request import WebCloneTransactionRequest as WebCloneTransactionRequest
 from cashout_sdk.models.web_create_transaction_request import WebCreateTransactionRequest as WebCreateTransactionRequest
 from cashout_sdk.models.web_delete_transaction_request import WebDeleteTransactionRequest as WebDeleteTransactionRequest
+from cashout_sdk.models.web_edit_transaction_request import WebEditTransactionRequest as WebEditTransactionRequest
 from cashout_sdk.models.web_error_response import WebErrorResponse as WebErrorResponse
 from cashout_sdk.models.web_message_response import WebMessageResponse as WebMessageResponse
 from cashout_sdk.models.web_month_point import WebMonthPoint as WebMonthPoint
 from cashout_sdk.models.web_monthly_analytics_response import WebMonthlyAnalyticsResponse as WebMonthlyAnalyticsResponse
+from cashout_sdk.models.web_search_transactions_request import WebSearchTransactionsRequest as WebSearchTransactionsRequest
+from cashout_sdk.models.web_search_transactions_response import WebSearchTransactionsResponse as WebSearchTransactionsResponse
 from cashout_sdk.models.web_stats_response import WebStatsResponse as WebStatsResponse
 from cashout_sdk.models.web_transaction_dto import WebTransactionDTO as WebTransactionDTO
 from cashout_sdk.models.web_transactions_response import WebTransactionsResponse as WebTransactionsResponse

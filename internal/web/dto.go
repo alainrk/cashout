@@ -47,6 +47,45 @@ type DeleteTransactionRequest struct {
 	ID int64 `json:"id"`
 }
 
+// EditTransactionRequest is the body of PATCH /api/transactions/edit.
+// Only non-nil fields are applied. Type is intentionally not editable —
+// switching between Income/Expense is forbidden, matching the Telegram bot.
+type EditTransactionRequest struct {
+	ID          int64    `json:"id"                    example:"42"`
+	Category    *string  `json:"category,omitempty"    example:"Grocery"`
+	Amount      *float64 `json:"amount,omitempty"      example:"19.90"`
+	Description *string  `json:"description,omitempty" example:"weekly shop"`
+	Date        *string  `json:"date,omitempty"        example:"2026-05-21"`
+}
+
+// CloneTransactionRequest is the body of POST /api/transactions/clone.
+type CloneTransactionRequest struct {
+	ID int64 `json:"id" example:"42"`
+}
+
+// SearchTransactionsRequest is the body of POST /api/transactions/search.
+// Empty / zero fields are ignored. Type accepts "Income", "Expense" or "".
+// Category "" or "all" disables the category filter.
+type SearchTransactionsRequest struct {
+	Query     string   `json:"query,omitempty"     example:"coffee"`
+	Category  string   `json:"category,omitempty"  example:"Grocery"`
+	Type      string   `json:"type,omitempty"      example:"Expense"`
+	DateFrom  string   `json:"dateFrom,omitempty"  example:"2026-01-01"`
+	DateTo    string   `json:"dateTo,omitempty"    example:"2026-05-31"`
+	AmountMin *float64 `json:"amountMin,omitempty" example:"5"`
+	AmountMax *float64 `json:"amountMax,omitempty" example:"100"`
+	Offset    int      `json:"offset,omitempty"    example:"0"`
+	Limit     int      `json:"limit,omitempty"     example:"50"`
+}
+
+// SearchTransactionsResponse is the body of POST /api/transactions/search.
+type SearchTransactionsResponse struct {
+	Transactions []TransactionDTO `json:"transactions"`
+	Total        int64            `json:"total"`
+	Offset       int              `json:"offset"`
+	Limit        int              `json:"limit"`
+}
+
 // StatsResponse is the body of GET /api/stats.
 type StatsResponse struct {
 	Balance           float64 `json:"balance"`

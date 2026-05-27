@@ -116,9 +116,13 @@ Class | Method | HTTP request | Description
 *BudgetApi* | [**api_budget_put_2**](docs/BudgetApi.md#api_budget_put_2) | **PUT** /api/budget | Delete the monthly budget
 *TransactionsApi* | [**api_categories_get**](docs/TransactionsApi.md#api_categories_get) | **GET** /api/categories | List categories
 *TransactionsApi* | [**api_stats_get**](docs/TransactionsApi.md#api_stats_get) | **GET** /api/stats | Monthly stats
+*TransactionsApi* | [**api_transactions_clone_post**](docs/TransactionsApi.md#api_transactions_clone_post) | **POST** /api/transactions/clone | Clone transaction
 *TransactionsApi* | [**api_transactions_create_post**](docs/TransactionsApi.md#api_transactions_create_post) | **POST** /api/transactions/create | Create transaction
 *TransactionsApi* | [**api_transactions_delete_delete**](docs/TransactionsApi.md#api_transactions_delete_delete) | **DELETE** /api/transactions/delete | Delete transaction
+*TransactionsApi* | [**api_transactions_edit_patch**](docs/TransactionsApi.md#api_transactions_edit_patch) | **PATCH** /api/transactions/edit | Edit transaction (partial)
+*TransactionsApi* | [**api_transactions_export_get**](docs/TransactionsApi.md#api_transactions_export_get) | **GET** /api/transactions/export | Export transactions as CSV
 *TransactionsApi* | [**api_transactions_get**](docs/TransactionsApi.md#api_transactions_get) | **GET** /api/transactions | List transactions for a month
+*TransactionsApi* | [**api_transactions_search_post**](docs/TransactionsApi.md#api_transactions_search_post) | **POST** /api/transactions/search | Search transactions
 
 
 ## Documentation For Models
@@ -128,12 +132,16 @@ Class | Method | HTTP request | Description
  - [WebCategoriesResponse](docs/WebCategoriesResponse.md)
  - [WebCategoryBreakdown](docs/WebCategoryBreakdown.md)
  - [WebCategoryEntry](docs/WebCategoryEntry.md)
+ - [WebCloneTransactionRequest](docs/WebCloneTransactionRequest.md)
  - [WebCreateTransactionRequest](docs/WebCreateTransactionRequest.md)
  - [WebDeleteTransactionRequest](docs/WebDeleteTransactionRequest.md)
+ - [WebEditTransactionRequest](docs/WebEditTransactionRequest.md)
  - [WebErrorResponse](docs/WebErrorResponse.md)
  - [WebMessageResponse](docs/WebMessageResponse.md)
  - [WebMonthPoint](docs/WebMonthPoint.md)
  - [WebMonthlyAnalyticsResponse](docs/WebMonthlyAnalyticsResponse.md)
+ - [WebSearchTransactionsRequest](docs/WebSearchTransactionsRequest.md)
+ - [WebSearchTransactionsResponse](docs/WebSearchTransactionsResponse.md)
  - [WebStatsResponse](docs/WebStatsResponse.md)
  - [WebTransactionDTO](docs/WebTransactionDTO.md)
  - [WebTransactionsResponse](docs/WebTransactionsResponse.md)

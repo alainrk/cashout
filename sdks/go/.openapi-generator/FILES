@@ -1,5 +1,4 @@
 .gitignore
-.openapi-generator-ignore
 .travis.yml
 README.md
 api/openapi.yaml
@@ -16,12 +15,16 @@ docs/WebBudgetUpsertRequest.md
 docs/WebCategoriesResponse.md
 docs/WebCategoryBreakdown.md
 docs/WebCategoryEntry.md
+docs/WebCloneTransactionRequest.md
 docs/WebCreateTransactionRequest.md
 docs/WebDeleteTransactionRequest.md
+docs/WebEditTransactionRequest.md
 docs/WebErrorResponse.md
 docs/WebMessageResponse.md
 docs/WebMonthPoint.md
 docs/WebMonthlyAnalyticsResponse.md
+docs/WebSearchTransactionsRequest.md
+docs/WebSearchTransactionsResponse.md
 docs/WebStatsResponse.md
 docs/WebTransactionDTO.md
 docs/WebTransactionsResponse.md
@@ -36,12 +39,16 @@ model_web_budget_upsert_request.go
 model_web_categories_response.go
 model_web_category_breakdown.go
 model_web_category_entry.go
+model_web_clone_transaction_request.go
 model_web_create_transaction_request.go
 model_web_delete_transaction_request.go
+model_web_edit_transaction_request.go
 model_web_error_response.go
 model_web_message_response.go
 model_web_month_point.go
 model_web_monthly_analytics_response.go
+model_web_search_transactions_request.go
+model_web_search_transactions_response.go
 model_web_stats_response.go
 model_web_transaction_dto.go
 model_web_transactions_response.go
@@ -49,7 +56,4 @@ model_web_trend_response.go
 model_web_year_analytics_response.go
 model_web_year_month_entry.go
 response.go
-test/api_analytics_test.go
-test/api_budget_test.go
-test/api_transactions_test.go
 utils.go

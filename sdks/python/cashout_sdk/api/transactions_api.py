@@ -16,14 +16,19 @@ from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
-from pydantic import Field, StrictStr
-from typing import Optional
+from pydantic import Field, StrictBytes, StrictFloat, StrictInt, StrictStr
+from typing import Optional, Tuple, Union
 from typing_extensions import Annotated
 from cashout_sdk.models.web_categories_response import WebCategoriesResponse
+from cashout_sdk.models.web_clone_transaction_request import WebCloneTransactionRequest
 from cashout_sdk.models.web_create_transaction_request import WebCreateTransactionRequest
 from cashout_sdk.models.web_delete_transaction_request import WebDeleteTransactionRequest
+from cashout_sdk.models.web_edit_transaction_request import WebEditTransactionRequest
 from cashout_sdk.models.web_message_response import WebMessageResponse
+from cashout_sdk.models.web_search_transactions_request import WebSearchTransactionsRequest
+from cashout_sdk.models.web_search_transactions_response import WebSearchTransactionsResponse
 from cashout_sdk.models.web_stats_response import WebStatsResponse
+from cashout_sdk.models.web_transaction_dto import WebTransactionDTO
 from cashout_sdk.models.web_transactions_response import WebTransactionsResponse
 
 from cashout_sdk.api_client import ApiClient, RequestSerialized
@@ -561,6 +566,295 @@ class TransactionsApi:
         return self.api_client.param_serialize(
             method='GET',
             resource_path='/api/stats',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    def api_transactions_clone_post(
+        self,
+        body: Annotated[WebCloneTransactionRequest, Field(description="ID of the transaction to clone")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> WebTransactionDTO:
+        """Clone transaction
+
+        Duplicate an existing transaction; the new transaction copies type, category, amount, description and currency, with date set to today.
+
+        :param body: ID of the transaction to clone (required)
+        :type body: WebCloneTransactionRequest
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._api_transactions_clone_post_serialize(
+            body=body,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "WebTransactionDTO",
+            '400': "WebErrorResponse",
+            '401': "WebErrorResponse",
+            '403': "WebErrorResponse",
+            '404': "WebErrorResponse",
+            '500': "WebErrorResponse",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def api_transactions_clone_post_with_http_info(
+        self,
+        body: Annotated[WebCloneTransactionRequest, Field(description="ID of the transaction to clone")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[WebTransactionDTO]:
+        """Clone transaction
+
+        Duplicate an existing transaction; the new transaction copies type, category, amount, description and currency, with date set to today.
+
+        :param body: ID of the transaction to clone (required)
+        :type body: WebCloneTransactionRequest
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._api_transactions_clone_post_serialize(
+            body=body,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "WebTransactionDTO",
+            '400': "WebErrorResponse",
+            '401': "WebErrorResponse",
+            '403': "WebErrorResponse",
+            '404': "WebErrorResponse",
+            '500': "WebErrorResponse",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def api_transactions_clone_post_without_preload_content(
+        self,
+        body: Annotated[WebCloneTransactionRequest, Field(description="ID of the transaction to clone")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Clone transaction
+
+        Duplicate an existing transaction; the new transaction copies type, category, amount, description and currency, with date set to today.
+
+        :param body: ID of the transaction to clone (required)
+        :type body: WebCloneTransactionRequest
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._api_transactions_clone_post_serialize(
+            body=body,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "WebTransactionDTO",
+            '400': "WebErrorResponse",
+            '401': "WebErrorResponse",
+            '403': "WebErrorResponse",
+            '404': "WebErrorResponse",
+            '500': "WebErrorResponse",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _api_transactions_clone_post_serialize(
+        self,
+        body,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+        if body is not None:
+            _body_params = body
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+        # set the HTTP header `Content-Type`
+        if _content_type:
+            _header_params['Content-Type'] = _content_type
+        else:
+            _default_content_type = (
+                self.api_client.select_header_content_type(
+                    [
+                        'application/json'
+                    ]
+                )
+            )
+            if _default_content_type is not None:
+                _header_params['Content-Type'] = _default_content_type
+
+        # authentication setting
+        _auth_settings: List[str] = [
+            'BearerAuth'
+        ]
+
+        return self.api_client.param_serialize(
+            method='POST',
+            resource_path='/api/transactions/clone',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1137,6 +1431,669 @@ class TransactionsApi:
 
 
     @validate_call
+    def api_transactions_edit_patch(
+        self,
+        body: Annotated[WebEditTransactionRequest, Field(description="Fields to update; only non-null fields are applied")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> WebTransactionDTO:
+        """Edit transaction (partial)
+
+        Update one or more fields of an existing transaction. Type cannot be changed; category must remain within the same type (Income↔Expense swaps are rejected).
+
+        :param body: Fields to update; only non-null fields are applied (required)
+        :type body: WebEditTransactionRequest
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._api_transactions_edit_patch_serialize(
+            body=body,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "WebTransactionDTO",
+            '400': "WebErrorResponse",
+            '401': "WebErrorResponse",
+            '403': "WebErrorResponse",
+            '404': "WebErrorResponse",
+            '500': "WebErrorResponse",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def api_transactions_edit_patch_with_http_info(
+        self,
+        body: Annotated[WebEditTransactionRequest, Field(description="Fields to update; only non-null fields are applied")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[WebTransactionDTO]:
+        """Edit transaction (partial)
+
+        Update one or more fields of an existing transaction. Type cannot be changed; category must remain within the same type (Income↔Expense swaps are rejected).
+
+        :param body: Fields to update; only non-null fields are applied (required)
+        :type body: WebEditTransactionRequest
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._api_transactions_edit_patch_serialize(
+            body=body,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "WebTransactionDTO",
+            '400': "WebErrorResponse",
+            '401': "WebErrorResponse",
+            '403': "WebErrorResponse",
+            '404': "WebErrorResponse",
+            '500': "WebErrorResponse",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def api_transactions_edit_patch_without_preload_content(
+        self,
+        body: Annotated[WebEditTransactionRequest, Field(description="Fields to update; only non-null fields are applied")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Edit transaction (partial)
+
+        Update one or more fields of an existing transaction. Type cannot be changed; category must remain within the same type (Income↔Expense swaps are rejected).
+
+        :param body: Fields to update; only non-null fields are applied (required)
+        :type body: WebEditTransactionRequest
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._api_transactions_edit_patch_serialize(
+            body=body,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "WebTransactionDTO",
+            '400': "WebErrorResponse",
+            '401': "WebErrorResponse",
+            '403': "WebErrorResponse",
+            '404': "WebErrorResponse",
+            '500': "WebErrorResponse",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _api_transactions_edit_patch_serialize(
+        self,
+        body,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+        if body is not None:
+            _body_params = body
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+        # set the HTTP header `Content-Type`
+        if _content_type:
+            _header_params['Content-Type'] = _content_type
+        else:
+            _default_content_type = (
+                self.api_client.select_header_content_type(
+                    [
+                        'application/json'
+                    ]
+                )
+            )
+            if _default_content_type is not None:
+                _header_params['Content-Type'] = _default_content_type
+
+        # authentication setting
+        _auth_settings: List[str] = [
+            'BearerAuth'
+        ]
+
+        return self.api_client.param_serialize(
+            method='PATCH',
+            resource_path='/api/transactions/edit',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    def api_transactions_export_get(
+        self,
+        query: Annotated[Optional[StrictStr], Field(description="Substring match on description (case-insensitive)")] = None,
+        category: Annotated[Optional[StrictStr], Field(description="Category filter (\\")] = None,
+        type: Annotated[Optional[StrictStr], Field(description="Transaction type: Income or Expense")] = None,
+        date_from: Annotated[Optional[StrictStr], Field(description="Inclusive lower bound (YYYY-MM-DD)")] = None,
+        date_to: Annotated[Optional[StrictStr], Field(description="Inclusive upper bound (YYYY-MM-DD)")] = None,
+        amount_min: Annotated[Optional[Union[StrictFloat, StrictInt]], Field(description="Inclusive lower bound on amount")] = None,
+        amount_max: Annotated[Optional[Union[StrictFloat, StrictInt]], Field(description="Inclusive upper bound on amount")] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> bytearray:
+        """Export transactions as CSV
+
+        Stream a CSV containing all transactions matching the optional filter set. Columns: date,type,category,amount,currency,description,created_at,updated_at.
+
+        :param query: Substring match on description (case-insensitive)
+        :type query: str
+        :param category: Category filter (\\
+        :type category: str
+        :param type: Transaction type: Income or Expense
+        :type type: str
+        :param date_from: Inclusive lower bound (YYYY-MM-DD)
+        :type date_from: str
+        :param date_to: Inclusive upper bound (YYYY-MM-DD)
+        :type date_to: str
+        :param amount_min: Inclusive lower bound on amount
+        :type amount_min: float
+        :param amount_max: Inclusive upper bound on amount
+        :type amount_max: float
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._api_transactions_export_get_serialize(
+            query=query,
+            category=category,
+            type=type,
+            date_from=date_from,
+            date_to=date_to,
+            amount_min=amount_min,
+            amount_max=amount_max,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "bytearray",
+            '400': "WebErrorResponse",
+            '401': "WebErrorResponse",
+            '500': "WebErrorResponse",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def api_transactions_export_get_with_http_info(
+        self,
+        query: Annotated[Optional[StrictStr], Field(description="Substring match on description (case-insensitive)")] = None,
+        category: Annotated[Optional[StrictStr], Field(description="Category filter (\\")] = None,
+        type: Annotated[Optional[StrictStr], Field(description="Transaction type: Income or Expense")] = None,
+        date_from: Annotated[Optional[StrictStr], Field(description="Inclusive lower bound (YYYY-MM-DD)")] = None,
+        date_to: Annotated[Optional[StrictStr], Field(description="Inclusive upper bound (YYYY-MM-DD)")] = None,
+        amount_min: Annotated[Optional[Union[StrictFloat, StrictInt]], Field(description="Inclusive lower bound on amount")] = None,
+        amount_max: Annotated[Optional[Union[StrictFloat, StrictInt]], Field(description="Inclusive upper bound on amount")] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[bytearray]:
+        """Export transactions as CSV
+
+        Stream a CSV containing all transactions matching the optional filter set. Columns: date,type,category,amount,currency,description,created_at,updated_at.
+
+        :param query: Substring match on description (case-insensitive)
+        :type query: str
+        :param category: Category filter (\\
+        :type category: str
+        :param type: Transaction type: Income or Expense
+        :type type: str
+        :param date_from: Inclusive lower bound (YYYY-MM-DD)
+        :type date_from: str
+        :param date_to: Inclusive upper bound (YYYY-MM-DD)
+        :type date_to: str
+        :param amount_min: Inclusive lower bound on amount
+        :type amount_min: float
+        :param amount_max: Inclusive upper bound on amount
+        :type amount_max: float
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._api_transactions_export_get_serialize(
+            query=query,
+            category=category,
+            type=type,
+            date_from=date_from,
+            date_to=date_to,
+            amount_min=amount_min,
+            amount_max=amount_max,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "bytearray",
+            '400': "WebErrorResponse",
+            '401': "WebErrorResponse",
+            '500': "WebErrorResponse",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def api_transactions_export_get_without_preload_content(
+        self,
+        query: Annotated[Optional[StrictStr], Field(description="Substring match on description (case-insensitive)")] = None,
+        category: Annotated[Optional[StrictStr], Field(description="Category filter (\\")] = None,
+        type: Annotated[Optional[StrictStr], Field(description="Transaction type: Income or Expense")] = None,
+        date_from: Annotated[Optional[StrictStr], Field(description="Inclusive lower bound (YYYY-MM-DD)")] = None,
+        date_to: Annotated[Optional[StrictStr], Field(description="Inclusive upper bound (YYYY-MM-DD)")] = None,
+        amount_min: Annotated[Optional[Union[StrictFloat, StrictInt]], Field(description="Inclusive lower bound on amount")] = None,
+        amount_max: Annotated[Optional[Union[StrictFloat, StrictInt]], Field(description="Inclusive upper bound on amount")] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Export transactions as CSV
+
+        Stream a CSV containing all transactions matching the optional filter set. Columns: date,type,category,amount,currency,description,created_at,updated_at.
+
+        :param query: Substring match on description (case-insensitive)
+        :type query: str
+        :param category: Category filter (\\
+        :type category: str
+        :param type: Transaction type: Income or Expense
+        :type type: str
+        :param date_from: Inclusive lower bound (YYYY-MM-DD)
+        :type date_from: str
+        :param date_to: Inclusive upper bound (YYYY-MM-DD)
+        :type date_to: str
+        :param amount_min: Inclusive lower bound on amount
+        :type amount_min: float
+        :param amount_max: Inclusive upper bound on amount
+        :type amount_max: float
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._api_transactions_export_get_serialize(
+            query=query,
+            category=category,
+            type=type,
+            date_from=date_from,
+            date_to=date_to,
+            amount_min=amount_min,
+            amount_max=amount_max,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "bytearray",
+            '400': "WebErrorResponse",
+            '401': "WebErrorResponse",
+            '500': "WebErrorResponse",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _api_transactions_export_get_serialize(
+        self,
+        query,
+        category,
+        type,
+        date_from,
+        date_to,
+        amount_min,
+        amount_max,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        # process the query parameters
+        if query is not None:
+            
+            _query_params.append(('query', query))
+            
+        if category is not None:
+            
+            _query_params.append(('category', category))
+            
+        if type is not None:
+            
+            _query_params.append(('type', type))
+            
+        if date_from is not None:
+            
+            _query_params.append(('dateFrom', date_from))
+            
+        if date_to is not None:
+            
+            _query_params.append(('dateTo', date_to))
+            
+        if amount_min is not None:
+            
+            _query_params.append(('amountMin', amount_min))
+            
+        if amount_max is not None:
+            
+            _query_params.append(('amountMax', amount_max))
+            
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'text/csv'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+            'BearerAuth'
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/api/transactions/export',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
     def api_transactions_get(
         self,
         month: Annotated[Optional[StrictStr], Field(description="Month in YYYY-MM (defaults to current month)")] = None,
@@ -1387,6 +2344,289 @@ class TransactionsApi:
         return self.api_client.param_serialize(
             method='GET',
             resource_path='/api/transactions',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    def api_transactions_search_post(
+        self,
+        body: Annotated[WebSearchTransactionsRequest, Field(description="Filter set")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> WebSearchTransactionsResponse:
+        """Search transactions
+
+        Search a user's transactions by any combination of text, category, type, date range, amount range. Returns paginated results with a total count.
+
+        :param body: Filter set (required)
+        :type body: WebSearchTransactionsRequest
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._api_transactions_search_post_serialize(
+            body=body,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "WebSearchTransactionsResponse",
+            '400': "WebErrorResponse",
+            '401': "WebErrorResponse",
+            '500': "WebErrorResponse",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def api_transactions_search_post_with_http_info(
+        self,
+        body: Annotated[WebSearchTransactionsRequest, Field(description="Filter set")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[WebSearchTransactionsResponse]:
+        """Search transactions
+
+        Search a user's transactions by any combination of text, category, type, date range, amount range. Returns paginated results with a total count.
+
+        :param body: Filter set (required)
+        :type body: WebSearchTransactionsRequest
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._api_transactions_search_post_serialize(
+            body=body,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "WebSearchTransactionsResponse",
+            '400': "WebErrorResponse",
+            '401': "WebErrorResponse",
+            '500': "WebErrorResponse",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def api_transactions_search_post_without_preload_content(
+        self,
+        body: Annotated[WebSearchTransactionsRequest, Field(description="Filter set")],
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Search transactions
+
+        Search a user's transactions by any combination of text, category, type, date range, amount range. Returns paginated results with a total count.
+
+        :param body: Filter set (required)
+        :type body: WebSearchTransactionsRequest
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._api_transactions_search_post_serialize(
+            body=body,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "WebSearchTransactionsResponse",
+            '400': "WebErrorResponse",
+            '401': "WebErrorResponse",
+            '500': "WebErrorResponse",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _api_transactions_search_post_serialize(
+        self,
+        body,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+        if body is not None:
+            _body_params = body
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+        # set the HTTP header `Content-Type`
+        if _content_type:
+            _header_params['Content-Type'] = _content_type
+        else:
+            _default_content_type = (
+                self.api_client.select_header_content_type(
+                    [
+                        'application/json'
+                    ]
+                )
+            )
+            if _default_content_type is not None:
+                _header_params['Content-Type'] = _default_content_type
+
+        # authentication setting
+        _auth_settings: List[str] = [
+            'BearerAuth'
+        ]
+
+        return self.api_client.param_serialize(
+            method='POST',
+            resource_path='/api/transactions/search',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

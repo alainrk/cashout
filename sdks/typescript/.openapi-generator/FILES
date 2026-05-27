@@ -1,6 +1,5 @@
 .gitignore
 .npmignore
-.openapi-generator-ignore
 README.md
 package.json
 src/apis/AnalyticsApi.ts
@@ -13,12 +12,16 @@ src/models/WebBudgetUpsertRequest.ts
 src/models/WebCategoriesResponse.ts
 src/models/WebCategoryBreakdown.ts
 src/models/WebCategoryEntry.ts
+src/models/WebCloneTransactionRequest.ts
 src/models/WebCreateTransactionRequest.ts
 src/models/WebDeleteTransactionRequest.ts
+src/models/WebEditTransactionRequest.ts
 src/models/WebErrorResponse.ts
 src/models/WebMessageResponse.ts
 src/models/WebMonthPoint.ts
 src/models/WebMonthlyAnalyticsResponse.ts
+src/models/WebSearchTransactionsRequest.ts
+src/models/WebSearchTransactionsResponse.ts
 src/models/WebStatsResponse.ts
 src/models/WebTransactionDTO.ts
 src/models/WebTransactionsResponse.ts

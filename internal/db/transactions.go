@@ -301,6 +301,63 @@ func (db *DB) GetUserTransactionsByTypePaginated(tgID int64, transactionType mod
 	return transactions, total, nil
 }
 
+// TransactionFilter bundles the optional filters supported by
+// SearchUserTransactionsFiltered. Nil/zero fields are ignored.
+type TransactionFilter struct {
+	Query     string                   // case-insensitive substring on description
+	Category  string                   // "" or "all" disables the category filter
+	Type      model.TransactionType    // "" disables the type filter
+	DateFrom  *time.Time               // inclusive lower bound
+	DateTo    *time.Time               // inclusive upper bound
+	AmountMin *float64                 // inclusive lower bound
+	AmountMax *float64                 // inclusive upper bound
+}
+
+// SearchUserTransactionsFiltered runs the full set of optional filters used by
+// the /api/transactions/search and /api/transactions/export endpoints.
+// A limit <= 0 disables the LIMIT clause (used for export).
+func (db *DB) SearchUserTransactionsFiltered(tgID int64, f TransactionFilter, offset, limit int) ([]model.Transaction, int64, error) {
+	var transactions []model.Transaction
+	var total int64
+
+	q := db.conn.Model(&model.Transaction{}).Where("tg_id = ?", tgID)
+
+	if f.Query != "" {
+		q = q.Where("LOWER(description) LIKE LOWER(?)", "%"+f.Query+"%")
+	}
+	if f.Category != "" && f.Category != "all" {
+		q = q.Where("category = ?", f.Category)
+	}
+	if f.Type != "" {
+		q = q.Where("type = ?", f.Type)
+	}
+	if f.DateFrom != nil {
+		q = q.Where("date >= ?", *f.DateFrom)
+	}
+	if f.DateTo != nil {
+		q = q.Where("date <= ?", *f.DateTo)
+	}
+	if f.AmountMin != nil {
+		q = q.Where("amount >= ?", *f.AmountMin)
+	}
+	if f.AmountMax != nil {
+		q = q.Where("amount <= ?", *f.AmountMax)
+	}
+
+	if err := q.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	result := q.Order("date DESC").Order("id DESC").Offset(offset)
+	if limit > 0 {
+		result = result.Limit(limit)
+	}
+	if err := result.Find(&transactions).Error; err != nil {
+		return nil, 0, err
+	}
+	return transactions, total, nil
+}
+
 // SearchUserTransactions searches transactions by description with optional category filter
 func (db *DB) SearchUserTransactions(tgID int64, searchQuery string, category string, offset, limit int) ([]model.Transaction, int64, error) {
 	var transactions []model.Transaction

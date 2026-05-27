@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"cashout/internal/db"
 	"cashout/internal/model"
 	"time"
 )
@@ -112,4 +113,15 @@ func (r *Transactions) GetUserTransactionsByDateRange(tgID int64, startDate, end
 // SearchUserTransactions searches transactions by description with optional category filter
 func (r *Transactions) SearchUserTransactions(tgID int64, searchQuery string, category string, offset, limit int) ([]model.Transaction, int64, error) {
 	return r.DB.SearchUserTransactions(tgID, searchQuery, category, offset, limit)
+}
+
+// TransactionFilter is re-exported from the db package so callers can build the
+// filter without importing internal/db directly.
+type TransactionFilter = db.TransactionFilter
+
+// SearchUserTransactionsFiltered runs the extended filter set used by the
+// /api/transactions/search and /api/transactions/export endpoints.
+// A limit <= 0 disables the LIMIT clause (used for export).
+func (r *Transactions) SearchUserTransactionsFiltered(tgID int64, f TransactionFilter, offset, limit int) ([]model.Transaction, int64, error) {
+	return r.DB.SearchUserTransactionsFiltered(tgID, f, offset, limit)
 }

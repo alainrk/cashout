@@ -592,6 +592,75 @@
                 }
             }
         },
+        "/api/transactions/clone": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Duplicate an existing transaction; the new transaction copies type, category, amount, description and currency, with date set to today.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transactions"
+                ],
+                "summary": "Clone transaction",
+                "parameters": [
+                    {
+                        "description": "ID of the transaction to clone",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/web.CloneTransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/web.TransactionDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/web.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/web.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/web.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/web.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/web.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/transactions/create": {
             "post": {
                 "security": [
@@ -703,6 +772,219 @@
                     }
                 }
             }
+        },
+        "/api/transactions/edit": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update one or more fields of an existing transaction. Type cannot be changed; category must remain within the same type (Income↔Expense swaps are rejected).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transactions"
+                ],
+                "summary": "Edit transaction (partial)",
+                "parameters": [
+                    {
+                        "description": "Fields to update; only non-null fields are applied",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/web.EditTransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/web.TransactionDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/web.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/web.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/web.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/web.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/web.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transactions/export": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Stream a CSV containing all transactions matching the optional filter set. Columns: date,type,category,amount,currency,description,created_at,updated_at.",
+                "produces": [
+                    "text/csv"
+                ],
+                "tags": [
+                    "transactions"
+                ],
+                "summary": "Export transactions as CSV",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Substring match on description (case-insensitive)",
+                        "name": "query",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category filter (\\",
+                        "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Transaction type: Income or Expense",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Inclusive lower bound (YYYY-MM-DD)",
+                        "name": "dateFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Inclusive upper bound (YYYY-MM-DD)",
+                        "name": "dateTo",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Inclusive lower bound on amount",
+                        "name": "amountMin",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Inclusive upper bound on amount",
+                        "name": "amountMax",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/web.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/web.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/web.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transactions/search": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Search a user's transactions by any combination of text, category, type, date range, amount range. Returns paginated results with a total count.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transactions"
+                ],
+                "summary": "Search transactions",
+                "parameters": [
+                    {
+                        "description": "Filter set",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/web.SearchTransactionsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/web.SearchTransactionsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/web.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/web.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/web.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -782,6 +1064,15 @@
                 }
             }
         },
+        "web.CloneTransactionRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 42
+                }
+            }
+        },
         "web.CreateTransactionRequest": {
             "type": "object",
             "properties": {
@@ -812,6 +1103,31 @@
             "properties": {
                 "id": {
                     "type": "integer"
+                }
+            }
+        },
+        "web.EditTransactionRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 19.9
+                },
+                "category": {
+                    "type": "string",
+                    "example": "Grocery"
+                },
+                "date": {
+                    "type": "string",
+                    "example": "2026-05-21"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "weekly shop"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 42
                 }
             }
         },
@@ -865,6 +1181,67 @@
                 },
                 "totalIncome": {
                     "type": "number"
+                }
+            }
+        },
+        "web.SearchTransactionsRequest": {
+            "type": "object",
+            "properties": {
+                "amountMax": {
+                    "type": "number",
+                    "example": 100
+                },
+                "amountMin": {
+                    "type": "number",
+                    "example": 5
+                },
+                "category": {
+                    "type": "string",
+                    "example": "Grocery"
+                },
+                "dateFrom": {
+                    "type": "string",
+                    "example": "2026-01-01"
+                },
+                "dateTo": {
+                    "type": "string",
+                    "example": "2026-05-31"
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 50
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "query": {
+                    "type": "string",
+                    "example": "coffee"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "Expense"
+                }
+            }
+        },
+        "web.SearchTransactionsResponse": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "transactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/web.TransactionDTO"
+                    }
                 }
             }
         },

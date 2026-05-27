@@ -16,26 +16,41 @@
 import * as runtime from '../runtime';
 import type {
   WebCategoriesResponse,
+  WebCloneTransactionRequest,
   WebCreateTransactionRequest,
   WebDeleteTransactionRequest,
+  WebEditTransactionRequest,
   WebErrorResponse,
   WebMessageResponse,
+  WebSearchTransactionsRequest,
+  WebSearchTransactionsResponse,
   WebStatsResponse,
+  WebTransactionDTO,
   WebTransactionsResponse,
 } from '../models/index';
 import {
     WebCategoriesResponseFromJSON,
     WebCategoriesResponseToJSON,
+    WebCloneTransactionRequestFromJSON,
+    WebCloneTransactionRequestToJSON,
     WebCreateTransactionRequestFromJSON,
     WebCreateTransactionRequestToJSON,
     WebDeleteTransactionRequestFromJSON,
     WebDeleteTransactionRequestToJSON,
+    WebEditTransactionRequestFromJSON,
+    WebEditTransactionRequestToJSON,
     WebErrorResponseFromJSON,
     WebErrorResponseToJSON,
     WebMessageResponseFromJSON,
     WebMessageResponseToJSON,
+    WebSearchTransactionsRequestFromJSON,
+    WebSearchTransactionsRequestToJSON,
+    WebSearchTransactionsResponseFromJSON,
+    WebSearchTransactionsResponseToJSON,
     WebStatsResponseFromJSON,
     WebStatsResponseToJSON,
+    WebTransactionDTOFromJSON,
+    WebTransactionDTOToJSON,
     WebTransactionsResponseFromJSON,
     WebTransactionsResponseToJSON,
 } from '../models/index';
@@ -48,6 +63,10 @@ export interface ApiStatsGetRequest {
     month?: string;
 }
 
+export interface ApiTransactionsClonePostRequest {
+    body: WebCloneTransactionRequest;
+}
+
 export interface ApiTransactionsCreatePostRequest {
     body: WebCreateTransactionRequest;
 }
@@ -56,8 +75,26 @@ export interface ApiTransactionsDeleteDeleteRequest {
     body: WebDeleteTransactionRequest;
 }
 
+export interface ApiTransactionsEditPatchRequest {
+    body: WebEditTransactionRequest;
+}
+
+export interface ApiTransactionsExportGetRequest {
+    query?: string;
+    category?: string;
+    type?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    amountMin?: number;
+    amountMax?: number;
+}
+
 export interface ApiTransactionsGetRequest {
     month?: string;
+}
+
+export interface ApiTransactionsSearchPostRequest {
+    body: WebSearchTransactionsRequest;
 }
 
 /**
@@ -143,6 +180,51 @@ export class TransactionsApi extends runtime.BaseAPI {
      */
     async apiStatsGet(requestParameters: ApiStatsGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WebStatsResponse> {
         const response = await this.apiStatsGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Duplicate an existing transaction; the new transaction copies type, category, amount, description and currency, with date set to today.
+     * Clone transaction
+     */
+    async apiTransactionsClonePostRaw(requestParameters: ApiTransactionsClonePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WebTransactionDTO>> {
+        if (requestParameters['body'] == null) {
+            throw new runtime.RequiredError(
+                'body',
+                'Required parameter "body" was null or undefined when calling apiTransactionsClonePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
+        }
+
+
+        let urlPath = `/api/transactions/clone`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: WebCloneTransactionRequestToJSON(requestParameters['body']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => WebTransactionDTOFromJSON(jsonValue));
+    }
+
+    /**
+     * Duplicate an existing transaction; the new transaction copies type, category, amount, description and currency, with date set to today.
+     * Clone transaction
+     */
+    async apiTransactionsClonePost(requestParameters: ApiTransactionsClonePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WebTransactionDTO> {
+        const response = await this.apiTransactionsClonePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -233,6 +315,114 @@ export class TransactionsApi extends runtime.BaseAPI {
     }
 
     /**
+     * Update one or more fields of an existing transaction. Type cannot be changed; category must remain within the same type (Income↔Expense swaps are rejected).
+     * Edit transaction (partial)
+     */
+    async apiTransactionsEditPatchRaw(requestParameters: ApiTransactionsEditPatchRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WebTransactionDTO>> {
+        if (requestParameters['body'] == null) {
+            throw new runtime.RequiredError(
+                'body',
+                'Required parameter "body" was null or undefined when calling apiTransactionsEditPatch().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
+        }
+
+
+        let urlPath = `/api/transactions/edit`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: WebEditTransactionRequestToJSON(requestParameters['body']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => WebTransactionDTOFromJSON(jsonValue));
+    }
+
+    /**
+     * Update one or more fields of an existing transaction. Type cannot be changed; category must remain within the same type (Income↔Expense swaps are rejected).
+     * Edit transaction (partial)
+     */
+    async apiTransactionsEditPatch(requestParameters: ApiTransactionsEditPatchRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WebTransactionDTO> {
+        const response = await this.apiTransactionsEditPatchRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Stream a CSV containing all transactions matching the optional filter set. Columns: date,type,category,amount,currency,description,created_at,updated_at.
+     * Export transactions as CSV
+     */
+    async apiTransactionsExportGetRaw(requestParameters: ApiTransactionsExportGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Blob>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['query'] != null) {
+            queryParameters['query'] = requestParameters['query'];
+        }
+
+        if (requestParameters['category'] != null) {
+            queryParameters['category'] = requestParameters['category'];
+        }
+
+        if (requestParameters['type'] != null) {
+            queryParameters['type'] = requestParameters['type'];
+        }
+
+        if (requestParameters['dateFrom'] != null) {
+            queryParameters['dateFrom'] = requestParameters['dateFrom'];
+        }
+
+        if (requestParameters['dateTo'] != null) {
+            queryParameters['dateTo'] = requestParameters['dateTo'];
+        }
+
+        if (requestParameters['amountMin'] != null) {
+            queryParameters['amountMin'] = requestParameters['amountMin'];
+        }
+
+        if (requestParameters['amountMax'] != null) {
+            queryParameters['amountMax'] = requestParameters['amountMax'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
+        }
+
+
+        let urlPath = `/api/transactions/export`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.BlobApiResponse(response);
+    }
+
+    /**
+     * Stream a CSV containing all transactions matching the optional filter set. Columns: date,type,category,amount,currency,description,created_at,updated_at.
+     * Export transactions as CSV
+     */
+    async apiTransactionsExportGet(requestParameters: ApiTransactionsExportGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Blob> {
+        const response = await this.apiTransactionsExportGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * List transactions for a month
      */
     async apiTransactionsGetRaw(requestParameters: ApiTransactionsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WebTransactionsResponse>> {
@@ -266,6 +456,51 @@ export class TransactionsApi extends runtime.BaseAPI {
      */
     async apiTransactionsGet(requestParameters: ApiTransactionsGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WebTransactionsResponse> {
         const response = await this.apiTransactionsGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Search a user\'s transactions by any combination of text, category, type, date range, amount range. Returns paginated results with a total count.
+     * Search transactions
+     */
+    async apiTransactionsSearchPostRaw(requestParameters: ApiTransactionsSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WebSearchTransactionsResponse>> {
+        if (requestParameters['body'] == null) {
+            throw new runtime.RequiredError(
+                'body',
+                'Required parameter "body" was null or undefined when calling apiTransactionsSearchPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
+        }
+
+
+        let urlPath = `/api/transactions/search`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: WebSearchTransactionsRequestToJSON(requestParameters['body']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => WebSearchTransactionsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Search a user\'s transactions by any combination of text, category, type, date range, amount range. Returns paginated results with a total count.
+     * Search transactions
+     */
+    async apiTransactionsSearchPost(requestParameters: ApiTransactionsSearchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WebSearchTransactionsResponse> {
+        const response = await this.apiTransactionsSearchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

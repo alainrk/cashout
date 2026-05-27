@@ -385,6 +385,60 @@ paths:
       summary: List transactions for a month
       tags:
       - transactions
+  /api/transactions/clone:
+    post:
+      description: "Duplicate an existing transaction; the new transaction copies\
+        \ type, category, amount, description and currency, with date set to today."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/web.CloneTransactionRequest"
+        description: ID of the transaction to clone
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.TransactionDTO"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Clone transaction
+      tags:
+      - transactions
+      x-codegen-request-body-name: body
   /api/transactions/create:
     post:
       requestBody:
@@ -462,6 +516,174 @@ paths:
       security:
       - BearerAuth: []
       summary: Delete transaction
+      tags:
+      - transactions
+      x-codegen-request-body-name: body
+  /api/transactions/edit:
+    patch:
+      description: Update one or more fields of an existing transaction. Type cannot
+        be changed; category must remain within the same type (Income↔Expense swaps
+        are rejected).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/web.EditTransactionRequest"
+        description: Fields to update; only non-null fields are applied
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.TransactionDTO"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Edit transaction (partial)
+      tags:
+      - transactions
+      x-codegen-request-body-name: body
+  /api/transactions/export:
+    get:
+      description: "Stream a CSV containing all transactions matching the optional\
+        \ filter set. Columns: date,type,category,amount,currency,description,created_at,updated_at."
+      parameters:
+      - description: Substring match on description (case-insensitive)
+        in: query
+        name: query
+        schema:
+          type: string
+      - description: Category filter (\
+        in: query
+        name: category
+        schema:
+          type: string
+      - description: "Transaction type: Income or Expense"
+        in: query
+        name: type
+        schema:
+          type: string
+      - description: Inclusive lower bound (YYYY-MM-DD)
+        in: query
+        name: dateFrom
+        schema:
+          type: string
+      - description: Inclusive upper bound (YYYY-MM-DD)
+        in: query
+        name: dateTo
+        schema:
+          type: string
+      - description: Inclusive lower bound on amount
+        in: query
+        name: amountMin
+        schema:
+          type: number
+      - description: Inclusive upper bound on amount
+        in: query
+        name: amountMax
+        schema:
+          type: number
+      responses:
+        "200":
+          content:
+            text/csv:
+              schema:
+                format: binary
+                type: string
+          description: OK
+        "400":
+          content:
+            text/csv:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Bad Request
+        "401":
+          content:
+            text/csv:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Unauthorized
+        "500":
+          content:
+            text/csv:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Export transactions as CSV
+      tags:
+      - transactions
+  /api/transactions/search:
+    post:
+      description: "Search a user's transactions by any combination of text, category,\
+        \ type, date range, amount range. Returns paginated results with a total count."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/web.SearchTransactionsRequest"
+        description: Filter set
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.SearchTransactionsResponse"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/web.ErrorResponse"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Search transactions
       tags:
       - transactions
       x-codegen-request-body-name: body
@@ -551,6 +773,12 @@ components:
         pct:
           type: number
       type: object
+    web.CloneTransactionRequest:
+      properties:
+        id:
+          example: 42
+          type: integer
+      type: object
     web.CreateTransactionRequest:
       properties:
         amount:
@@ -572,6 +800,24 @@ components:
     web.DeleteTransactionRequest:
       properties:
         id:
+          type: integer
+      type: object
+    web.EditTransactionRequest:
+      properties:
+        amount:
+          example: 19.9
+          type: number
+        category:
+          example: Grocery
+          type: string
+        date:
+          example: 2026-05-21
+          type: string
+        description:
+          example: weekly shop
+          type: string
+        id:
+          example: 42
           type: integer
       type: object
     web.ErrorResponse:
@@ -640,6 +886,66 @@ components:
           type: number
         totalIncome:
           type: number
+      type: object
+    web.SearchTransactionsRequest:
+      properties:
+        amountMax:
+          example: 100.0
+          type: number
+        amountMin:
+          example: 5.0
+          type: number
+        category:
+          example: Grocery
+          type: string
+        dateFrom:
+          example: 2026-01-01
+          type: string
+        dateTo:
+          example: 2026-05-31
+          type: string
+        limit:
+          example: 50
+          type: integer
+        offset:
+          example: 0
+          type: integer
+        query:
+          example: coffee
+          type: string
+        type:
+          example: Expense
+          type: string
+      type: object
+    web.SearchTransactionsResponse:
+      example:
+        total: 1
+        offset: 6
+        limit: 0
+        transactions:
+        - date: date
+          amount: 6.027456183070403
+          description: description
+          id: 1
+          category: category
+          type: type
+        - date: date
+          amount: 6.027456183070403
+          description: description
+          id: 1
+          category: category
+          type: type
+      properties:
+        limit:
+          type: integer
+        offset:
+          type: integer
+        total:
+          type: integer
+        transactions:
+          items:
+            $ref: "#/components/schemas/web.TransactionDTO"
+          type: array
       type: object
     web.StatsResponse:
       example:
