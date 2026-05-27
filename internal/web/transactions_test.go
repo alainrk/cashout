@@ -73,16 +73,15 @@ func ptrFloat(v float64) *float64 { return &v }
 
 func TestBuildSearchFilter(t *testing.T) {
 	type tc struct {
-		name         string
-		query        string
-		category     string
-		txType       string
-		dateFrom     string
-		dateTo       string
-		amountMin    *float64
-		amountMax    *float64
-		wantCode     int
-		assertFilter func(t *testing.T, f any)
+		name      string
+		query     string
+		category  string
+		txType    string
+		dateFrom  string
+		dateTo    string
+		amountMin *float64
+		amountMax *float64
+		wantCode  int
 	}
 
 	cases := []tc{

@@ -19,11 +19,11 @@ var _ MappedNullable = &WebEditTransactionRequest{}
 
 // WebEditTransactionRequest struct for WebEditTransactionRequest
 type WebEditTransactionRequest struct {
-	Amount *float32 `json:"amount,omitempty"`
-	Category *string `json:"category,omitempty"`
-	Date *string `json:"date,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Id *int32 `json:"id,omitempty"`
+	Amount      *float32 `json:"amount,omitempty"`
+	Category    *string  `json:"category,omitempty"`
+	Date        *string  `json:"date,omitempty"`
+	Description *string  `json:"description,omitempty"`
+	Id          *int32   `json:"id,omitempty"`
 }
 
 // NewWebEditTransactionRequest instantiates a new WebEditTransactionRequest object
@@ -204,7 +204,7 @@ func (o *WebEditTransactionRequest) SetId(v int32) {
 }
 
 func (o WebEditTransactionRequest) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -266,5 +266,3 @@ func (v *NullableWebEditTransactionRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

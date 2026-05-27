@@ -18,14 +18,13 @@ import (
 	"net/url"
 )
 
-
 // BudgetAPIService BudgetAPI service
 type BudgetAPIService service
 
 type ApiApiBudgetDeleteRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BudgetAPIService
-	body *WebBudgetUpsertRequest
+	body       *WebBudgetUpsertRequest
 }
 
 // Budget amount
@@ -41,24 +40,25 @@ func (r ApiApiBudgetDeleteRequest) Execute() (*WebBudgetResponse, *http.Response
 /*
 ApiBudgetDelete Delete the monthly budget
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiBudgetDeleteRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiBudgetDeleteRequest
 */
 func (a *BudgetAPIService) ApiBudgetDelete(ctx context.Context) ApiApiBudgetDeleteRequest {
 	return ApiApiBudgetDeleteRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebBudgetResponse
+//
+//	@return WebBudgetResponse
 func (a *BudgetAPIService) ApiBudgetDeleteExecute(r ApiApiBudgetDeleteRequest) (*WebBudgetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebBudgetResponse
+		localVarHTTPMethod  = http.MethodDelete
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebBudgetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BudgetAPIService.ApiBudgetDelete")
@@ -137,8 +137,8 @@ func (a *BudgetAPIService) ApiBudgetDeleteExecute(r ApiApiBudgetDeleteRequest) (
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -148,8 +148,8 @@ func (a *BudgetAPIService) ApiBudgetDeleteExecute(r ApiApiBudgetDeleteRequest) (
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -159,8 +159,8 @@ func (a *BudgetAPIService) ApiBudgetDeleteExecute(r ApiApiBudgetDeleteRequest) (
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -178,9 +178,9 @@ func (a *BudgetAPIService) ApiBudgetDeleteExecute(r ApiApiBudgetDeleteRequest) (
 }
 
 type ApiApiBudgetDelete_0Request struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BudgetAPIService
-	body *WebBudgetUpsertRequest
+	body       *WebBudgetUpsertRequest
 }
 
 // Budget amount
@@ -196,24 +196,25 @@ func (r ApiApiBudgetDelete_0Request) Execute() (*WebBudgetResponse, *http.Respon
 /*
 ApiBudgetDelete_0 Delete the monthly budget
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiBudgetDelete_0Request
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiBudgetDelete_0Request
 */
 func (a *BudgetAPIService) ApiBudgetDelete_1(ctx context.Context) ApiApiBudgetDelete_0Request {
 	return ApiApiBudgetDelete_0Request{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebBudgetResponse
+//
+//	@return WebBudgetResponse
 func (a *BudgetAPIService) ApiBudgetDelete_1Execute(r ApiApiBudgetDelete_0Request) (*WebBudgetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebBudgetResponse
+		localVarHTTPMethod  = http.MethodDelete
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebBudgetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BudgetAPIService.ApiBudgetDelete_1")
@@ -292,8 +293,8 @@ func (a *BudgetAPIService) ApiBudgetDelete_1Execute(r ApiApiBudgetDelete_0Reques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -303,8 +304,8 @@ func (a *BudgetAPIService) ApiBudgetDelete_1Execute(r ApiApiBudgetDelete_0Reques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -314,8 +315,8 @@ func (a *BudgetAPIService) ApiBudgetDelete_1Execute(r ApiApiBudgetDelete_0Reques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -333,9 +334,9 @@ func (a *BudgetAPIService) ApiBudgetDelete_1Execute(r ApiApiBudgetDelete_0Reques
 }
 
 type ApiApiBudgetDelete_1Request struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BudgetAPIService
-	body *WebBudgetUpsertRequest
+	body       *WebBudgetUpsertRequest
 }
 
 // Budget amount
@@ -351,24 +352,25 @@ func (r ApiApiBudgetDelete_1Request) Execute() (*WebBudgetResponse, *http.Respon
 /*
 ApiBudgetDelete_1 Delete the monthly budget
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiBudgetDelete_1Request
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiBudgetDelete_1Request
 */
 func (a *BudgetAPIService) ApiBudgetDelete_2(ctx context.Context) ApiApiBudgetDelete_1Request {
 	return ApiApiBudgetDelete_1Request{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebBudgetResponse
+//
+//	@return WebBudgetResponse
 func (a *BudgetAPIService) ApiBudgetDelete_2Execute(r ApiApiBudgetDelete_1Request) (*WebBudgetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebBudgetResponse
+		localVarHTTPMethod  = http.MethodDelete
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebBudgetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BudgetAPIService.ApiBudgetDelete_2")
@@ -447,8 +449,8 @@ func (a *BudgetAPIService) ApiBudgetDelete_2Execute(r ApiApiBudgetDelete_1Reques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -458,8 +460,8 @@ func (a *BudgetAPIService) ApiBudgetDelete_2Execute(r ApiApiBudgetDelete_1Reques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -469,8 +471,8 @@ func (a *BudgetAPIService) ApiBudgetDelete_2Execute(r ApiApiBudgetDelete_1Reques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -488,9 +490,9 @@ func (a *BudgetAPIService) ApiBudgetDelete_2Execute(r ApiApiBudgetDelete_1Reques
 }
 
 type ApiApiBudgetDelete_2Request struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BudgetAPIService
-	body *WebBudgetUpsertRequest
+	body       *WebBudgetUpsertRequest
 }
 
 // Budget amount
@@ -506,24 +508,25 @@ func (r ApiApiBudgetDelete_2Request) Execute() (*WebBudgetResponse, *http.Respon
 /*
 ApiBudgetDelete_2 Delete the monthly budget
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiBudgetDelete_2Request
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiBudgetDelete_2Request
 */
 func (a *BudgetAPIService) ApiBudgetDelete_3(ctx context.Context) ApiApiBudgetDelete_2Request {
 	return ApiApiBudgetDelete_2Request{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebBudgetResponse
+//
+//	@return WebBudgetResponse
 func (a *BudgetAPIService) ApiBudgetDelete_3Execute(r ApiApiBudgetDelete_2Request) (*WebBudgetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebBudgetResponse
+		localVarHTTPMethod  = http.MethodDelete
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebBudgetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BudgetAPIService.ApiBudgetDelete_3")
@@ -602,8 +605,8 @@ func (a *BudgetAPIService) ApiBudgetDelete_3Execute(r ApiApiBudgetDelete_2Reques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -613,8 +616,8 @@ func (a *BudgetAPIService) ApiBudgetDelete_3Execute(r ApiApiBudgetDelete_2Reques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -624,8 +627,8 @@ func (a *BudgetAPIService) ApiBudgetDelete_3Execute(r ApiApiBudgetDelete_2Reques
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -643,9 +646,9 @@ func (a *BudgetAPIService) ApiBudgetDelete_3Execute(r ApiApiBudgetDelete_2Reques
 }
 
 type ApiApiBudgetGetRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BudgetAPIService
-	body *WebBudgetUpsertRequest
+	body       *WebBudgetUpsertRequest
 }
 
 // Budget amount
@@ -661,24 +664,25 @@ func (r ApiApiBudgetGetRequest) Execute() (*WebBudgetResponse, *http.Response, e
 /*
 ApiBudgetGet Delete the monthly budget
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiBudgetGetRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiBudgetGetRequest
 */
 func (a *BudgetAPIService) ApiBudgetGet(ctx context.Context) ApiApiBudgetGetRequest {
 	return ApiApiBudgetGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebBudgetResponse
+//
+//	@return WebBudgetResponse
 func (a *BudgetAPIService) ApiBudgetGetExecute(r ApiApiBudgetGetRequest) (*WebBudgetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebBudgetResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebBudgetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BudgetAPIService.ApiBudgetGet")
@@ -757,8 +761,8 @@ func (a *BudgetAPIService) ApiBudgetGetExecute(r ApiApiBudgetGetRequest) (*WebBu
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -768,8 +772,8 @@ func (a *BudgetAPIService) ApiBudgetGetExecute(r ApiApiBudgetGetRequest) (*WebBu
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -779,8 +783,8 @@ func (a *BudgetAPIService) ApiBudgetGetExecute(r ApiApiBudgetGetRequest) (*WebBu
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -798,9 +802,9 @@ func (a *BudgetAPIService) ApiBudgetGetExecute(r ApiApiBudgetGetRequest) (*WebBu
 }
 
 type ApiApiBudgetGet_0Request struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BudgetAPIService
-	body *WebBudgetUpsertRequest
+	body       *WebBudgetUpsertRequest
 }
 
 // Budget amount
@@ -816,24 +820,25 @@ func (r ApiApiBudgetGet_0Request) Execute() (*WebBudgetResponse, *http.Response,
 /*
 ApiBudgetGet_0 Delete the monthly budget
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiBudgetGet_0Request
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiBudgetGet_0Request
 */
 func (a *BudgetAPIService) ApiBudgetGet_4(ctx context.Context) ApiApiBudgetGet_0Request {
 	return ApiApiBudgetGet_0Request{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebBudgetResponse
+//
+//	@return WebBudgetResponse
 func (a *BudgetAPIService) ApiBudgetGet_4Execute(r ApiApiBudgetGet_0Request) (*WebBudgetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebBudgetResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebBudgetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BudgetAPIService.ApiBudgetGet_4")
@@ -912,8 +917,8 @@ func (a *BudgetAPIService) ApiBudgetGet_4Execute(r ApiApiBudgetGet_0Request) (*W
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -923,8 +928,8 @@ func (a *BudgetAPIService) ApiBudgetGet_4Execute(r ApiApiBudgetGet_0Request) (*W
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -934,8 +939,8 @@ func (a *BudgetAPIService) ApiBudgetGet_4Execute(r ApiApiBudgetGet_0Request) (*W
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -953,9 +958,9 @@ func (a *BudgetAPIService) ApiBudgetGet_4Execute(r ApiApiBudgetGet_0Request) (*W
 }
 
 type ApiApiBudgetGet_1Request struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BudgetAPIService
-	body *WebBudgetUpsertRequest
+	body       *WebBudgetUpsertRequest
 }
 
 // Budget amount
@@ -971,24 +976,25 @@ func (r ApiApiBudgetGet_1Request) Execute() (*WebBudgetResponse, *http.Response,
 /*
 ApiBudgetGet_1 Delete the monthly budget
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiBudgetGet_1Request
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiBudgetGet_1Request
 */
 func (a *BudgetAPIService) ApiBudgetGet_5(ctx context.Context) ApiApiBudgetGet_1Request {
 	return ApiApiBudgetGet_1Request{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebBudgetResponse
+//
+//	@return WebBudgetResponse
 func (a *BudgetAPIService) ApiBudgetGet_5Execute(r ApiApiBudgetGet_1Request) (*WebBudgetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebBudgetResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebBudgetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BudgetAPIService.ApiBudgetGet_5")
@@ -1067,8 +1073,8 @@ func (a *BudgetAPIService) ApiBudgetGet_5Execute(r ApiApiBudgetGet_1Request) (*W
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -1078,8 +1084,8 @@ func (a *BudgetAPIService) ApiBudgetGet_5Execute(r ApiApiBudgetGet_1Request) (*W
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -1089,8 +1095,8 @@ func (a *BudgetAPIService) ApiBudgetGet_5Execute(r ApiApiBudgetGet_1Request) (*W
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1108,9 +1114,9 @@ func (a *BudgetAPIService) ApiBudgetGet_5Execute(r ApiApiBudgetGet_1Request) (*W
 }
 
 type ApiApiBudgetGet_2Request struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BudgetAPIService
-	body *WebBudgetUpsertRequest
+	body       *WebBudgetUpsertRequest
 }
 
 // Budget amount
@@ -1126,24 +1132,25 @@ func (r ApiApiBudgetGet_2Request) Execute() (*WebBudgetResponse, *http.Response,
 /*
 ApiBudgetGet_2 Delete the monthly budget
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiBudgetGet_2Request
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiBudgetGet_2Request
 */
 func (a *BudgetAPIService) ApiBudgetGet_6(ctx context.Context) ApiApiBudgetGet_2Request {
 	return ApiApiBudgetGet_2Request{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebBudgetResponse
+//
+//	@return WebBudgetResponse
 func (a *BudgetAPIService) ApiBudgetGet_6Execute(r ApiApiBudgetGet_2Request) (*WebBudgetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebBudgetResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebBudgetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BudgetAPIService.ApiBudgetGet_6")
@@ -1222,8 +1229,8 @@ func (a *BudgetAPIService) ApiBudgetGet_6Execute(r ApiApiBudgetGet_2Request) (*W
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -1233,8 +1240,8 @@ func (a *BudgetAPIService) ApiBudgetGet_6Execute(r ApiApiBudgetGet_2Request) (*W
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -1244,8 +1251,8 @@ func (a *BudgetAPIService) ApiBudgetGet_6Execute(r ApiApiBudgetGet_2Request) (*W
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1263,9 +1270,9 @@ func (a *BudgetAPIService) ApiBudgetGet_6Execute(r ApiApiBudgetGet_2Request) (*W
 }
 
 type ApiApiBudgetPostRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BudgetAPIService
-	body *WebBudgetUpsertRequest
+	body       *WebBudgetUpsertRequest
 }
 
 // Budget amount
@@ -1281,24 +1288,25 @@ func (r ApiApiBudgetPostRequest) Execute() (*WebBudgetResponse, *http.Response, 
 /*
 ApiBudgetPost Delete the monthly budget
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiBudgetPostRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiBudgetPostRequest
 */
 func (a *BudgetAPIService) ApiBudgetPost(ctx context.Context) ApiApiBudgetPostRequest {
 	return ApiApiBudgetPostRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebBudgetResponse
+//
+//	@return WebBudgetResponse
 func (a *BudgetAPIService) ApiBudgetPostExecute(r ApiApiBudgetPostRequest) (*WebBudgetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebBudgetResponse
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebBudgetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BudgetAPIService.ApiBudgetPost")
@@ -1377,8 +1385,8 @@ func (a *BudgetAPIService) ApiBudgetPostExecute(r ApiApiBudgetPostRequest) (*Web
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -1388,8 +1396,8 @@ func (a *BudgetAPIService) ApiBudgetPostExecute(r ApiApiBudgetPostRequest) (*Web
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -1399,8 +1407,8 @@ func (a *BudgetAPIService) ApiBudgetPostExecute(r ApiApiBudgetPostRequest) (*Web
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1418,9 +1426,9 @@ func (a *BudgetAPIService) ApiBudgetPostExecute(r ApiApiBudgetPostRequest) (*Web
 }
 
 type ApiApiBudgetPost_0Request struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BudgetAPIService
-	body *WebBudgetUpsertRequest
+	body       *WebBudgetUpsertRequest
 }
 
 // Budget amount
@@ -1436,24 +1444,25 @@ func (r ApiApiBudgetPost_0Request) Execute() (*WebBudgetResponse, *http.Response
 /*
 ApiBudgetPost_0 Delete the monthly budget
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiBudgetPost_0Request
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiBudgetPost_0Request
 */
 func (a *BudgetAPIService) ApiBudgetPost_7(ctx context.Context) ApiApiBudgetPost_0Request {
 	return ApiApiBudgetPost_0Request{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebBudgetResponse
+//
+//	@return WebBudgetResponse
 func (a *BudgetAPIService) ApiBudgetPost_7Execute(r ApiApiBudgetPost_0Request) (*WebBudgetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebBudgetResponse
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebBudgetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BudgetAPIService.ApiBudgetPost_7")
@@ -1532,8 +1541,8 @@ func (a *BudgetAPIService) ApiBudgetPost_7Execute(r ApiApiBudgetPost_0Request) (
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -1543,8 +1552,8 @@ func (a *BudgetAPIService) ApiBudgetPost_7Execute(r ApiApiBudgetPost_0Request) (
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -1554,8 +1563,8 @@ func (a *BudgetAPIService) ApiBudgetPost_7Execute(r ApiApiBudgetPost_0Request) (
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1573,9 +1582,9 @@ func (a *BudgetAPIService) ApiBudgetPost_7Execute(r ApiApiBudgetPost_0Request) (
 }
 
 type ApiApiBudgetPost_1Request struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BudgetAPIService
-	body *WebBudgetUpsertRequest
+	body       *WebBudgetUpsertRequest
 }
 
 // Budget amount
@@ -1591,24 +1600,25 @@ func (r ApiApiBudgetPost_1Request) Execute() (*WebBudgetResponse, *http.Response
 /*
 ApiBudgetPost_1 Delete the monthly budget
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiBudgetPost_1Request
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiBudgetPost_1Request
 */
 func (a *BudgetAPIService) ApiBudgetPost_8(ctx context.Context) ApiApiBudgetPost_1Request {
 	return ApiApiBudgetPost_1Request{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebBudgetResponse
+//
+//	@return WebBudgetResponse
 func (a *BudgetAPIService) ApiBudgetPost_8Execute(r ApiApiBudgetPost_1Request) (*WebBudgetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebBudgetResponse
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebBudgetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BudgetAPIService.ApiBudgetPost_8")
@@ -1687,8 +1697,8 @@ func (a *BudgetAPIService) ApiBudgetPost_8Execute(r ApiApiBudgetPost_1Request) (
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -1698,8 +1708,8 @@ func (a *BudgetAPIService) ApiBudgetPost_8Execute(r ApiApiBudgetPost_1Request) (
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -1709,8 +1719,8 @@ func (a *BudgetAPIService) ApiBudgetPost_8Execute(r ApiApiBudgetPost_1Request) (
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1728,9 +1738,9 @@ func (a *BudgetAPIService) ApiBudgetPost_8Execute(r ApiApiBudgetPost_1Request) (
 }
 
 type ApiApiBudgetPost_2Request struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BudgetAPIService
-	body *WebBudgetUpsertRequest
+	body       *WebBudgetUpsertRequest
 }
 
 // Budget amount
@@ -1746,24 +1756,25 @@ func (r ApiApiBudgetPost_2Request) Execute() (*WebBudgetResponse, *http.Response
 /*
 ApiBudgetPost_2 Delete the monthly budget
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiBudgetPost_2Request
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiBudgetPost_2Request
 */
 func (a *BudgetAPIService) ApiBudgetPost_9(ctx context.Context) ApiApiBudgetPost_2Request {
 	return ApiApiBudgetPost_2Request{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebBudgetResponse
+//
+//	@return WebBudgetResponse
 func (a *BudgetAPIService) ApiBudgetPost_9Execute(r ApiApiBudgetPost_2Request) (*WebBudgetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebBudgetResponse
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebBudgetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BudgetAPIService.ApiBudgetPost_9")
@@ -1842,8 +1853,8 @@ func (a *BudgetAPIService) ApiBudgetPost_9Execute(r ApiApiBudgetPost_2Request) (
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -1853,8 +1864,8 @@ func (a *BudgetAPIService) ApiBudgetPost_9Execute(r ApiApiBudgetPost_2Request) (
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -1864,8 +1875,8 @@ func (a *BudgetAPIService) ApiBudgetPost_9Execute(r ApiApiBudgetPost_2Request) (
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1883,9 +1894,9 @@ func (a *BudgetAPIService) ApiBudgetPost_9Execute(r ApiApiBudgetPost_2Request) (
 }
 
 type ApiApiBudgetPutRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BudgetAPIService
-	body *WebBudgetUpsertRequest
+	body       *WebBudgetUpsertRequest
 }
 
 // Budget amount
@@ -1901,24 +1912,25 @@ func (r ApiApiBudgetPutRequest) Execute() (*WebBudgetResponse, *http.Response, e
 /*
 ApiBudgetPut Delete the monthly budget
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiBudgetPutRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiBudgetPutRequest
 */
 func (a *BudgetAPIService) ApiBudgetPut(ctx context.Context) ApiApiBudgetPutRequest {
 	return ApiApiBudgetPutRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebBudgetResponse
+//
+//	@return WebBudgetResponse
 func (a *BudgetAPIService) ApiBudgetPutExecute(r ApiApiBudgetPutRequest) (*WebBudgetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebBudgetResponse
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebBudgetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BudgetAPIService.ApiBudgetPut")
@@ -1997,8 +2009,8 @@ func (a *BudgetAPIService) ApiBudgetPutExecute(r ApiApiBudgetPutRequest) (*WebBu
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -2008,8 +2020,8 @@ func (a *BudgetAPIService) ApiBudgetPutExecute(r ApiApiBudgetPutRequest) (*WebBu
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -2019,8 +2031,8 @@ func (a *BudgetAPIService) ApiBudgetPutExecute(r ApiApiBudgetPutRequest) (*WebBu
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -2038,9 +2050,9 @@ func (a *BudgetAPIService) ApiBudgetPutExecute(r ApiApiBudgetPutRequest) (*WebBu
 }
 
 type ApiApiBudgetPut_0Request struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BudgetAPIService
-	body *WebBudgetUpsertRequest
+	body       *WebBudgetUpsertRequest
 }
 
 // Budget amount
@@ -2056,24 +2068,25 @@ func (r ApiApiBudgetPut_0Request) Execute() (*WebBudgetResponse, *http.Response,
 /*
 ApiBudgetPut_0 Delete the monthly budget
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiBudgetPut_0Request
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiBudgetPut_0Request
 */
 func (a *BudgetAPIService) ApiBudgetPut_10(ctx context.Context) ApiApiBudgetPut_0Request {
 	return ApiApiBudgetPut_0Request{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebBudgetResponse
+//
+//	@return WebBudgetResponse
 func (a *BudgetAPIService) ApiBudgetPut_10Execute(r ApiApiBudgetPut_0Request) (*WebBudgetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebBudgetResponse
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebBudgetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BudgetAPIService.ApiBudgetPut_10")
@@ -2152,8 +2165,8 @@ func (a *BudgetAPIService) ApiBudgetPut_10Execute(r ApiApiBudgetPut_0Request) (*
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -2163,8 +2176,8 @@ func (a *BudgetAPIService) ApiBudgetPut_10Execute(r ApiApiBudgetPut_0Request) (*
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -2174,8 +2187,8 @@ func (a *BudgetAPIService) ApiBudgetPut_10Execute(r ApiApiBudgetPut_0Request) (*
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -2193,9 +2206,9 @@ func (a *BudgetAPIService) ApiBudgetPut_10Execute(r ApiApiBudgetPut_0Request) (*
 }
 
 type ApiApiBudgetPut_1Request struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BudgetAPIService
-	body *WebBudgetUpsertRequest
+	body       *WebBudgetUpsertRequest
 }
 
 // Budget amount
@@ -2211,24 +2224,25 @@ func (r ApiApiBudgetPut_1Request) Execute() (*WebBudgetResponse, *http.Response,
 /*
 ApiBudgetPut_1 Delete the monthly budget
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiBudgetPut_1Request
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiBudgetPut_1Request
 */
 func (a *BudgetAPIService) ApiBudgetPut_11(ctx context.Context) ApiApiBudgetPut_1Request {
 	return ApiApiBudgetPut_1Request{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebBudgetResponse
+//
+//	@return WebBudgetResponse
 func (a *BudgetAPIService) ApiBudgetPut_11Execute(r ApiApiBudgetPut_1Request) (*WebBudgetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebBudgetResponse
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebBudgetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BudgetAPIService.ApiBudgetPut_11")
@@ -2307,8 +2321,8 @@ func (a *BudgetAPIService) ApiBudgetPut_11Execute(r ApiApiBudgetPut_1Request) (*
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -2318,8 +2332,8 @@ func (a *BudgetAPIService) ApiBudgetPut_11Execute(r ApiApiBudgetPut_1Request) (*
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -2329,8 +2343,8 @@ func (a *BudgetAPIService) ApiBudgetPut_11Execute(r ApiApiBudgetPut_1Request) (*
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -2348,9 +2362,9 @@ func (a *BudgetAPIService) ApiBudgetPut_11Execute(r ApiApiBudgetPut_1Request) (*
 }
 
 type ApiApiBudgetPut_2Request struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *BudgetAPIService
-	body *WebBudgetUpsertRequest
+	body       *WebBudgetUpsertRequest
 }
 
 // Budget amount
@@ -2366,24 +2380,25 @@ func (r ApiApiBudgetPut_2Request) Execute() (*WebBudgetResponse, *http.Response,
 /*
 ApiBudgetPut_2 Delete the monthly budget
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiBudgetPut_2Request
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiBudgetPut_2Request
 */
 func (a *BudgetAPIService) ApiBudgetPut_12(ctx context.Context) ApiApiBudgetPut_2Request {
 	return ApiApiBudgetPut_2Request{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebBudgetResponse
+//
+//	@return WebBudgetResponse
 func (a *BudgetAPIService) ApiBudgetPut_12Execute(r ApiApiBudgetPut_2Request) (*WebBudgetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebBudgetResponse
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebBudgetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "BudgetAPIService.ApiBudgetPut_12")
@@ -2462,8 +2477,8 @@ func (a *BudgetAPIService) ApiBudgetPut_12Execute(r ApiApiBudgetPut_2Request) (*
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -2473,8 +2488,8 @@ func (a *BudgetAPIService) ApiBudgetPut_12Execute(r ApiApiBudgetPut_2Request) (*
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -2484,8 +2499,8 @@ func (a *BudgetAPIService) ApiBudgetPut_12Execute(r ApiApiBudgetPut_2Request) (*
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}

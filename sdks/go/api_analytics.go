@@ -18,14 +18,13 @@ import (
 	"net/url"
 )
 
-
 // AnalyticsAPIService AnalyticsAPI service
 type AnalyticsAPIService service
 
 type ApiApiAnalyticsMonthlyGetRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *AnalyticsAPIService
-	month *string
+	month      *string
 }
 
 // Month in YYYY-MM (defaults to current month)
@@ -43,24 +42,25 @@ ApiAnalyticsMonthlyGet Monthly category breakdown
 
 Returns total income/expenses and per-category aggregates for a given month.
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiAnalyticsMonthlyGetRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiAnalyticsMonthlyGetRequest
 */
 func (a *AnalyticsAPIService) ApiAnalyticsMonthlyGet(ctx context.Context) ApiApiAnalyticsMonthlyGetRequest {
 	return ApiApiAnalyticsMonthlyGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebMonthlyAnalyticsResponse
+//
+//	@return WebMonthlyAnalyticsResponse
 func (a *AnalyticsAPIService) ApiAnalyticsMonthlyGetExecute(r ApiApiAnalyticsMonthlyGetRequest) (*WebMonthlyAnalyticsResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebMonthlyAnalyticsResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebMonthlyAnalyticsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AnalyticsAPIService.ApiAnalyticsMonthlyGet")
@@ -137,8 +137,8 @@ func (a *AnalyticsAPIService) ApiAnalyticsMonthlyGetExecute(r ApiApiAnalyticsMon
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -148,8 +148,8 @@ func (a *AnalyticsAPIService) ApiAnalyticsMonthlyGetExecute(r ApiApiAnalyticsMon
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -167,9 +167,9 @@ func (a *AnalyticsAPIService) ApiAnalyticsMonthlyGetExecute(r ApiApiAnalyticsMon
 }
 
 type ApiApiAnalyticsTrendGetRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *AnalyticsAPIService
-	months *int32
+	months     *int32
 }
 
 // Number of trailing months (1..60, default 12)
@@ -185,24 +185,25 @@ func (r ApiApiAnalyticsTrendGetRequest) Execute() (*WebTrendResponse, *http.Resp
 /*
 ApiAnalyticsTrendGet Monthly trend over the trailing N months
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiAnalyticsTrendGetRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiAnalyticsTrendGetRequest
 */
 func (a *AnalyticsAPIService) ApiAnalyticsTrendGet(ctx context.Context) ApiApiAnalyticsTrendGetRequest {
 	return ApiApiAnalyticsTrendGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebTrendResponse
+//
+//	@return WebTrendResponse
 func (a *AnalyticsAPIService) ApiAnalyticsTrendGetExecute(r ApiApiAnalyticsTrendGetRequest) (*WebTrendResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebTrendResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebTrendResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AnalyticsAPIService.ApiAnalyticsTrendGet")
@@ -279,8 +280,8 @@ func (a *AnalyticsAPIService) ApiAnalyticsTrendGetExecute(r ApiApiAnalyticsTrend
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -290,8 +291,8 @@ func (a *AnalyticsAPIService) ApiAnalyticsTrendGetExecute(r ApiApiAnalyticsTrend
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -309,9 +310,9 @@ func (a *AnalyticsAPIService) ApiAnalyticsTrendGetExecute(r ApiApiAnalyticsTrend
 }
 
 type ApiApiAnalyticsYearGetRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *AnalyticsAPIService
-	year *int32
+	year       *int32
 }
 
 // 4-digit year (defaults to current year)
@@ -327,24 +328,25 @@ func (r ApiApiAnalyticsYearGetRequest) Execute() (*WebYearAnalyticsResponse, *ht
 /*
 ApiAnalyticsYearGet Annual breakdown by month and category
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiAnalyticsYearGetRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiAnalyticsYearGetRequest
 */
 func (a *AnalyticsAPIService) ApiAnalyticsYearGet(ctx context.Context) ApiApiAnalyticsYearGetRequest {
 	return ApiApiAnalyticsYearGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebYearAnalyticsResponse
+//
+//	@return WebYearAnalyticsResponse
 func (a *AnalyticsAPIService) ApiAnalyticsYearGetExecute(r ApiApiAnalyticsYearGetRequest) (*WebYearAnalyticsResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebYearAnalyticsResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebYearAnalyticsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AnalyticsAPIService.ApiAnalyticsYearGet")
@@ -421,8 +423,8 @@ func (a *AnalyticsAPIService) ApiAnalyticsYearGetExecute(r ApiApiAnalyticsYearGe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -432,8 +434,8 @@ func (a *AnalyticsAPIService) ApiAnalyticsYearGetExecute(r ApiApiAnalyticsYearGe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}

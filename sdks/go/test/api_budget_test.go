@@ -11,10 +11,10 @@ package cashout
 
 import (
 	"context"
+	openapiclient "github.com/alainrk/cashout/cashout"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
-	openapiclient "github.com/alainrk/cashout/cashout"
 )
 
 func Test_cashout_BudgetAPIService(t *testing.T) {
@@ -24,7 +24,7 @@ func Test_cashout_BudgetAPIService(t *testing.T) {
 
 	t.Run("Test BudgetAPIService ApiBudgetDelete", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.BudgetAPI.ApiBudgetDelete(context.Background()).Execute()
 
@@ -36,7 +36,7 @@ func Test_cashout_BudgetAPIService(t *testing.T) {
 
 	t.Run("Test BudgetAPIService ApiBudgetDelete_1", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.BudgetAPI.ApiBudgetDelete_0(context.Background()).Execute()
 
@@ -48,7 +48,7 @@ func Test_cashout_BudgetAPIService(t *testing.T) {
 
 	t.Run("Test BudgetAPIService ApiBudgetDelete_2", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.BudgetAPI.ApiBudgetDelete_1(context.Background()).Execute()
 
@@ -60,7 +60,7 @@ func Test_cashout_BudgetAPIService(t *testing.T) {
 
 	t.Run("Test BudgetAPIService ApiBudgetDelete_3", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.BudgetAPI.ApiBudgetDelete_2(context.Background()).Execute()
 
@@ -72,7 +72,7 @@ func Test_cashout_BudgetAPIService(t *testing.T) {
 
 	t.Run("Test BudgetAPIService ApiBudgetGet", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.BudgetAPI.ApiBudgetGet(context.Background()).Execute()
 
@@ -84,7 +84,7 @@ func Test_cashout_BudgetAPIService(t *testing.T) {
 
 	t.Run("Test BudgetAPIService ApiBudgetGet_4", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.BudgetAPI.ApiBudgetGet_0(context.Background()).Execute()
 
@@ -96,7 +96,7 @@ func Test_cashout_BudgetAPIService(t *testing.T) {
 
 	t.Run("Test BudgetAPIService ApiBudgetGet_5", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.BudgetAPI.ApiBudgetGet_1(context.Background()).Execute()
 
@@ -108,7 +108,7 @@ func Test_cashout_BudgetAPIService(t *testing.T) {
 
 	t.Run("Test BudgetAPIService ApiBudgetGet_6", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.BudgetAPI.ApiBudgetGet_2(context.Background()).Execute()
 
@@ -120,7 +120,7 @@ func Test_cashout_BudgetAPIService(t *testing.T) {
 
 	t.Run("Test BudgetAPIService ApiBudgetPost", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.BudgetAPI.ApiBudgetPost(context.Background()).Execute()
 
@@ -132,7 +132,7 @@ func Test_cashout_BudgetAPIService(t *testing.T) {
 
 	t.Run("Test BudgetAPIService ApiBudgetPost_7", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.BudgetAPI.ApiBudgetPost_0(context.Background()).Execute()
 
@@ -144,7 +144,7 @@ func Test_cashout_BudgetAPIService(t *testing.T) {
 
 	t.Run("Test BudgetAPIService ApiBudgetPost_8", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.BudgetAPI.ApiBudgetPost_1(context.Background()).Execute()
 
@@ -156,7 +156,7 @@ func Test_cashout_BudgetAPIService(t *testing.T) {
 
 	t.Run("Test BudgetAPIService ApiBudgetPost_9", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.BudgetAPI.ApiBudgetPost_2(context.Background()).Execute()
 
@@ -168,7 +168,7 @@ func Test_cashout_BudgetAPIService(t *testing.T) {
 
 	t.Run("Test BudgetAPIService ApiBudgetPut", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.BudgetAPI.ApiBudgetPut(context.Background()).Execute()
 
@@ -180,7 +180,7 @@ func Test_cashout_BudgetAPIService(t *testing.T) {
 
 	t.Run("Test BudgetAPIService ApiBudgetPut_10", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.BudgetAPI.ApiBudgetPut_0(context.Background()).Execute()
 
@@ -192,7 +192,7 @@ func Test_cashout_BudgetAPIService(t *testing.T) {
 
 	t.Run("Test BudgetAPIService ApiBudgetPut_11", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.BudgetAPI.ApiBudgetPut_1(context.Background()).Execute()
 
@@ -204,7 +204,7 @@ func Test_cashout_BudgetAPIService(t *testing.T) {
 
 	t.Run("Test BudgetAPIService ApiBudgetPut_12", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.BudgetAPI.ApiBudgetPut_2(context.Background()).Execute()
 

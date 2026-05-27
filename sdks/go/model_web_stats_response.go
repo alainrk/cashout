@@ -19,10 +19,10 @@ var _ MappedNullable = &WebStatsResponse{}
 
 // WebStatsResponse struct for WebStatsResponse
 type WebStatsResponse struct {
-	Balance *float32 `json:"balance,omitempty"`
-	TotalExpenses *float32 `json:"totalExpenses,omitempty"`
-	TotalIncome *float32 `json:"totalIncome,omitempty"`
-	TotalTransactions *int32 `json:"totalTransactions,omitempty"`
+	Balance           *float32 `json:"balance,omitempty"`
+	TotalExpenses     *float32 `json:"totalExpenses,omitempty"`
+	TotalIncome       *float32 `json:"totalIncome,omitempty"`
+	TotalTransactions *int32   `json:"totalTransactions,omitempty"`
 }
 
 // NewWebStatsResponse instantiates a new WebStatsResponse object
@@ -171,7 +171,7 @@ func (o *WebStatsResponse) SetTotalTransactions(v int32) {
 }
 
 func (o WebStatsResponse) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -230,5 +230,3 @@ func (v *NullableWebStatsResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-
