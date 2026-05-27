@@ -304,13 +304,13 @@ func (db *DB) GetUserTransactionsByTypePaginated(tgID int64, transactionType mod
 // TransactionFilter bundles the optional filters supported by
 // SearchUserTransactionsFiltered. Nil/zero fields are ignored.
 type TransactionFilter struct {
-	Query     string                   // case-insensitive substring on description
-	Category  string                   // "" or "all" disables the category filter
-	Type      model.TransactionType    // "" disables the type filter
-	DateFrom  *time.Time               // inclusive lower bound
-	DateTo    *time.Time               // inclusive upper bound
-	AmountMin *float64                 // inclusive lower bound
-	AmountMax *float64                 // inclusive upper bound
+	Query     string                // case-insensitive substring on description
+	Category  string                // "" or "all" disables the category filter
+	Type      model.TransactionType // "" disables the type filter
+	DateFrom  *time.Time            // inclusive lower bound
+	DateTo    *time.Time            // inclusive upper bound
+	AmountMin *float64              // inclusive lower bound
+	AmountMax *float64              // inclusive upper bound
 }
 
 // SearchUserTransactionsFiltered runs the full set of optional filters used by

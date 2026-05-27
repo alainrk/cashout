@@ -19,12 +19,12 @@ var _ MappedNullable = &WebTransactionDTO{}
 
 // WebTransactionDTO struct for WebTransactionDTO
 type WebTransactionDTO struct {
-	Amount *float32 `json:"amount,omitempty"`
-	Category *string `json:"category,omitempty"`
-	Date *string `json:"date,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Id *int32 `json:"id,omitempty"`
-	Type *string `json:"type,omitempty"`
+	Amount      *float32 `json:"amount,omitempty"`
+	Category    *string  `json:"category,omitempty"`
+	Date        *string  `json:"date,omitempty"`
+	Description *string  `json:"description,omitempty"`
+	Id          *int32   `json:"id,omitempty"`
+	Type        *string  `json:"type,omitempty"`
 }
 
 // NewWebTransactionDTO instantiates a new WebTransactionDTO object
@@ -237,7 +237,7 @@ func (o *WebTransactionDTO) SetType(v string) {
 }
 
 func (o WebTransactionDTO) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -302,5 +302,3 @@ func (v *NullableWebTransactionDTO) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

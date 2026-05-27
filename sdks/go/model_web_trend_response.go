@@ -19,9 +19,9 @@ var _ MappedNullable = &WebTrendResponse{}
 
 // WebTrendResponse struct for WebTrendResponse
 type WebTrendResponse struct {
-	From *string `json:"from,omitempty"`
+	From   *string         `json:"from,omitempty"`
 	Points []WebMonthPoint `json:"points,omitempty"`
-	To *string `json:"to,omitempty"`
+	To     *string         `json:"to,omitempty"`
 }
 
 // NewWebTrendResponse instantiates a new WebTrendResponse object
@@ -138,7 +138,7 @@ func (o *WebTrendResponse) SetTo(v string) {
 }
 
 func (o WebTrendResponse) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -194,5 +194,3 @@ func (v *NullableWebTrendResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

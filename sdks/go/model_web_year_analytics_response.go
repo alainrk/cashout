@@ -19,12 +19,12 @@ var _ MappedNullable = &WebYearAnalyticsResponse{}
 
 // WebYearAnalyticsResponse struct for WebYearAnalyticsResponse
 type WebYearAnalyticsResponse struct {
-	Balance *float32 `json:"balance,omitempty"`
-	ByCategory *WebCategoryBreakdown `json:"byCategory,omitempty"`
-	ByMonth []WebYearMonthEntry `json:"byMonth,omitempty"`
-	TotalExpenses *float32 `json:"totalExpenses,omitempty"`
-	TotalIncome *float32 `json:"totalIncome,omitempty"`
-	Year *int32 `json:"year,omitempty"`
+	Balance       *float32              `json:"balance,omitempty"`
+	ByCategory    *WebCategoryBreakdown `json:"byCategory,omitempty"`
+	ByMonth       []WebYearMonthEntry   `json:"byMonth,omitempty"`
+	TotalExpenses *float32              `json:"totalExpenses,omitempty"`
+	TotalIncome   *float32              `json:"totalIncome,omitempty"`
+	Year          *int32                `json:"year,omitempty"`
 }
 
 // NewWebYearAnalyticsResponse instantiates a new WebYearAnalyticsResponse object
@@ -237,7 +237,7 @@ func (o *WebYearAnalyticsResponse) SetYear(v int32) {
 }
 
 func (o WebYearAnalyticsResponse) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -302,5 +302,3 @@ func (v *NullableWebYearAnalyticsResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

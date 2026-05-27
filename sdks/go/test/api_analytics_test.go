@@ -11,10 +11,10 @@ package cashout
 
 import (
 	"context"
+	openapiclient "github.com/alainrk/cashout/cashout"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
-	openapiclient "github.com/alainrk/cashout/cashout"
 )
 
 func Test_cashout_AnalyticsAPIService(t *testing.T) {
@@ -24,7 +24,7 @@ func Test_cashout_AnalyticsAPIService(t *testing.T) {
 
 	t.Run("Test AnalyticsAPIService ApiAnalyticsMonthlyGet", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.AnalyticsAPI.ApiAnalyticsMonthlyGet(context.Background()).Execute()
 
@@ -36,7 +36,7 @@ func Test_cashout_AnalyticsAPIService(t *testing.T) {
 
 	t.Run("Test AnalyticsAPIService ApiAnalyticsTrendGet", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.AnalyticsAPI.ApiAnalyticsTrendGet(context.Background()).Execute()
 
@@ -48,7 +48,7 @@ func Test_cashout_AnalyticsAPIService(t *testing.T) {
 
 	t.Run("Test AnalyticsAPIService ApiAnalyticsYearGet", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.AnalyticsAPI.ApiAnalyticsYearGet(context.Background()).Execute()
 

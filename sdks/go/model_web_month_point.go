@@ -21,8 +21,8 @@ var _ MappedNullable = &WebMonthPoint{}
 type WebMonthPoint struct {
 	Balance *float32 `json:"balance,omitempty"`
 	Expense *float32 `json:"expense,omitempty"`
-	Income *float32 `json:"income,omitempty"`
-	Month *string `json:"month,omitempty"`
+	Income  *float32 `json:"income,omitempty"`
+	Month   *string  `json:"month,omitempty"`
 }
 
 // NewWebMonthPoint instantiates a new WebMonthPoint object
@@ -171,7 +171,7 @@ func (o *WebMonthPoint) SetMonth(v string) {
 }
 
 func (o WebMonthPoint) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -230,5 +230,3 @@ func (v *NullableWebMonthPoint) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-
