@@ -11,10 +11,10 @@ package cashout
 
 import (
 	"context"
+	openapiclient "github.com/alainrk/cashout/cashout"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
-	openapiclient "github.com/alainrk/cashout/cashout"
 )
 
 func Test_cashout_TransactionsAPIService(t *testing.T) {
@@ -24,7 +24,7 @@ func Test_cashout_TransactionsAPIService(t *testing.T) {
 
 	t.Run("Test TransactionsAPIService ApiCategoriesGet", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.TransactionsAPI.ApiCategoriesGet(context.Background()).Execute()
 
@@ -36,7 +36,7 @@ func Test_cashout_TransactionsAPIService(t *testing.T) {
 
 	t.Run("Test TransactionsAPIService ApiStatsGet", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.TransactionsAPI.ApiStatsGet(context.Background()).Execute()
 
@@ -48,7 +48,7 @@ func Test_cashout_TransactionsAPIService(t *testing.T) {
 
 	t.Run("Test TransactionsAPIService ApiTransactionsCreatePost", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.TransactionsAPI.ApiTransactionsCreatePost(context.Background()).Execute()
 
@@ -60,7 +60,7 @@ func Test_cashout_TransactionsAPIService(t *testing.T) {
 
 	t.Run("Test TransactionsAPIService ApiTransactionsDeleteDelete", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.TransactionsAPI.ApiTransactionsDeleteDelete(context.Background()).Execute()
 
@@ -72,7 +72,7 @@ func Test_cashout_TransactionsAPIService(t *testing.T) {
 
 	t.Run("Test TransactionsAPIService ApiTransactionsGet", func(t *testing.T) {
 
-		t.Skip("skip test")  // remove to run test
+		t.Skip("skip test") // remove to run test
 
 		resp, httpRes, err := apiClient.TransactionsAPI.ApiTransactionsGet(context.Background()).Execute()
 

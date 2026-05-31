@@ -214,6 +214,11 @@ sdk-python:
 	  -o sdks/python \
 	  --git-user-id=$(SDK_GIT_USER) --git-repo-id=$(SDK_GIT_REPO) \
 	  --additional-properties=packageName=cashout_sdk,projectName=cashout-sdk
+	# The generator emits `license = "NoLicense"`, a bare string that setuptools
+	# validates as an SPDX expression and rejects (it is not valid SPDX), breaking
+	# `pip`/`uv` installs. Rewrite it to the table form, which installs cleanly.
+	@sed -i.bak 's|^license = "NoLicense"$$|license = { text = "NoLicense" }|' sdks/python/pyproject.toml
+	@rm -f sdks/python/pyproject.toml.bak
 
 ## sdk-go: generate the Go SDK into sdks/go
 .PHONY: sdk-go

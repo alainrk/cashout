@@ -19,14 +19,13 @@ import (
 	"os"
 )
 
-
 // TransactionsAPIService TransactionsAPI service
 type TransactionsAPIService service
 
 type ApiApiCategoriesGetRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *TransactionsAPIService
-	type_ *string
+	type_      *string
 }
 
 // Transaction type: Income or Expense
@@ -42,24 +41,25 @@ func (r ApiApiCategoriesGetRequest) Execute() (*WebCategoriesResponse, *http.Res
 /*
 ApiCategoriesGet List categories
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiCategoriesGetRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiCategoriesGetRequest
 */
 func (a *TransactionsAPIService) ApiCategoriesGet(ctx context.Context) ApiApiCategoriesGetRequest {
 	return ApiApiCategoriesGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebCategoriesResponse
+//
+//	@return WebCategoriesResponse
 func (a *TransactionsAPIService) ApiCategoriesGetExecute(r ApiApiCategoriesGetRequest) (*WebCategoriesResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebCategoriesResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebCategoriesResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "TransactionsAPIService.ApiCategoriesGet")
@@ -137,8 +137,8 @@ func (a *TransactionsAPIService) ApiCategoriesGetExecute(r ApiApiCategoriesGetRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -148,8 +148,8 @@ func (a *TransactionsAPIService) ApiCategoriesGetExecute(r ApiApiCategoriesGetRe
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -167,9 +167,9 @@ func (a *TransactionsAPIService) ApiCategoriesGetExecute(r ApiApiCategoriesGetRe
 }
 
 type ApiApiStatsGetRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *TransactionsAPIService
-	month *string
+	month      *string
 }
 
 // Month in YYYY-MM (defaults to current month)
@@ -185,24 +185,25 @@ func (r ApiApiStatsGetRequest) Execute() (*WebStatsResponse, *http.Response, err
 /*
 ApiStatsGet Monthly stats
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiStatsGetRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiStatsGetRequest
 */
 func (a *TransactionsAPIService) ApiStatsGet(ctx context.Context) ApiApiStatsGetRequest {
 	return ApiApiStatsGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebStatsResponse
+//
+//	@return WebStatsResponse
 func (a *TransactionsAPIService) ApiStatsGetExecute(r ApiApiStatsGetRequest) (*WebStatsResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebStatsResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebStatsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "TransactionsAPIService.ApiStatsGet")
@@ -279,8 +280,8 @@ func (a *TransactionsAPIService) ApiStatsGetExecute(r ApiApiStatsGetRequest) (*W
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -290,8 +291,8 @@ func (a *TransactionsAPIService) ApiStatsGetExecute(r ApiApiStatsGetRequest) (*W
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -309,9 +310,9 @@ func (a *TransactionsAPIService) ApiStatsGetExecute(r ApiApiStatsGetRequest) (*W
 }
 
 type ApiApiTransactionsClonePostRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *TransactionsAPIService
-	body *WebCloneTransactionRequest
+	body       *WebCloneTransactionRequest
 }
 
 // ID of the transaction to clone
@@ -329,24 +330,25 @@ ApiTransactionsClonePost Clone transaction
 
 Duplicate an existing transaction; the new transaction copies type, category, amount, description and currency, with date set to today.
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiTransactionsClonePostRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiTransactionsClonePostRequest
 */
 func (a *TransactionsAPIService) ApiTransactionsClonePost(ctx context.Context) ApiApiTransactionsClonePostRequest {
 	return ApiApiTransactionsClonePostRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebTransactionDTO
+//
+//	@return WebTransactionDTO
 func (a *TransactionsAPIService) ApiTransactionsClonePostExecute(r ApiApiTransactionsClonePostRequest) (*WebTransactionDTO, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebTransactionDTO
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebTransactionDTO
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "TransactionsAPIService.ApiTransactionsClonePost")
@@ -425,8 +427,8 @@ func (a *TransactionsAPIService) ApiTransactionsClonePostExecute(r ApiApiTransac
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -436,8 +438,8 @@ func (a *TransactionsAPIService) ApiTransactionsClonePostExecute(r ApiApiTransac
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -447,8 +449,8 @@ func (a *TransactionsAPIService) ApiTransactionsClonePostExecute(r ApiApiTransac
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -458,8 +460,8 @@ func (a *TransactionsAPIService) ApiTransactionsClonePostExecute(r ApiApiTransac
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -469,8 +471,8 @@ func (a *TransactionsAPIService) ApiTransactionsClonePostExecute(r ApiApiTransac
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -488,9 +490,9 @@ func (a *TransactionsAPIService) ApiTransactionsClonePostExecute(r ApiApiTransac
 }
 
 type ApiApiTransactionsCreatePostRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *TransactionsAPIService
-	body *WebCreateTransactionRequest
+	body       *WebCreateTransactionRequest
 }
 
 // Transaction payload
@@ -506,24 +508,25 @@ func (r ApiApiTransactionsCreatePostRequest) Execute() (*WebMessageResponse, *ht
 /*
 ApiTransactionsCreatePost Create transaction
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiTransactionsCreatePostRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiTransactionsCreatePostRequest
 */
 func (a *TransactionsAPIService) ApiTransactionsCreatePost(ctx context.Context) ApiApiTransactionsCreatePostRequest {
 	return ApiApiTransactionsCreatePostRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebMessageResponse
+//
+//	@return WebMessageResponse
 func (a *TransactionsAPIService) ApiTransactionsCreatePostExecute(r ApiApiTransactionsCreatePostRequest) (*WebMessageResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebMessageResponse
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebMessageResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "TransactionsAPIService.ApiTransactionsCreatePost")
@@ -602,8 +605,8 @@ func (a *TransactionsAPIService) ApiTransactionsCreatePostExecute(r ApiApiTransa
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -613,8 +616,8 @@ func (a *TransactionsAPIService) ApiTransactionsCreatePostExecute(r ApiApiTransa
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -624,8 +627,8 @@ func (a *TransactionsAPIService) ApiTransactionsCreatePostExecute(r ApiApiTransa
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -643,9 +646,9 @@ func (a *TransactionsAPIService) ApiTransactionsCreatePostExecute(r ApiApiTransa
 }
 
 type ApiApiTransactionsDeleteDeleteRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *TransactionsAPIService
-	body *WebDeleteTransactionRequest
+	body       *WebDeleteTransactionRequest
 }
 
 // Transaction ID payload
@@ -661,24 +664,25 @@ func (r ApiApiTransactionsDeleteDeleteRequest) Execute() (*WebMessageResponse, *
 /*
 ApiTransactionsDeleteDelete Delete transaction
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiTransactionsDeleteDeleteRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiTransactionsDeleteDeleteRequest
 */
 func (a *TransactionsAPIService) ApiTransactionsDeleteDelete(ctx context.Context) ApiApiTransactionsDeleteDeleteRequest {
 	return ApiApiTransactionsDeleteDeleteRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebMessageResponse
+//
+//	@return WebMessageResponse
 func (a *TransactionsAPIService) ApiTransactionsDeleteDeleteExecute(r ApiApiTransactionsDeleteDeleteRequest) (*WebMessageResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebMessageResponse
+		localVarHTTPMethod  = http.MethodDelete
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebMessageResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "TransactionsAPIService.ApiTransactionsDeleteDelete")
@@ -757,8 +761,8 @@ func (a *TransactionsAPIService) ApiTransactionsDeleteDeleteExecute(r ApiApiTran
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -768,8 +772,8 @@ func (a *TransactionsAPIService) ApiTransactionsDeleteDeleteExecute(r ApiApiTran
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -779,8 +783,8 @@ func (a *TransactionsAPIService) ApiTransactionsDeleteDeleteExecute(r ApiApiTran
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -798,9 +802,9 @@ func (a *TransactionsAPIService) ApiTransactionsDeleteDeleteExecute(r ApiApiTran
 }
 
 type ApiApiTransactionsEditPatchRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *TransactionsAPIService
-	body *WebEditTransactionRequest
+	body       *WebEditTransactionRequest
 }
 
 // Fields to update; only non-null fields are applied
@@ -818,24 +822,25 @@ ApiTransactionsEditPatch Edit transaction (partial)
 
 Update one or more fields of an existing transaction. Type cannot be changed; category must remain within the same type (Income↔Expense swaps are rejected).
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiTransactionsEditPatchRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiTransactionsEditPatchRequest
 */
 func (a *TransactionsAPIService) ApiTransactionsEditPatch(ctx context.Context) ApiApiTransactionsEditPatchRequest {
 	return ApiApiTransactionsEditPatchRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebTransactionDTO
+//
+//	@return WebTransactionDTO
 func (a *TransactionsAPIService) ApiTransactionsEditPatchExecute(r ApiApiTransactionsEditPatchRequest) (*WebTransactionDTO, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPatch
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebTransactionDTO
+		localVarHTTPMethod  = http.MethodPatch
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebTransactionDTO
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "TransactionsAPIService.ApiTransactionsEditPatch")
@@ -914,8 +919,8 @@ func (a *TransactionsAPIService) ApiTransactionsEditPatchExecute(r ApiApiTransac
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -925,8 +930,8 @@ func (a *TransactionsAPIService) ApiTransactionsEditPatchExecute(r ApiApiTransac
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 403 {
@@ -936,8 +941,8 @@ func (a *TransactionsAPIService) ApiTransactionsEditPatchExecute(r ApiApiTransac
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 404 {
@@ -947,8 +952,8 @@ func (a *TransactionsAPIService) ApiTransactionsEditPatchExecute(r ApiApiTransac
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -958,8 +963,8 @@ func (a *TransactionsAPIService) ApiTransactionsEditPatchExecute(r ApiApiTransac
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -977,15 +982,15 @@ func (a *TransactionsAPIService) ApiTransactionsEditPatchExecute(r ApiApiTransac
 }
 
 type ApiApiTransactionsExportGetRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *TransactionsAPIService
-	query *string
-	category *string
-	type_ *string
-	dateFrom *string
-	dateTo *string
-	amountMin *float32
-	amountMax *float32
+	query      *string
+	category   *string
+	type_      *string
+	dateFrom   *string
+	dateTo     *string
+	amountMin  *float32
+	amountMax  *float32
 }
 
 // Substring match on description (case-insensitive)
@@ -1039,24 +1044,25 @@ ApiTransactionsExportGet Export transactions as CSV
 
 Stream a CSV containing all transactions matching the optional filter set. Columns: date,type,category,amount,currency,description,created_at,updated_at.
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiTransactionsExportGetRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiTransactionsExportGetRequest
 */
 func (a *TransactionsAPIService) ApiTransactionsExportGet(ctx context.Context) ApiApiTransactionsExportGetRequest {
 	return ApiApiTransactionsExportGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return *os.File
+//
+//	@return *os.File
 func (a *TransactionsAPIService) ApiTransactionsExportGetExecute(r ApiApiTransactionsExportGetRequest) (*os.File, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *os.File
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *os.File
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "TransactionsAPIService.ApiTransactionsExportGet")
@@ -1151,8 +1157,8 @@ func (a *TransactionsAPIService) ApiTransactionsExportGetExecute(r ApiApiTransac
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -1162,8 +1168,8 @@ func (a *TransactionsAPIService) ApiTransactionsExportGetExecute(r ApiApiTransac
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -1173,8 +1179,8 @@ func (a *TransactionsAPIService) ApiTransactionsExportGetExecute(r ApiApiTransac
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1192,9 +1198,9 @@ func (a *TransactionsAPIService) ApiTransactionsExportGetExecute(r ApiApiTransac
 }
 
 type ApiApiTransactionsGetRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *TransactionsAPIService
-	month *string
+	month      *string
 }
 
 // Month in YYYY-MM (defaults to current month)
@@ -1210,24 +1216,25 @@ func (r ApiApiTransactionsGetRequest) Execute() (*WebTransactionsResponse, *http
 /*
 ApiTransactionsGet List transactions for a month
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiTransactionsGetRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiTransactionsGetRequest
 */
 func (a *TransactionsAPIService) ApiTransactionsGet(ctx context.Context) ApiApiTransactionsGetRequest {
 	return ApiApiTransactionsGetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebTransactionsResponse
+//
+//	@return WebTransactionsResponse
 func (a *TransactionsAPIService) ApiTransactionsGetExecute(r ApiApiTransactionsGetRequest) (*WebTransactionsResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebTransactionsResponse
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebTransactionsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "TransactionsAPIService.ApiTransactionsGet")
@@ -1304,8 +1311,8 @@ func (a *TransactionsAPIService) ApiTransactionsGetExecute(r ApiApiTransactionsG
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -1315,8 +1322,8 @@ func (a *TransactionsAPIService) ApiTransactionsGetExecute(r ApiApiTransactionsG
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
@@ -1334,9 +1341,9 @@ func (a *TransactionsAPIService) ApiTransactionsGetExecute(r ApiApiTransactionsG
 }
 
 type ApiApiTransactionsSearchPostRequest struct {
-	ctx context.Context
+	ctx        context.Context
 	ApiService *TransactionsAPIService
-	body *WebSearchTransactionsRequest
+	body       *WebSearchTransactionsRequest
 }
 
 // Filter set
@@ -1354,24 +1361,25 @@ ApiTransactionsSearchPost Search transactions
 
 Search a user's transactions by any combination of text, category, type, date range, amount range. Returns paginated results with a total count.
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApiTransactionsSearchPostRequest
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApiTransactionsSearchPostRequest
 */
 func (a *TransactionsAPIService) ApiTransactionsSearchPost(ctx context.Context) ApiApiTransactionsSearchPostRequest {
 	return ApiApiTransactionsSearchPostRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return WebSearchTransactionsResponse
+//
+//	@return WebSearchTransactionsResponse
 func (a *TransactionsAPIService) ApiTransactionsSearchPostExecute(r ApiApiTransactionsSearchPostRequest) (*WebSearchTransactionsResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *WebSearchTransactionsResponse
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *WebSearchTransactionsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "TransactionsAPIService.ApiTransactionsSearchPost")
@@ -1450,8 +1458,8 @@ func (a *TransactionsAPIService) ApiTransactionsSearchPostExecute(r ApiApiTransa
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 401 {
@@ -1461,8 +1469,8 @@ func (a *TransactionsAPIService) ApiTransactionsSearchPostExecute(r ApiApiTransa
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
@@ -1472,8 +1480,8 @@ func (a *TransactionsAPIService) ApiTransactionsSearchPostExecute(r ApiApiTransa
 				newErr.error = err.Error()
 				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
-					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
-					newErr.model = v
+			newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+			newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}

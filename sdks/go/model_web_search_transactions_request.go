@@ -21,13 +21,13 @@ var _ MappedNullable = &WebSearchTransactionsRequest{}
 type WebSearchTransactionsRequest struct {
 	AmountMax *float32 `json:"amountMax,omitempty"`
 	AmountMin *float32 `json:"amountMin,omitempty"`
-	Category *string `json:"category,omitempty"`
-	DateFrom *string `json:"dateFrom,omitempty"`
-	DateTo *string `json:"dateTo,omitempty"`
-	Limit *int32 `json:"limit,omitempty"`
-	Offset *int32 `json:"offset,omitempty"`
-	Query *string `json:"query,omitempty"`
-	Type *string `json:"type,omitempty"`
+	Category  *string  `json:"category,omitempty"`
+	DateFrom  *string  `json:"dateFrom,omitempty"`
+	DateTo    *string  `json:"dateTo,omitempty"`
+	Limit     *int32   `json:"limit,omitempty"`
+	Offset    *int32   `json:"offset,omitempty"`
+	Query     *string  `json:"query,omitempty"`
+	Type      *string  `json:"type,omitempty"`
 }
 
 // NewWebSearchTransactionsRequest instantiates a new WebSearchTransactionsRequest object
@@ -336,7 +336,7 @@ func (o *WebSearchTransactionsRequest) SetType(v string) {
 }
 
 func (o WebSearchTransactionsRequest) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -410,5 +410,3 @@ func (v *NullableWebSearchTransactionsRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

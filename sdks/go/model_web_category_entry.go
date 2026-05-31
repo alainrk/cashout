@@ -19,10 +19,10 @@ var _ MappedNullable = &WebCategoryEntry{}
 
 // WebCategoryEntry struct for WebCategoryEntry
 type WebCategoryEntry struct {
-	Amount *float32 `json:"amount,omitempty"`
-	Category *string `json:"category,omitempty"`
-	Count *int32 `json:"count,omitempty"`
-	Pct *float32 `json:"pct,omitempty"`
+	Amount   *float32 `json:"amount,omitempty"`
+	Category *string  `json:"category,omitempty"`
+	Count    *int32   `json:"count,omitempty"`
+	Pct      *float32 `json:"pct,omitempty"`
 }
 
 // NewWebCategoryEntry instantiates a new WebCategoryEntry object
@@ -171,7 +171,7 @@ func (o *WebCategoryEntry) SetPct(v float32) {
 }
 
 func (o WebCategoryEntry) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -230,5 +230,3 @@ func (v *NullableWebCategoryEntry) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

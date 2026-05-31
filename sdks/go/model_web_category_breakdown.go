@@ -20,7 +20,7 @@ var _ MappedNullable = &WebCategoryBreakdown{}
 // WebCategoryBreakdown struct for WebCategoryBreakdown
 type WebCategoryBreakdown struct {
 	Expense []WebCategoryEntry `json:"Expense,omitempty"`
-	Income []WebCategoryEntry `json:"Income,omitempty"`
+	Income  []WebCategoryEntry `json:"Income,omitempty"`
 }
 
 // NewWebCategoryBreakdown instantiates a new WebCategoryBreakdown object
@@ -105,7 +105,7 @@ func (o *WebCategoryBreakdown) SetIncome(v []WebCategoryEntry) {
 }
 
 func (o WebCategoryBreakdown) MarshalJSON() ([]byte, error) {
-	toSerialize,err := o.ToMap()
+	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -158,5 +158,3 @@ func (v *NullableWebCategoryBreakdown) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-
