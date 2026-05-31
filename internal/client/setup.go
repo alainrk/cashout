@@ -91,6 +91,8 @@ func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
 
 	dispatcher.AddHandler(handlers.NewCommand("clone", c.CloneTransactions))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("home.clone"), c.CloneTransactions))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("clone.entry"), c.CloneTransactions))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("clone.recent"), c.CloneShowRecent))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("clone.select."), c.CloneTransactionSelected))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("clone.page."), c.CloneTransactionPage))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Equal("clone.noop"), c.CloneNoop))

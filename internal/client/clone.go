@@ -13,8 +13,39 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 )
 
-// CloneTransactions handles the /clone command and home.clone callback
+// CloneTransactions handles the /clone command and home.clone callback.
+// Lands the user on a "type to search" screen as the default fast path.
+// Recent list and Advanced filters are available behind buttons.
 func (c *Client) CloneTransactions(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return err
+	}
+
+	user.Session.State = model.StateEnteringCloneSearchQuery
+	user.Session.Body = "all"
+	err = c.Repositories.Users.Update(&user)
+	if err != nil {
+		return fmt.Errorf("failed to update user data: %w", err)
+	}
+
+	message := "📋 <b>Clone Transaction</b>\n\nType a few letters to find a transaction to clone."
+	keyboard := [][]gotgbot.InlineKeyboardButton{
+		{
+			{Text: "🕘 Recent", CallbackData: "clone.recent"},
+			{Text: "🎛 Advanced filters", CallbackData: "clone.searchmore"},
+		},
+		{
+			{Text: "❌ Cancel", CallbackData: "clone.search.cancel"},
+		},
+	}
+	return SendMessage(ctx, b, message, keyboard)
+}
+
+// CloneShowRecent shows the 10 most recent expenses (the legacy initial screen),
+// reachable from the new entry screen via the Recent button.
+func (c *Client) CloneShowRecent(b *gotgbot.Bot, ctx *ext.Context) error {
 	_, u := c.getUserFromContext(ctx)
 	user, err := c.authAndGetUser(u)
 	if err != nil {
@@ -516,9 +547,10 @@ func createCloneRecentKeyboard(transactions []model.Transaction, offset, limit, 
 		keyboard = append(keyboard, navigationRow)
 	}
 
-	// Search More + Cancel
+	// Search + Advanced + Cancel
 	keyboard = append(keyboard, []gotgbot.InlineKeyboardButton{
-		{Text: "🔍 Search More", CallbackData: "clone.searchmore"},
+		{Text: "🔍 Search", CallbackData: "clone.entry"},
+		{Text: "🎛 Advanced", CallbackData: "clone.searchmore"},
 		{Text: "❌ Cancel", CallbackData: "transactions.cancel"},
 	})
 

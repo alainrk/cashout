@@ -103,20 +103,23 @@ func TestCreateCloneRecentKeyboard_NumberedButtonsRowsOf5(t *testing.T) {
 	}
 }
 
-func TestCreateCloneRecentKeyboard_SearchMoreAndCancel(t *testing.T) {
+func TestCreateCloneRecentKeyboard_SearchAdvancedAndCancel(t *testing.T) {
 	txns := []model.Transaction{{ID: 1}}
 	kb := createCloneRecentKeyboard(txns, 0, 10, 1)
 
-	// Last row should be Search More + Cancel
+	// Last row should be Search + Advanced + Cancel
 	lastRow := kb[len(kb)-1]
-	if len(lastRow) != 2 {
-		t.Fatalf("last row should have 2 buttons, got %d", len(lastRow))
+	if len(lastRow) != 3 {
+		t.Fatalf("last row should have 3 buttons, got %d", len(lastRow))
 	}
-	if lastRow[0].CallbackData != "clone.searchmore" {
-		t.Errorf("expected clone.searchmore, got %s", lastRow[0].CallbackData)
+	if lastRow[0].CallbackData != "clone.entry" {
+		t.Errorf("expected clone.entry, got %s", lastRow[0].CallbackData)
 	}
-	if lastRow[1].CallbackData != "transactions.cancel" {
-		t.Errorf("expected transactions.cancel, got %s", lastRow[1].CallbackData)
+	if lastRow[1].CallbackData != "clone.searchmore" {
+		t.Errorf("expected clone.searchmore, got %s", lastRow[1].CallbackData)
+	}
+	if lastRow[2].CallbackData != "transactions.cancel" {
+		t.Errorf("expected transactions.cancel, got %s", lastRow[2].CallbackData)
 	}
 }
 
