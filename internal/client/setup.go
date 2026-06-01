@@ -3,6 +3,8 @@ package client
 import (
 	"strings"
 
+	"cashout/internal/model"
+
 	gotgbot "github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
@@ -17,6 +19,31 @@ func noCommands(msg *gotgbot.Message) bool {
 
 func cancelText(msg *gotgbot.Message) bool {
 	return message.Text(msg) && strings.ToLower(strings.Trim(msg.Text, " ")) == "cancel"
+}
+
+func onlyCommands(msg *gotgbot.Message) bool {
+	return message.Command(msg)
+}
+
+// ResetStateOnCommand clears any in-flight conversational state when the user
+// issues a /command, so stateless commands (/export, /week, …) do not leave
+// the user trapped in a previous flow (e.g. clone search query). Stateful
+// commands overwrite state immediately after this runs, so the reset is a
+// no-op for them.
+func (c *Client) ResetStateOnCommand(b *gotgbot.Bot, ctx *ext.Context) error {
+	_, u := c.getUserFromContext(ctx)
+	user, err := c.authAndGetUser(u)
+	if err != nil {
+		return ext.ContinueGroups
+	}
+	if user.Session.State != model.StateNormal || user.Session.Body != "" {
+		user.Session.State = model.StateNormal
+		user.Session.Body = ""
+		if err := c.Repositories.Users.Update(&user); err != nil {
+			c.Logger.Warnf("ResetStateOnCommand: failed to reset state: %v", err)
+		}
+	}
+	return ext.ContinueGroups
 }
 
 // SendTypingAction is a best-effort pre-handler that sends a "typing" chat
@@ -35,6 +62,11 @@ func SetupHandlers(dispatcher *ext.Dispatcher, c *Client) {
 	// reports). Callback queries are intentionally excluded — they resolve
 	// fast and the 5s typing indicator otherwise lingers visibly.
 	dispatcher.AddHandlerToGroup(handlers.NewMessage(func(*gotgbot.Message) bool { return true }, c.SendTypingAction), -1)
+
+	// Pre-handler (group -1): reset any in-flight conversational state when a
+	// /command is issued, so stateless commands don't leave the user trapped
+	// in a previous flow.
+	dispatcher.AddHandlerToGroup(handlers.NewMessage(onlyCommands, c.ResetStateOnCommand), -1)
 
 	// Top-level message for LLM goes into AddTransaction and gets the expense/income intent from user session state.
 	dispatcher.AddHandler(handlers.NewMessage(noCommands, c.FreeTextRouter))
